@@ -17,11 +17,13 @@ import { EventJournal } from './events/journal';
 import { SqliteQueue, type QueueAdapter } from './queue/queue';
 import { CheckpointRepo } from './orchestrator/checkpoints';
 import { MissionRunner, type RunnerConfig } from './orchestrator/runner';
-import { createDemoMission } from './orchestrator/demo';
+import { createDemoMission, MOCK_MODEL_ID } from './orchestrator/demo';
 import { ModelCaller } from './llm/call-model';
 import { MockLlmClient, type MockOptions } from './llm/mock';
+import type { MissionExecConfig } from './llm/exec-config';
 import { ResearchService } from './research/research-service';
 import { researchMockRespond } from './research/mock-responder';
+import { planningMockRespond } from './planning/mock-responder';
 import { getSource, listSources } from './research/catalog';
 import { SourceHttp, DEFAULT_HTTP_CONFIG } from './sources/http';
 import {
@@ -35,6 +37,11 @@ import { mockBooks, mockFullTextHttp, mockPageHttp } from './sources/mock-pdf';
 import { loadQualityWeights } from './sources/score';
 import { demoRegistry, type AgentRegistry } from './agents/registry';
 import { IngestService } from './kb/ingest';
+import { PlanningService } from './planning/service';
+import { OutlineRepo } from './planning/outline';
+import { loadEstimation, loadPlanConfig, loadStructures } from './planning/config';
+import { BriefSchema, WORK_TYPE_LABEL_FR } from '@emilio/shared';
+import type { Brief } from '@emilio/shared';
 import { KbStore } from './kb/store';
 import { resolveEmbedder, type EmbeddingAdapter } from './kb/embeddings';
 import { LocalFileAdapter } from './storage/file-adapter';
@@ -47,7 +54,7 @@ import {
   type OpenRouterConfig,
 } from './llm/openrouter';
 
-export const ENGINE_VERSION = '0.4.0';
+export const ENGINE_VERSION = '0.5.0';
 
 export type EngineOptions = {
   dbPath: string;
@@ -67,6 +74,8 @@ export type EngineOptions = {
   presetsPath?: string;
   normsProfilesPath?: string;
   qualityWeightsPath?: string;
+  /** Dossier `resources/` : gabarits de structure, réglages du plan et de l'estimation. */
+  resourcesDir?: string;
   /** Substitut de `fetch` pour les connecteurs de sources (tests). */
   sourcesFetch?: FetchLike;
 };
@@ -89,6 +98,8 @@ export class EngineService {
   readonly sourceHttp: SourceHttp;
   readonly sources: SourceRegistry;
   readonly research: ResearchService;
+  readonly outline: OutlineRepo;
+  readonly planning: PlanningService;
   readonly mockSources: MockSourceConnector[] = mockConnectors();
   private sourceKeys = new Map<string, string>();
   private readonly opts: EngineOptions;
@@ -107,7 +118,7 @@ export class EngineService {
       new MockLlmClient({
         delayMs: 400,
         costPerCallUsd: 0.002,
-        respond: researchMockRespond,
+        respond: (req) => researchMockRespond(req) ?? planningMockRespond(req),
         ...opts.mockOptions,
       });
     this.journal = new EventJournal(this.db);
@@ -129,7 +140,10 @@ export class EngineService {
       checkpoints: this.checkpoints,
       caller,
       agents: opts.agents ?? demoRegistry(),
-      localHandlers: { 'demo.ingest': () => ({ fichiers: 0 }) },
+      localHandlers: {
+        'demo.ingest': () => ({ fichiers: 0 }),
+        'p3.research': (task) => this.researchNode(task.missionId, String(task.input.nodeId)),
+      },
       probes: {
         credit: async (id) =>
           this.isMock(id) ? !this.mock.creditExhausted : this.creditAvailable(),
@@ -198,6 +212,22 @@ export class EngineService {
           : { books: this.sources.books, http: this.sourceHttp },
       fullTextHttp: (mode) => (mode === 'mock' ? mockFullTextHttp : this.sourceHttp),
     });
+    this.outline = new OutlineRepo(this.db);
+    this.planning = new PlanningService({
+      db: this.db,
+      missions: this.missions,
+      journal: this.journal,
+      caller,
+      queue: this.queue,
+      ingest: this.ingest,
+      research: this.research,
+      outline: this.outline,
+      config: loadPlanConfig(opts.resourcesDir),
+      estimation: loadEstimation(opts.resourcesDir),
+      structures: loadStructures(opts.resourcesDir),
+      price: (model) => this.priceOf(model),
+      onUpdated: (id) => this.emit({ kind: 'mission.updated', mission: this.missions.summary(id) }),
+    });
     this.journal.subscribe((event) => this.emit({ kind: 'mission.event', event }));
   }
 
@@ -205,6 +235,7 @@ export class EngineService {
   start(): void {
     this.runner.recoverOnStart();
     this.ingest.recover();
+    this.planning.recover();
     this.runner.startLoop();
   }
 
@@ -242,6 +273,44 @@ export class EngineService {
         keyMasked: masks[id] ?? null,
       })),
     };
+  }
+
+  /** Recherche approfondie d'une section du plan validé (tâche P3, CdC §9) : sections du plan → `ResearchService`. */
+  private async researchNode(missionId: string, nodeId: string): Promise<unknown> {
+    const node = this.outline.list(missionId).find((n) => n.id === nodeId);
+    if (!node) throw new AppError('E_INTERNAL', 'Section du plan introuvable.');
+    const brief = BriefSchema.parse(this.draftBrief(missionId)) as Brief;
+    this.outline.setStatus(nodeId, 'researching');
+    try {
+      const r = await this.research.researchSection({
+        missionId,
+        sectionKey: nodeId,
+        title: node.title,
+        objective: node.objective || node.title,
+        keyQuestions: node.keyQuestions,
+        workType: WORK_TYPE_LABEL_FR[brief.workType].toLowerCase(),
+        discipline: brief.discipline,
+        depth: brief.execution?.profondeurRecherche ?? 'normale',
+        minSources: node.requiredSourcesMin || undefined,
+        prioriteAfrique: brief.execution?.preferenceSources === 'afrique',
+      });
+      return {
+        sectionKey: r.sectionKey,
+        retained: r.retained.length,
+        verified: r.verified,
+        rejected: r.rejected.length,
+        notes: r.notes,
+        coverageOk: r.coverageOk,
+      };
+    } finally {
+      this.outline.setStatus(nodeId, 'planned');
+    }
+  }
+
+  private draftBrief(missionId: string): unknown {
+    const r = this.db.prepare('SELECT brief_json FROM missions WHERE id=?').get(missionId) as
+      { brief_json: string | null } | undefined;
+    return JSON.parse(r?.brief_json ?? '{}');
   }
 
   private isMock(missionId: string): boolean {
@@ -411,11 +480,59 @@ export class EngineService {
         this.runner.resume(id());
         return this.missions.summary(id());
       case 'cancelMission':
+        this.planning.cancel(id());
         this.runner.cancel(id());
         return this.missions.summary(id());
       case 'retryMission':
+        // Plan en échec (aucune tâche créée) : on relance la planification plutôt que les tâches.
+        if (
+          this.missions.status(id()) === 'failed' &&
+          Object.values(this.queue.counts(id())).every((n) => n === 0)
+        )
+          return this.planning.start(id());
         this.runner.retry(id());
         return this.missions.summary(id());
+      case 'setLlmMode': {
+        if (this.missions.status(id()) !== 'briefing')
+          throw new AppError(
+            'E_BAD_REQUEST',
+            'Le mode simulé se choisit avant la génération du plan.',
+          );
+        const cur = this.missions.config<MissionExecConfig>(id());
+        const mock = Boolean(p.simulated);
+        const models = mock
+          ? (Object.fromEntries(
+              Object.keys(cur.models).map((k) => [k, MOCK_MODEL_ID]),
+            ) as MissionExecConfig['models'])
+          : cur.models;
+        this.missions.setConfig(id(), { ...cur, llmMode: mock ? 'mock' : 'real', models });
+        return this.missions.summary(id());
+      }
+      case 'generatePlan':
+        return this.planning.start(id());
+      case 'regeneratePlan':
+        return this.planning.start(id(), { comment: String(p.comment ?? '') });
+      case 'getPlan':
+        return this.planning.overview(id());
+      case 'updatePlanNode':
+        return this.planning.updateNode(id(), String(p.nodeId), p.patch as never);
+      case 'addPlanNode':
+        return this.planning.addNode(id(), p.input as never);
+      case 'deletePlanNode':
+        return this.planning.deleteNode(id(), String(p.nodeId));
+      case 'movePlanNode':
+        return this.planning.moveNode(
+          id(),
+          String(p.nodeId),
+          (p.parentId as string | null) ?? null,
+          Number(p.index),
+        );
+      case 'savePlanMeta':
+        return this.planning.saveMeta(id(), p.patch as never);
+      case 'validatePlan':
+        return this.planning.validate(id(), () =>
+          this.runner.start(id(), 'Plan validé : la mission démarre en autonomie.'),
+        );
       case 'listEvents':
         return this.journal.list(
           (p.id as string | null) ?? null,
@@ -439,6 +556,7 @@ export class EngineService {
   }
 
   async close(): Promise<void> {
+    await this.planning.stop();
     await this.runner.stop();
     await this.ingest.idle();
     this.db.close();

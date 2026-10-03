@@ -108,7 +108,7 @@ test('assistant en 7 étapes : brouillon enregistré, import réel de documents 
     await page.getByRole('button', { name: 'Créer la mission' }).click();
     await expect(page).toHaveURL(/#\/missions\/(?!nouvelle).+/);
     await expect(page.getByText('Brief', { exact: true }).first()).toBeVisible();
-    await expect(page.getByText(/génération du plan arrive au prochain jalon/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Générer le plan' })).toBeVisible();
   } finally {
     await app.close();
   }

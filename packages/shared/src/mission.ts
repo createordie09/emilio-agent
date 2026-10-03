@@ -14,6 +14,8 @@ export type MissionSummary = {
   budgetMaxUsd: number | null;
   /** Mission exécutée avec le client simulé (aucun appel payant). */
   simulated: boolean;
+  /** Version du plan proposé (0 = pas encore de plan). */
+  planVersion: number;
   tasksTotal: number;
   tasksDone: number;
   startedAt: string | null;

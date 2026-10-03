@@ -139,8 +139,8 @@ export function StepSummary({
       />
       <p className="t-small flex items-start gap-2 rounded-md bg-primary-softer p-3 text-text-muted">
         <Clock className="mt-0.5 size-4 shrink-0 text-primary" />
-        L'estimation détaillée du coût et de la durée sera calculée avec la génération du plan
-        (prochain jalon). En attendant, votre budget maximal sert de plafond.
+        L'estimation détaillée du coût et de la durée vous sera présentée avec le plan proposé,
+        avant tout lancement de la recherche. Votre budget maximal sert de plafond.
       </p>
       {warn && (
         <div

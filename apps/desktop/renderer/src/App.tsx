@@ -6,6 +6,7 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { DesignPage } from '@/pages/DesignPage';
 import { SoonPage } from '@/pages/SoonPage';
 import { MissionsPage } from '@/pages/MissionsPage';
+import { PlanPage } from '@/pages/PlanPage';
 import { MissionPage } from '@/pages/MissionPage';
 import { NewMissionPage } from '@/pages/NewMissionPage';
 import { WizardPage } from '@/pages/wizard/WizardPage';
@@ -25,6 +26,7 @@ export function App() {
           <Route path="missions/nouvelle" element={<NewMissionPage />} />
           <Route path="missions/nouvelle/:draftId" element={<WizardPage />} />
           <Route path="missions/:id" element={<MissionPage />} />
+          <Route path="missions/:id/plan" element={<PlanPage />} />
           <Route path="bibliotheque" element={<SoonPage title="Bibliothèque de sources" />} />
           <Route path="parametres" element={<SettingsPage />} />
           {/* Page de démonstration du design system : mode développeur uniquement (CdC §6.1.10). */}

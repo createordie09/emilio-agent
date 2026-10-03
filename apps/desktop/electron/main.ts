@@ -118,6 +118,7 @@ async function bootstrap(): Promise<void> {
       EMILIO_PRESETS_PATH: join(resources, 'presets.json'),
       EMILIO_NORMS_PATH: join(resources, 'norms-profiles.json'),
       EMILIO_QUALITY_WEIGHTS_PATH: join(resources, 'quality-weights.json'),
+      EMILIO_RESOURCES_DIR: resources,
     },
     (raw) => restore(raw),
     60_000,

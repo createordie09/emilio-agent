@@ -23,3 +23,6 @@ export function renderPrompt(
   };
   return tpl.replace(/\{\{(\w+)\}\}/g, (_m, k: string) => String(all[k] ?? ''));
 }
+
+/** Version des prompts de cadrage et de plan (P1, P2), stockée avec chaque appel. */
+export const PLAN_PROMPT_VERSION = 'plan-1';

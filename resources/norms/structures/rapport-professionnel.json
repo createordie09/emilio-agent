@@ -1,0 +1,103 @@
+{
+  "id": "rapport-professionnel",
+  "label": "Rapport de formation / projet professionnel",
+  "workTypes": ["rapport_formation_pro", "projet_pro"],
+  "allowExtraChapters": false,
+  "nodes": [
+    {
+      "key": "intro",
+      "level": "chapitre",
+      "kind": "introduction",
+      "title": "Introduction",
+      "share": 0.07
+    },
+    {
+      "key": "c1",
+      "level": "chapitre",
+      "kind": "corps",
+      "title": "Diagnostic de la situation",
+      "share": 0.15
+    },
+    {
+      "key": "c2",
+      "level": "chapitre",
+      "kind": "corps",
+      "title": "Problématique professionnelle",
+      "share": 0.1
+    },
+    {
+      "key": "c3",
+      "level": "chapitre",
+      "kind": "corps",
+      "title": "Cadre de référence",
+      "share": 0.15
+    },
+    {
+      "key": "c4",
+      "level": "chapitre",
+      "kind": "corps",
+      "title": "Démarche",
+      "share": 0.12
+    },
+    {
+      "key": "c5",
+      "level": "chapitre",
+      "kind": "corps",
+      "title": "Plan d'action et solution proposée",
+      "share": 0.2,
+      "children": [
+        {
+          "key": "c5.1",
+          "level": "section",
+          "kind": "corps",
+          "title": "Objectifs"
+        },
+        {
+          "key": "c5.2",
+          "level": "section",
+          "kind": "corps",
+          "title": "Activités"
+        },
+        {
+          "key": "c5.3",
+          "level": "section",
+          "kind": "corps",
+          "title": "Ressources"
+        },
+        {
+          "key": "c5.4",
+          "level": "section",
+          "kind": "corps",
+          "title": "Chronogramme"
+        },
+        {
+          "key": "c5.5",
+          "level": "section",
+          "kind": "corps",
+          "title": "Budget (si fourni)"
+        },
+        {
+          "key": "c5.6",
+          "level": "section",
+          "kind": "corps",
+          "title": "Indicateurs de suivi"
+        }
+      ]
+    },
+    {
+      "key": "c6",
+      "level": "chapitre",
+      "kind": "corps",
+      "title": "Résultats attendus ou obtenus",
+      "share": 0.1
+    },
+    {
+      "key": "concl",
+      "level": "chapitre",
+      "kind": "conclusion",
+      "title": "Conclusion",
+      "share": 0.06
+    }
+  ],
+  "description": "Gabarit de structure (CdC §15.3). Les parts (`share`) sont des poids relatifs de mots, normalisés par le code."
+}

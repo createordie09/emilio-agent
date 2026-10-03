@@ -21,6 +21,7 @@ type MissionRow = {
   finished_at: string | null;
   created_at: string;
   error_json: string | null;
+  plan_meta_json: string | null;
 };
 
 const STATUS_LABEL_FR: Record<MissionStatus, string> = {
@@ -157,6 +158,9 @@ export class MissionRepo {
       costSpentUsd: m.cost_spent_usd,
       budgetMaxUsd: cfg.budgetMaxUsd ?? null,
       simulated: cfg.llmMode === 'mock',
+      planVersion: m.plan_meta_json
+        ? ((JSON.parse(m.plan_meta_json) as { version?: number }).version ?? 0)
+        : 0,
       tasksTotal: c.total,
       tasksDone: c.done ?? 0,
       startedAt: m.started_at,

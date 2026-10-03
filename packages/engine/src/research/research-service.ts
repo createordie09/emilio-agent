@@ -272,6 +272,106 @@ export class ResearchService {
     return result;
   }
 
+  /**
+   * Recherche exploratoire pour le plan (CdC §9 P2.1–2.2) : ≈ 30 à 60 candidats (métadonnées et résumés seulement),
+   * vérification rapide de l'existence des DOI, sans texte intégral ni fiche de lecture.
+   */
+  async explore(spec: {
+    missionId: string;
+    topic: string;
+    queries: { texte: string; langue: 'fr' | 'en' }[];
+    perQuery: number;
+    maxCandidates: number;
+    discipline?: string;
+    prioriteAfrique?: boolean;
+    signal?: AbortSignal;
+  }): Promise<{
+    sources: {
+      id: string;
+      title: string;
+      authors: string[];
+      year: number | null;
+      abstract: string | null;
+      status: 'unverified' | 'verified' | 'partially_verified' | 'rejected';
+    }[];
+    found: number;
+    byConnector: Record<string, number>;
+    warnings: string[];
+  }> {
+    const { missionId } = spec;
+    const mode = this.d.missions.config<MissionExecConfig>(missionId).llmMode;
+    const connectors = this.d.connectors(mode, extraConnectorsForDiscipline(spec.discipline));
+    const warnings: string[] = [];
+    const failed = new Set<string>();
+    const raw = await searchAll(
+      connectors,
+      spec.queries.map((q) => ({ text: q.texte, language: q.langue })),
+      { limit: spec.perQuery },
+      (id, e) => {
+        if (failed.has(id)) return;
+        failed.add(id);
+        const why = e instanceof AppError ? e.messageFr : (e as Error).message;
+        warnings.push(`Source ${CONNECTOR_LABELS[id] ?? id} ignorée : ${why}`);
+      },
+    );
+    const byConnector: Record<string, number> = {};
+    for (const c of raw) byConnector[c.origin] = (byConnector[c.origin] ?? 0) + 1;
+    const merged = dedupe(raw);
+    const emb = this.d.embedder();
+    const [qv] = await emb.embedPassages([spec.topic]);
+    const vecs = merged.length
+      ? await emb.embedPassages(merged.map((c) => `${c.title}. ${c.abstract ?? ''}`.slice(0, 2000)))
+      : [];
+    const sims = vecs.map((v) => cos(qv!, v));
+    const lo = Math.min(...sims, 1);
+    const hi = Math.max(...sims, -1);
+    const rows = merged
+      .map((c, i) => {
+        const relevance = hi > lo ? (sims[i]! - lo) / (hi - lo) : 0.5;
+        const quality = qualityScore(c, this.d.weights, { prioriteAfrique: spec.prioriteAfrique });
+        return { c, relevance, quality, score: combinedScore(relevance, quality, this.d.weights) };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, spec.maxCandidates)
+      .map((r) => ({ ...r, id: this.upsertSource(missionId, r.c, r.relevance, r.quality) }));
+
+    // Vérification rapide : existence des DOI (Crossref puis OpenAlex), sans arbitrage par un modèle.
+    const doiSources = (['crossref', 'openalex'] as const).flatMap((id) => {
+      const c = this.d.connector(mode, id);
+      return c ? [{ id, connector: c }] : [];
+    });
+    const base = this.d.verifyDeps(mode);
+    const results = rows.length
+      ? await verifyMany(
+          rows.map((r) => r.c),
+          { doiSources, books: base.books, http: base.http, requireIdentifier: false },
+        )
+      : [];
+    const upd = this.d.db.prepare(
+      'UPDATE sources SET verification_status=?, verification_json=?, updated_at=? WHERE id=?',
+    );
+    const status = new Map<string, 'unverified' | 'verified' | 'partially_verified' | 'rejected'>();
+    rows.forEach((r, i) => {
+      const v = results[i];
+      if (!v) return status.set(r.id, 'unverified');
+      upd.run(v.status, JSON.stringify(v.evidence), nowIso(), r.id);
+      status.set(r.id, v.status as 'verified' | 'partially_verified' | 'rejected');
+    });
+    return {
+      sources: rows.map((r) => ({
+        id: r.id,
+        title: r.c.title,
+        authors: r.c.authors,
+        year: r.c.year ?? null,
+        abstract: r.c.abstract ?? null,
+        status: status.get(r.id) ?? 'unverified',
+      })),
+      found: raw.length,
+      byConnector,
+      warnings,
+    };
+  }
+
   private key(c: CandidateSource): string {
     return c.doi ? `doi:${c.doi}` : `t:${normalizeTitle(c.title)}|${c.year ?? ''}`;
   }

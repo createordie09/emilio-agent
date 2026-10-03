@@ -16,6 +16,7 @@ export const ERROR_MESSAGES_FR = {
   E_SOURCE_AUTH:
     "Un service de recherche documentaire a refusé l'accès (clé absente ou invalide, ou domaine bloqué par le réseau).",
   E_SOURCE_REMOTE: 'Un service de recherche documentaire a renvoyé une erreur.',
+  E_PLAN: "Le plan n'a pas pu être généré. Vous pouvez réessayer.",
   E_ENGINE: "Le moteur de l'application ne répond pas.",
   E_INTERNAL: "Une erreur interne s'est produite.",
 } as const;

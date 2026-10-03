@@ -1,0 +1,23 @@
+{
+  "id": "these-chapitres",
+  "label": "Thèse de doctorat (chapitres)",
+  "workTypes": ["these_chapitres"],
+  "allowExtraChapters": true,
+  "nodes": [
+    {
+      "key": "intro",
+      "level": "chapitre",
+      "kind": "introduction",
+      "title": "Introduction du chapitre ou de la thèse",
+      "share": 0.08
+    },
+    {
+      "key": "concl",
+      "level": "chapitre",
+      "kind": "conclusion",
+      "title": "Conclusion",
+      "share": 0.07
+    }
+  ],
+  "description": "Gabarit de structure (CdC §15.3). Les parts (`share`) sont des poids relatifs de mots, normalisés par le code."
+}

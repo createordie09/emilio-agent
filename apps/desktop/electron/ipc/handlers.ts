@@ -27,6 +27,10 @@ import {
   type ConnectorStatus,
   type SectionResearchSummary,
   type SourceDetail,
+  type PlanMetaPatch,
+  type PlanNodeInput,
+  type PlanNodePatch,
+  type PlanOverview,
   type SourceSummary,
   type SourcesConfigInfo,
 } from '@emilio/shared';
@@ -204,6 +208,33 @@ export function createHandlers(d: HandlerDeps) {
         await requireDev();
         return d.engine.request<null>('simulate', { kind });
       }),
+    [IPC.missionsSetSimulated]: async (id: string, simulated: boolean) =>
+      guard(async () => {
+        await requireDev();
+        return d.engine.request<MissionSummary>('setLlmMode', {
+          id,
+          simulated: Boolean(simulated),
+        });
+      }),
+    [IPC.planGenerate]: async (id: string) => mission('generatePlan')(id),
+    [IPC.planRegenerate]: async (id: string, comment: string) =>
+      d.engine.request<MissionSummary>('regeneratePlan', { id, comment: String(comment ?? '') }),
+    [IPC.planGet]: async (id: string) => d.engine.request<PlanOverview>('getPlan', { id }),
+    [IPC.planUpdateNode]: async (id: string, nodeId: string, patch: PlanNodePatch) =>
+      d.engine.request<PlanOverview>('updatePlanNode', { id, nodeId, patch }),
+    [IPC.planAddNode]: async (id: string, input: PlanNodeInput) =>
+      d.engine.request<PlanOverview>('addPlanNode', { id, input }),
+    [IPC.planDeleteNode]: async (id: string, nodeId: string) =>
+      d.engine.request<PlanOverview>('deletePlanNode', { id, nodeId }),
+    [IPC.planMoveNode]: async (
+      id: string,
+      nodeId: string,
+      parentId: string | null,
+      index: number,
+    ) => d.engine.request<PlanOverview>('movePlanNode', { id, nodeId, parentId, index }),
+    [IPC.planSaveMeta]: async (id: string, patch: PlanMetaPatch) =>
+      d.engine.request<PlanOverview>('savePlanMeta', { id, patch }),
+    [IPC.planValidate]: async (id: string) => mission('validatePlan')(id),
     [IPC.missionsEvents]: async (id: string | null, opts?: { limit?: number }) =>
       d.engine.request<MissionEvent[]>('listEvents', { id, limit: opts?.limit }),
     [IPC.appInfo]: async () => d.appInfo(),

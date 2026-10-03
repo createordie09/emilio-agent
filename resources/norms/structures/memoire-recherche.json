@@ -1,0 +1,175 @@
+{
+  "id": "memoire-recherche",
+  "label": "Mémoire de recherche (licence / master)",
+  "workTypes": ["memoire_licence", "memoire_master"],
+  "allowExtraChapters": false,
+  "nodes": [
+    {
+      "key": "intro",
+      "level": "chapitre",
+      "kind": "introduction",
+      "title": "Introduction générale",
+      "share": 0.07,
+      "children": [
+        {
+          "key": "intro.1",
+          "level": "section",
+          "kind": "corps",
+          "title": "Contexte et justification"
+        },
+        {
+          "key": "intro.2",
+          "level": "section",
+          "kind": "corps",
+          "title": "Problématique"
+        },
+        {
+          "key": "intro.3",
+          "level": "section",
+          "kind": "corps",
+          "title": "Questions de recherche"
+        },
+        {
+          "key": "intro.4",
+          "level": "section",
+          "kind": "corps",
+          "title": "Objectifs"
+        },
+        {
+          "key": "intro.5",
+          "level": "section",
+          "kind": "corps",
+          "title": "Hypothèses"
+        },
+        {
+          "key": "intro.6",
+          "level": "section",
+          "kind": "corps",
+          "title": "Intérêt de l'étude"
+        },
+        {
+          "key": "intro.7",
+          "level": "section",
+          "kind": "corps",
+          "title": "Annonce du plan"
+        }
+      ]
+    },
+    {
+      "key": "p1",
+      "level": "partie",
+      "kind": "corps",
+      "title": "Cadre théorique et méthodologique",
+      "children": [
+        {
+          "key": "c1",
+          "level": "chapitre",
+          "kind": "corps",
+          "title": "Clarification conceptuelle et revue de littérature",
+          "share": 0.18
+        },
+        {
+          "key": "c2",
+          "level": "chapitre",
+          "kind": "corps",
+          "title": "Cadre théorique et démarche méthodologique",
+          "share": 0.17,
+          "children": [
+            {
+              "key": "c2.1",
+              "level": "section",
+              "kind": "corps",
+              "title": "Type d'étude"
+            },
+            {
+              "key": "c2.2",
+              "level": "section",
+              "kind": "corps",
+              "title": "Population et échantillonnage"
+            },
+            {
+              "key": "c2.3",
+              "level": "section",
+              "kind": "corps",
+              "title": "Outils de collecte"
+            },
+            {
+              "key": "c2.4",
+              "level": "section",
+              "kind": "corps",
+              "title": "Méthodes d'analyse"
+            },
+            {
+              "key": "c2.5",
+              "level": "section",
+              "kind": "corps",
+              "title": "Difficultés et limites"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "p2",
+      "level": "partie",
+      "kind": "corps",
+      "title": "Cadre empirique",
+      "children": [
+        {
+          "key": "c3",
+          "level": "chapitre",
+          "kind": "corps",
+          "title": "Présentation du milieu d'étude et des résultats",
+          "share": 0.2
+        },
+        {
+          "key": "c4",
+          "level": "chapitre",
+          "kind": "corps",
+          "title": "Analyse, discussion des résultats, vérification des hypothèses et recommandations",
+          "share": 0.2
+        }
+      ]
+    },
+    {
+      "key": "concl",
+      "level": "chapitre",
+      "kind": "conclusion",
+      "title": "Conclusion générale",
+      "share": 0.06,
+      "children": [
+        {
+          "key": "concl.1",
+          "level": "section",
+          "kind": "corps",
+          "title": "Rappel de la problématique"
+        },
+        {
+          "key": "concl.2",
+          "level": "section",
+          "kind": "corps",
+          "title": "Synthèse des résultats"
+        },
+        {
+          "key": "concl.3",
+          "level": "section",
+          "kind": "corps",
+          "title": "Vérification des hypothèses"
+        },
+        {
+          "key": "concl.4",
+          "level": "section",
+          "kind": "corps",
+          "title": "Limites"
+        },
+        {
+          "key": "concl.5",
+          "level": "section",
+          "kind": "corps",
+          "title": "Perspectives"
+        }
+      ]
+    }
+  ],
+  "description": "Gabarit de structure (CdC §15.3). Les parts (`share`) sont des poids relatifs de mots, normalisés par le code."
+}

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "description": "Réglages de la planification (CdC §9 P2, §6.5). Valeurs courantes, à ajuster après les premiers tests réels.",
+  "wordsPerPage": 350,
+  "minSectionWords": 400,
+  "wordTolerance": 0.1,
+  "defaultMinSourcesPerSection": 3,
+  "versionsAdvisedMax": 5,
+  "exploration": {
+    "rapide": 30,
+    "normale": 45,
+    "approfondie": 60
+  },
+  "explorationQueriesMax": 8,
+  "explorationPerQuery": 15,
+  "architectSources": 40,
+  "abstractChars": 300,
+  "bodyShare": 0.85
+}

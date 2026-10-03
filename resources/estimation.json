@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "description": "Coefficients d'estimation du coût et de la durée (CdC §14.5), à calibrer après les premiers tests réels. Les prix des modèles viennent d'OpenRouter (GET /models), jamais d'ici ; seuls les `simulatedPrice` servent en mode simulé, à titre d'exemple.",
+  "simulatedPrice": {
+    "promptPerMTokUsd": 3,
+    "completionPerMTokUsd": 15
+  },
+  "tokensPerWord": 1.3,
+  "defaultTokensPerSecond": 45,
+  "callOverheadSec": 4,
+  "measuredSpeedMinCalls": 5,
+  "research": {
+    "depthCalls": {
+      "rapide": 3,
+      "normale": 5,
+      "approfondie": 8
+    },
+    "tokensIn": 2200,
+    "tokensOut": 600,
+    "verifierShare": 0.25
+  },
+  "reading": {
+    "notesPerSection": {
+      "rapide": 3,
+      "normale": 6,
+      "approfondie": 12
+    },
+    "tokensIn": 3800,
+    "tokensOut": 800
+  },
+  "dataAnalysis": {
+    "callsBase": 2,
+    "callsPerHypothesis": 1,
+    "tokensIn": 5000,
+    "tokensOut": 1800
+  },
+  "writing": {
+    "inputPerOutputToken": 3.5,
+    "minInputTokens": 6000
+  },
+  "grounding": {
+    "wordsPerClaim": 30,
+    "claimsPerCall": 10,
+    "tokensIn": 2600,
+    "tokensOut": 500
+  },
+  "summaries": {
+    "tokensInPerSection": 1800,
+    "tokensOut": 400
+  },
+  "jury": {
+    "jurors": 3,
+    "chapterInputRatio": 1.15,
+    "tokensOut": 1400,
+    "presidentTokensOut": 1800
+  },
+  "revision": {
+    "shareOfSections": {
+      "bas": 0.2,
+      "moyen": 0.45,
+      "haut": 0.8
+    },
+    "inputPerOutputToken": 4
+  },
+  "global": {
+    "summaryTokensPerSection": 500,
+    "tokensOut": 1600,
+    "roundsExpected": {
+      "bas": 0,
+      "moyen": 1
+    }
+  },
+  "finishing": {
+    "biblioTokensIn": 6000,
+    "biblioTokensOut": 1500,
+    "defenseTokensIn": 9000,
+    "defenseTokensOutPerSlide": 350
+  },
+  "parallelPhases": ["P3", "P5", "P6"]
+}
