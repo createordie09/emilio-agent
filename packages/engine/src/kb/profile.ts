@@ -4,10 +4,10 @@ import Papa from 'papaparse';
 import { AppError, type ColumnProfile, type DataProfile } from '@emilio/shared';
 
 const MISSING = new Set(['', 'na', 'n/a', 'nan', 'null', 'nd', 'n.d.', '#n/a', '-', '—']);
-const isMissing = (v: string): boolean => MISSING.has(v.trim().toLowerCase());
+export const isMissing = (v: string): boolean => MISSING.has(v.trim().toLowerCase());
 
-const BOOL_TRUE = new Set(['oui', 'vrai', 'true', 'yes']);
-const BOOL_FALSE = new Set(['non', 'faux', 'false', 'no']);
+export const BOOL_TRUE = new Set(['oui', 'vrai', 'true', 'yes']);
+export const BOOL_FALSE = new Set(['non', 'faux', 'false', 'no']);
 const NUM = /^-?\d{1,3}([\u00a0\u202f ]\d{3})+([.,]\d+)?$|^-?\d+([.,]\d+)?$/;
 const DATE = /^\d{4}-\d{2}-\d{2}([T ].*)?$|^\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}$/;
 
@@ -64,14 +64,19 @@ function profileColumn(name: string, values: string[]): ColumnProfile {
   return { ...base, type: 'text', distinct };
 }
 
-function buildProfile(headers: string[], rows: string[][], sheet?: string): DataProfile {
+/** Noms de colonnes non vides et uniques (« Colonne 3 », « Âge (2) »). */
+export function uniqueNames(headers: string[]): string[] {
   const names = headers.map((h, i) => (h.trim() ? h.trim() : `Colonne ${i + 1}`));
   const seen = new Map<string, number>();
-  const unique = names.map((n) => {
+  return names.map((n) => {
     const k = (seen.get(n) ?? 0) + 1;
     seen.set(n, k);
     return k === 1 ? n : `${n} (${k})`;
   });
+}
+
+function buildProfile(headers: string[], rows: string[][], sheet?: string): DataProfile {
+  const unique = uniqueNames(headers);
   const columns = unique.map((n, i) =>
     profileColumn(
       n,
@@ -111,21 +116,29 @@ function decode(buf: Buffer): string {
   return utf8.includes('\uFFFD') ? new TextDecoder('windows-1252').decode(buf) : utf8;
 }
 
-async function profileCsv(path: string): Promise<DataProfile> {
+export type DataGrid = {
+  headers: string[];
+  rows: string[][];
+  sheet?: string;
+  warnings: string[];
+};
+
+async function gridCsv(path: string): Promise<DataGrid> {
   const text = decode(await readFile(path));
   const res = Papa.parse<string[]>(text, {
     skipEmptyLines: 'greedy',
     delimitersToGuess: [',', ';', '\t', '|'],
   });
   const rows = res.data;
-  if (!rows.length) return buildProfile([], []);
-  const profile = buildProfile(
-    rows[0]!.map(String),
-    rows.slice(1).map((r) => r.map((c) => String(c ?? ''))),
-  );
+  const warnings: string[] = [];
   if (res.errors.length)
-    profile.warnings.push(`${res.errors.length} ligne(s) mal formée(s) dans le fichier CSV.`);
-  return profile;
+    warnings.push(`${res.errors.length} ligne(s) mal formée(s) dans le fichier CSV.`);
+  if (!rows.length) return { headers: [], rows: [], warnings };
+  return {
+    headers: rows[0]!.map(String),
+    rows: rows.slice(1).map((r) => r.map((c) => String(c ?? ''))),
+    warnings,
+  };
 }
 
 function cellText(v: unknown): string {
@@ -141,12 +154,12 @@ function cellText(v: unknown): string {
   return String(v);
 }
 
-async function profileXlsx(path: string): Promise<DataProfile> {
+async function gridXlsx(path: string): Promise<DataGrid> {
   const ExcelJS = (await import('exceljs')).default;
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.readFile(path);
   const sheets = wb.worksheets.filter((s) => s.actualRowCount > 0);
-  if (!sheets.length) return buildProfile([], []);
+  if (!sheets.length) return { headers: [], rows: [], warnings: [] };
   const main = sheets.reduce((a, b) => (b.actualRowCount > a.actualRowCount ? b : a));
   const grid: string[][] = [];
   main.eachRow({ includeEmpty: false }, (row) => {
@@ -154,20 +167,20 @@ async function profileXlsx(path: string): Promise<DataProfile> {
     for (let c = 1; c <= main.columnCount; c++) r.push(cellText(row.getCell(c).value));
     grid.push(r);
   });
-  const profile = buildProfile(grid[0] ?? [], grid.slice(1), main.name);
+  const warnings: string[] = [];
   if (sheets.length > 1)
-    profile.warnings.push(
+    warnings.push(
       `Le classeur contient ${sheets.length} feuilles ; seule la plus grande (« ${main.name} ») est analysée.`,
     );
-  return profile;
+  return { headers: grid[0] ?? [], rows: grid.slice(1), sheet: main.name, warnings };
 }
 
-/** Profil des données de terrain : répondants, variables, types, valeurs manquantes, modalités (§9 P0.4). Calculs faits par du code. */
-export async function profileDataFile(path: string, filename = path): Promise<DataProfile> {
+/** Lit un fichier de données (CSV ou XLSX) : en-têtes et lignes de texte brut, tels que dans le fichier. */
+export async function readDataGrid(path: string, filename = path): Promise<DataGrid> {
   const ext = extname(filename).toLowerCase();
   try {
-    if (ext === '.csv') return await profileCsv(path);
-    if (ext === '.xlsx') return await profileXlsx(path);
+    if (ext === '.csv') return await gridCsv(path);
+    if (ext === '.xlsx') return await gridXlsx(path);
   } catch (e) {
     throw new AppError('E_PARSE_FILE', `${filename} : ${(e as Error).message}`);
   }
@@ -175,4 +188,13 @@ export async function profileDataFile(path: string, filename = path): Promise<Da
     'E_PARSE_FILE',
     `${filename} : seuls les fichiers CSV et XLSX sont acceptés pour les données de terrain`,
   );
+}
+
+/** Profil des données de terrain : répondants, variables, types, valeurs manquantes, modalités (§9 P0.4). Calculs faits par du code. */
+export async function profileDataFile(path: string, filename = path): Promise<DataProfile> {
+  const g = await readDataGrid(path, filename);
+  if (!g.rows.length && !g.headers.length) return buildProfile([], []);
+  const profile = buildProfile(g.headers, g.rows, g.sheet);
+  profile.warnings.push(...g.warnings);
+  return profile;
 }

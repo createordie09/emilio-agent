@@ -10,6 +10,12 @@ import type {
 import type { ThemePreference } from './constants';
 import type { MissionDetail, MissionEvent, MissionSummary } from './mission';
 import type { BriefDraft, WorkType } from './brief';
+import type {
+  FieldAnalysisView,
+  FrontMatterView,
+  SectionDraftDetail,
+  SectionDraftSummary,
+} from './writing';
 import type { PlanMetaPatch, PlanNodeInput, PlanNodePatch, PlanOverview } from './plan';
 import type { FileKind, MissionFileInfo } from './files';
 import type {
@@ -67,6 +73,13 @@ export interface EmilioApi {
     events(id: string | null, opts?: { limit?: number }): Promise<Result<MissionEvent[]>>;
     /** Mode développeur : bascule une mission au stade « brief » en mode simulé (aucun appel payant). */
     setSimulated(id: string, simulated: boolean): Promise<Result<MissionSummary>>;
+  };
+  /** Analyse des données (P4) et sections rédigées (P5) : lecture seule (CdC §6.7). */
+  writing: {
+    sections(missionId: string): Promise<Result<SectionDraftSummary[]>>;
+    section(nodeId: string): Promise<Result<SectionDraftDetail>>;
+    analysis(missionId: string): Promise<Result<FieldAnalysisView | null>>;
+    frontMatter(missionId: string): Promise<Result<FrontMatterView[]>>;
   };
   /** Cadrage, plan et validation (CdC §9 P1–P2, §6.5, §14.5). */
   plan: {
@@ -189,7 +202,11 @@ export type EngineMethod =
   | 'deletePlanNode'
   | 'movePlanNode'
   | 'savePlanMeta'
-  | 'validatePlan';
+  | 'validatePlan'
+  | 'listSectionDrafts'
+  | 'getSectionDraft'
+  | 'getFieldAnalysis'
+  | 'getFrontMatter';
 export type EngineRequest = { id: number; method: EngineMethod; params?: unknown };
 export type EngineResponse = { id: number; result: Result<unknown> };
 export type EngineEvent = { event: 'ready' | 'log' | 'live'; payload?: unknown };

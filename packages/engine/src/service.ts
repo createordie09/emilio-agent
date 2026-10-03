@@ -38,6 +38,10 @@ import { loadQualityWeights } from './sources/score';
 import { demoRegistry, type AgentRegistry } from './agents/registry';
 import { IngestService } from './kb/ingest';
 import { PlanningService } from './planning/service';
+import { DataAnalysisService } from './analysis/service';
+import { SectionWriter } from './writing/writer';
+import { loadWritingConfig } from './writing/config';
+import { writingMockRespond } from './writing/mock-responder';
 import { OutlineRepo } from './planning/outline';
 import { loadEstimation, loadPlanConfig, loadStructures } from './planning/config';
 import { BriefSchema, WORK_TYPE_LABEL_FR } from '@emilio/shared';
@@ -54,7 +58,7 @@ import {
   type OpenRouterConfig,
 } from './llm/openrouter';
 
-export const ENGINE_VERSION = '0.5.0';
+export const ENGINE_VERSION = '0.6.0';
 
 export type EngineOptions = {
   dbPath: string;
@@ -100,6 +104,8 @@ export class EngineService {
   readonly research: ResearchService;
   readonly outline: OutlineRepo;
   readonly planning: PlanningService;
+  readonly analysis: DataAnalysisService;
+  readonly writer: SectionWriter;
   readonly mockSources: MockSourceConnector[] = mockConnectors();
   private sourceKeys = new Map<string, string>();
   private readonly opts: EngineOptions;
@@ -118,7 +124,8 @@ export class EngineService {
       new MockLlmClient({
         delayMs: 400,
         costPerCallUsd: 0.002,
-        respond: (req) => researchMockRespond(req) ?? planningMockRespond(req),
+        respond: (req) =>
+          researchMockRespond(req) ?? planningMockRespond(req) ?? writingMockRespond(req),
         ...opts.mockOptions,
       });
     this.journal = new EventJournal(this.db);
@@ -143,6 +150,22 @@ export class EngineService {
       localHandlers: {
         'demo.ingest': () => ({ fichiers: 0 }),
         'p3.research': (task) => this.researchNode(task.missionId, String(task.input.nodeId)),
+        'p4.analysis': async (task) => {
+          const a = await this.analysis.run(task.missionId);
+          return { tables: a?.results.length ?? 0 };
+        },
+        'p5.write': async (task) => {
+          const r = await this.writer.writeSection(task.missionId, String(task.input.nodeId));
+          return { words: r.words, skipped: r.skipped };
+        },
+        'p5.general': async (task) => {
+          const r = await this.writer.writeGeneral(task.missionId, String(task.input.nodeId));
+          return { words: r.words, skipped: r.skipped };
+        },
+        'p5.front': async (task) => {
+          const f = await this.writer.writeFrontMatter(task.missionId);
+          return { pages: f.length };
+        },
       },
       probes: {
         credit: async (id) =>
@@ -213,6 +236,25 @@ export class EngineService {
       fullTextHttp: (mode) => (mode === 'mock' ? mockFullTextHttp : this.sourceHttp),
     });
     this.outline = new OutlineRepo(this.db);
+    const writing = loadWritingConfig(opts.resourcesDir);
+    this.analysis = new DataAnalysisService({
+      db: this.db,
+      missions: this.missions,
+      journal: this.journal,
+      caller,
+    });
+    this.writer = new SectionWriter({
+      db: this.db,
+      missions: this.missions,
+      journal: this.journal,
+      caller,
+      store: this.store,
+      embedder: () => this.embedder,
+      outline: this.outline,
+      analysis: this.analysis,
+      cfg: writing,
+      contextLength: (model) => this.contextOf(model),
+    });
     this.planning = new PlanningService({
       db: this.db,
       missions: this.missions,
@@ -225,6 +267,7 @@ export class EngineService {
       config: loadPlanConfig(opts.resourcesDir),
       estimation: loadEstimation(opts.resourcesDir),
       structures: loadStructures(opts.resourcesDir),
+      writing,
       price: (model) => this.priceOf(model),
       onUpdated: (id) => this.emit({ kind: 'mission.updated', mission: this.missions.summary(id) }),
     });
@@ -321,6 +364,13 @@ export class EngineService {
     const info = await this.llm.testKey();
     const left = info.accountCreditRemaining ?? info.limitRemaining;
     return left === null || left > 0;
+  }
+
+  private contextOf(model: string): number | null {
+    const cache = this.settings.get<{ models: { id: string; contextLength: number | null }[] }>(
+      'openrouter_models_cache',
+    );
+    return cache?.models.find((x) => x.id === model)?.contextLength ?? null;
   }
 
   private priceOf(model: string): { prompt: number; completion: number } | null {
@@ -508,6 +558,17 @@ export class EngineService {
         this.missions.setConfig(id(), { ...cur, llmMode: mock ? 'mock' : 'real', models });
         return this.missions.summary(id());
       }
+      case 'listSectionDrafts':
+        return this.writer.list(id());
+      case 'getSectionDraft': {
+        const d = this.writer.detail(String(p.nodeId));
+        if (!d) throw new AppError('E_BAD_REQUEST', 'Cette section n’est pas encore rédigée.');
+        return d;
+      }
+      case 'getFieldAnalysis':
+        return this.analysis.view(id());
+      case 'getFrontMatter':
+        return this.writer.frontMatter(id());
       case 'generatePlan':
         return this.planning.start(id());
       case 'regeneratePlan':

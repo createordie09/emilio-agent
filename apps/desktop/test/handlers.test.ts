@@ -237,6 +237,29 @@ describe('IPC handlers — cadrage et plan', () => {
   });
 });
 
+describe('IPC handlers — rédaction et analyse (lecture seule)', () => {
+  it('relaie les lectures au moteur avec le bon identifiant', async () => {
+    const calls: { method: string; params: unknown }[] = [];
+    const engine = {
+      async request(method: string, params?: unknown) {
+        calls.push({ method, params });
+        return { ok: true, value: [] };
+      },
+    } as unknown as EngineClient;
+    const { handlers } = createHandlers({ engine, cipher: cipher(), appInfo: () => ({}) });
+    await handlers[IPC.writingSections]('m1');
+    await handlers[IPC.writingSection]('n1');
+    await handlers[IPC.writingAnalysis]('m1');
+    await handlers[IPC.writingFrontMatter]('m1');
+    expect(calls).toEqual([
+      { method: 'listSectionDrafts', params: { id: 'm1' } },
+      { method: 'getSectionDraft', params: { nodeId: 'n1' } },
+      { method: 'getFieldAnalysis', params: { id: 'm1' } },
+      { method: 'getFrontMatter', params: { id: 'm1' } },
+    ]);
+  });
+});
+
 describe('IPC handlers — sources documentaires', () => {
   const setup = (dev: boolean, available = true) => {
     const store = new Map<string, unknown>();

@@ -38,6 +38,8 @@ import { useMission, useMissionEvents } from '@/lib/queries';
 import { useToasts } from '@/stores/toasts';
 import { useUi } from '@/stores/ui';
 import { SourcesPanel } from '@/components/SourcesPanel';
+import { AnalysisPanel } from '@/components/AnalysisPanel';
+import { WritingPanel } from '@/components/WritingPanel';
 
 const TASK_ICON: Record<TaskSummary['status'], { icon: typeof CheckCircle2; cls: string }> = {
   done: { icon: CheckCircle2, cls: 'text-success' },
@@ -292,6 +294,12 @@ export function MissionPage() {
         </div>
 
         <SourcesPanel missionId={m.id} simulated={m.simulated} />
+        {m.planVersion > 0 && m.status !== 'awaiting_plan_validation' && (
+          <AnalysisPanel missionId={m.id} />
+        )}
+        {m.planVersion > 0 && m.status !== 'awaiting_plan_validation' && (
+          <WritingPanel missionId={m.id} />
+        )}
 
         {devMode && (
           <section className="space-y-3 rounded-lg border border-dashed border-border p-5">

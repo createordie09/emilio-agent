@@ -116,6 +116,12 @@ pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 - Écran : `/missions/:id/plan` (`PlanPage`). Le plan n'est éditable qu'en `awaiting_plan_validation`. Mode simulé d'une mission (mode développeur) : « Mode simulé » au stade brief.
 - Le code décide de la structure, des mots et de la numérotation ; l'agent propose seulement titres, objectifs, questions et sources pressenties (alias fournis).
 
+## Analyse des données et rédaction (J6)
+
+- P4 : `packages/engine/src/stats/` (calculs, vérifiés contre des valeurs de tables) + `analysis/` (le modèle choisit et interprète, le code valide, calcule et contrôle les nombres). P5 : `writing/` — `SectionWriter` (contexte §8.4 → rédacteur → contrôles `checks.ts` → vérificateur d'ancrage → correction ciblée → suppression des phrases fautives → résumé).
+- Règles : seuls les alias `A…` / `E…` sont montrés au modèle ; marqueur inconnu = refusé ; citation = littérale ; nombre = justifié ; aucune donnée de terrain inventée (trame `[DONNÉES À INSÉRER]`) ; dédicace / remerciements = `[À COMPLÉTER]`. Réglages : `resources/writing-config.json`.
+- Tâches : `p4.analyse`, `p5.redaction.<nœud>` (chaînées par chapitre), `p5.general.<nœud>`, `p5.liminaires`. La mission s'arrête après P5 (`stopAfterPhase`).
+
 ## Qualité
 
 TypeScript `strict`, ESLint + Prettier, aucune sortie d'agent non validée par zod. Mode LLM simulé (mock) obligatoire dès J2 (§21.2) : aucun test ne doit faire d'appel payant.

@@ -1,4 +1,5 @@
 import { _electron as electron, type ElectronApplication, type Page } from '@playwright/test';
+import { basename } from 'node:path';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -40,7 +41,13 @@ export async function enableDevMode(page: Page): Promise<void> {
  */
 export async function createBriefedMission(
   page: Page,
-  opts: { title?: string; aProposer?: boolean } = {},
+  opts: {
+    title?: string;
+    aProposer?: boolean;
+    hypotheses?: string[];
+    /** Importe un fichier de données de terrain (dialogue système simulé). */
+    data?: { app: ElectronApplication; file: string };
+  } = {},
 ): Promise<void> {
   const title = opts.title ?? 'Microfinance et inclusion financière au Bénin';
   await page.evaluate(() => (location.hash = '#/missions/nouvelle'));
@@ -57,10 +64,35 @@ export async function createBriefedMission(
   }
   await page.getByLabel('Mot-clé', { exact: true }).fill('microfinance');
   await page.getByLabel('Mot-clé', { exact: true }).press('Enter');
-  await page.getByRole('radio', { name: 'Documentaire' }).click();
+  for (const h of opts.hypotheses ?? []) {
+    await page.getByLabel('Hypothèse', { exact: true }).fill(h);
+    await page.getByLabel('Hypothèse', { exact: true }).press('Enter');
+  }
+  await page.getByRole('radio', { name: opts.data ? 'Quantitative' : 'Documentaire' }).click();
   for (let i = 0; i < 2; i++) await page.getByRole('button', { name: 'Continuer' }).click();
   await page.getByRole('radio', { name: /Afrique francophone/ }).click();
-  await page.getByRole('button', { name: 'Continuer' }).click(); // → documents (aucun import)
+  await page.getByRole('button', { name: 'Continuer' }).click(); // → documents
+  if (opts.data) {
+    const { app, file } = opts.data;
+    await app.evaluate(
+      ({ dialog }, paths) => {
+        dialog.showOpenDialog = (async () => ({ canceled: false, filePaths: paths })) as never;
+      },
+      [file],
+    );
+    await page
+      .getByLabel('Type de document à importer')
+      .selectOption({ label: 'Données de terrain' });
+    await page.getByRole('button', { name: /Parcourir mes fichiers/ }).click();
+    await page
+      .getByRole('list', { name: 'Fichiers importés' })
+      .getByText(basename(file), { exact: true })
+      .waitFor();
+    await page
+      .getByRole('list', { name: 'Fichiers importés' })
+      .getByText(/répondant\(s\)/)
+      .waitFor({ timeout: 30_000 });
+  }
   await page.getByRole('button', { name: 'Continuer' }).click();
   await page.getByRole('radio', { name: /Équilibré/ }).click();
   await page.getByLabel('Budget maximal (en dollars)').fill('12');

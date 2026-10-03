@@ -17,6 +17,7 @@ import {
   MockLlmClient,
   researchMockRespond,
   planningMockRespond,
+  writingMockRespond,
   computeNumbering,
   allocateWords,
   mergeProposal,
@@ -37,7 +38,7 @@ function mk(over: { brief?: BriefDraft } = {}) {
   const mock = new MockLlmClient({
     delayMs: 0,
     costPerCallUsd: 0.002,
-    respond: (r) => researchMockRespond(r) ?? planningMockRespond(r),
+    respond: (r) => researchMockRespond(r) ?? planningMockRespond(r) ?? writingMockRespond(r),
   });
   const engine = new EngineService({
     dbPath: join(dir, 'e.db'),
@@ -674,7 +675,7 @@ describe('édition du plan (§6.5)', () => {
   });
 });
 
-describe('validation du plan et lancement de la recherche (P3)', () => {
+describe('validation du plan et lancement de la recherche (P3) puis de la rédaction', () => {
   it('fige le plan, met la recherche en file par section, exécute P3 et se termine proprement', async () => {
     const { engine, id } = await briefed();
     await generate(engine, id);
@@ -696,11 +697,14 @@ describe('validation du plan et lancement de la recherche (P3)', () => {
     const leaves = p.nodes.filter(
       (n) => n.kind === 'corps' && !p.nodes.some((c) => c.parentId === n.id),
     );
-    expect(engine.queue.counts(id).ready + engine.queue.counts(id).pending).toBe(leaves.length);
+    const p3 = engine.db
+      .prepare("SELECT COUNT(*) AS n FROM tasks WHERE mission_id=? AND phase='P3'")
+      .get(id) as { n: number };
+    expect(p3.n).toBe(leaves.length);
     const done = await engine.runner.runUntilSettled(id, 3000);
     expect(done.status).toBe('completed');
     const events = engine.journal.list(id, 400).map((e) => e.messageFr);
-    expect(events.some((m) => m.includes("Étapes disponibles terminées (jusqu'à P3)"))).toBe(true);
+    expect(events.some((m) => m.includes("Étapes disponibles terminées (jusqu'à P5)"))).toBe(true);
     // La matrice section ↔ sources est alimentée avec les identifiants du plan
     const rows = engine.db
       .prepare('SELECT DISTINCT section_key FROM section_sources WHERE mission_id=?')

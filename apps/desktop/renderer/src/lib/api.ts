@@ -142,6 +142,12 @@ function browserMock(): EmilioApi {
       events: () => ok([]),
       setSimulated: nope,
     },
+    writing: {
+      sections: () => ok([]),
+      section: nope,
+      analysis: () => ok(null),
+      frontMatter: () => ok([]),
+    },
     plan: {
       generate: nope,
       regenerate: nope,

@@ -70,3 +70,32 @@ export const usePlan = (id: string | undefined, enabled = true) =>
     gcTime: 0,
     queryFn: () => unwrap(api.plan.get(id!)),
   });
+
+export const useSections = (missionId: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: ['writing', 'sections', missionId],
+    enabled: Boolean(missionId) && enabled,
+    queryFn: () => unwrap(api.writing.sections(missionId!)),
+  });
+
+export const useSection = (nodeId: string | null) =>
+  useQuery({
+    queryKey: ['writing', 'section', nodeId],
+    enabled: Boolean(nodeId),
+    gcTime: 0,
+    queryFn: () => unwrap(api.writing.section(nodeId!)),
+  });
+
+export const useFieldAnalysis = (missionId: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: ['writing', 'analysis', missionId],
+    enabled: Boolean(missionId) && enabled,
+    queryFn: () => unwrap(api.writing.analysis(missionId!)),
+  });
+
+export const useFrontMatter = (missionId: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: ['writing', 'front', missionId],
+    enabled: Boolean(missionId) && enabled,
+    queryFn: () => unwrap(api.writing.frontMatter(missionId!)),
+  });

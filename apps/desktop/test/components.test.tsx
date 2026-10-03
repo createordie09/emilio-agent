@@ -3,7 +3,8 @@ import { render, screen, fireEvent, createEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { PlanTree } from '@/components/plan/PlanTree';
 import { EstimateCard } from '@/components/plan/EstimateCard';
-import type { CostEstimate, OutlineNodeView } from '@emilio/shared';
+import { Markdown } from '@/components/Markdown';
+import type { AnalysisTableView, CostEstimate, OutlineNodeView } from '@emilio/shared';
 import { Home } from 'lucide-react';
 import {
   Button,
@@ -233,5 +234,35 @@ describe('composants', () => {
     expect(screen.getByTestId('scenario-haut').querySelector('.text-danger')).not.toBeNull();
     expect(screen.getByText('Prix d’exemple (mode simulé)')).toBeInTheDocument();
     expect(screen.getByText(/Minimum : prix inconnu/)).toBeInTheDocument();
+  });
+
+  it('Markdown : citations lisibles, emplacements surlignés, titres, tableau de résultats inséré par son jeton', () => {
+    const id = '01a102bd-7fb9-7392-8430-40e76f27a1ba';
+    const table: AnalysisTableView = {
+      id: 'A1',
+      tableNumber: 1,
+      caption: 'Tableau 1 : Répartition selon « Sexe »',
+      source: 'Source : enquête de terrain, mars 2026',
+      headers: ['Sexe', 'Effectif'],
+      rows: [['Femme', '31']],
+      facts: [],
+      warnings: [],
+      hypothese: null,
+      figure: null,
+    };
+    render(
+      <Markdown
+        text={`#### Un titre\n\nLe crédit progresse [@${id}, p. 12]. [DONNÉES À INSÉRER : verbatims]\n\n{{TABLEAU:A1}}\n\n{{TABLEAU:A9}}`}
+        sources={{ [id]: 'Adjovi et al. (2021)' }}
+        tables={[table]}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Un titre' })).toBeInTheDocument();
+    expect(screen.getByText('Adjovi et al., 2021, p. 12')).toBeInTheDocument();
+    expect(screen.getByText('[DONNÉES À INSÉRER : verbatims]').tagName).toBe('MARK');
+    expect(screen.getByText('Tableau 1 : Répartition selon « Sexe »')).toBeInTheDocument();
+    expect(screen.getByText('Source : enquête de terrain, mars 2026')).toBeInTheDocument();
+    // jeton inconnu : ignoré, jamais affiché tel quel
+    expect(screen.queryByText(/TABLEAU:A9/)).toBeNull();
   });
 });

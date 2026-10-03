@@ -27,10 +27,14 @@ import {
   type ConnectorStatus,
   type SectionResearchSummary,
   type SourceDetail,
+  type FieldAnalysisView,
+  type FrontMatterView,
   type PlanMetaPatch,
   type PlanNodeInput,
   type PlanNodePatch,
   type PlanOverview,
+  type SectionDraftDetail,
+  type SectionDraftSummary,
   type SourceSummary,
   type SourcesConfigInfo,
 } from '@emilio/shared';
@@ -216,6 +220,14 @@ export function createHandlers(d: HandlerDeps) {
           simulated: Boolean(simulated),
         });
       }),
+    [IPC.writingSections]: async (missionId: string) =>
+      d.engine.request<SectionDraftSummary[]>('listSectionDrafts', { id: missionId }),
+    [IPC.writingSection]: async (nodeId: string) =>
+      d.engine.request<SectionDraftDetail>('getSectionDraft', { nodeId }),
+    [IPC.writingAnalysis]: async (missionId: string) =>
+      d.engine.request<FieldAnalysisView | null>('getFieldAnalysis', { id: missionId }),
+    [IPC.writingFrontMatter]: async (missionId: string) =>
+      d.engine.request<FrontMatterView[]>('getFrontMatter', { id: missionId }),
     [IPC.planGenerate]: async (id: string) => mission('generatePlan')(id),
     [IPC.planRegenerate]: async (id: string, comment: string) =>
       d.engine.request<MissionSummary>('regeneratePlan', { id, comment: String(comment ?? '') }),
