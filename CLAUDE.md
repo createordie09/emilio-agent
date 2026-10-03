@@ -77,13 +77,20 @@ resources/ (models/, norms/, templates/)
 ```
 pnpm install          # dépendances (monorepo) + reconstruction des modules natifs pour Electron
 pnpm dev              # Electron + Vite en développement
-pnpm build            # build de production (renderer + electron + engine)
+pnpm build            # build de production (renderer + electron + engine) → apps/desktop/out
+pnpm shots            # captures DA dans docs/screenshots (sous Xvfb : xvfb-run -a -s "-screen 0 1600x3400x24" pnpm shots)
 pnpm typecheck        # tsc --noEmit sur tous les packages
 pnpm lint             # ESLint + Prettier --check
 pnpm test             # Vitest (unitaires + intégration, mode LLM simulé)
 pnpm test:e2e         # Playwright + Electron
 pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 ```
+
+## Notes d'environnement (voir docs/DECISIONS.md ADR-006)
+
+- Cloud / CI sans en-têtes Electron : `better-sqlite3` est compilé pour Node, pas pour Electron. Les E2E lancent le moteur sous Node via `EMILIO_ENGINE_NODE` ; en local normal, `utilityProcess` (défaut) après `electron-builder install-app-deps`.
+- E2E : `pnpm build` puis `cd apps/desktop && xvfb-run -a npx playwright test` (root ⇒ `--no-sandbox`, déjà passé par les helpers).
+- Le preload sandboxé n'importe que `@emilio/shared/ipc` (pas de zod).
 
 ## Qualité
 
