@@ -7,3 +7,4 @@ docs/screenshots/tmp
 resources/models/*
 !resources/models/.gitkeep
 packages/engine/test-live/recorded/
+test-results/
