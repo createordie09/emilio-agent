@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, safeStorage, session, shell } from 'electron';
 import { join } from 'node:path';
-import { APP_NAME } from '@emilio/shared';
+import { APP_NAME, IPC } from '@emilio/shared';
 import { EngineHost, type EngineClient } from './engine-host';
 import { createHandlers, type SecretCipher } from './ipc/handlers';
 
@@ -96,7 +96,14 @@ async function bootstrap(): Promise<void> {
   const engineEntry = join(__dirname, 'engine.js');
   const dbPath = join(app.getPath('userData'), 'emilio.db');
   let restore: (raw: EngineClient) => Promise<void> = async () => {};
-  const engine = new EngineHost(engineEntry, dbPath, (raw) => restore(raw));
+  const engine = new EngineHost(
+    engineEntry,
+    dbPath,
+    (raw) => restore(raw),
+    60_000,
+    (payload) =>
+      BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(IPC.engineLive, payload)),
+  );
   const { handlers, restoreKey } = createHandlers({
     engine,
     cipher,

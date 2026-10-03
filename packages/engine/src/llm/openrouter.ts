@@ -1,5 +1,6 @@
 import { AppError, APP_NAME, type KeyInfo, type ModelInfo, type ModelList } from '@emilio/shared';
 import type { SettingsRepo } from '../storage/settings';
+import type { LlmClient, LlmRequest, LlmResponse } from './types';
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -12,6 +13,12 @@ export type OpenRouterConfig = {
   maxRetries: number;
   /** Délai de base du backoff exponentiel en ms. */
   retryBaseMs: number;
+  /** Délai max d'un appel de génération (CdC §14.1 : 180 s). */
+  chatTimeoutMs: number;
+  /** Réessais pour les appels de génération (CdC §14.1 : 5). */
+  chatMaxRetries: number;
+  /** Plafond du backoff exponentiel en ms. */
+  retryMaxMs: number;
   /** Durée de validité du cache des modèles (CdC §14.2 : 24 h). */
   modelsCacheTtlMs: number;
   /** URL d'identification de l'app (en-tête HTTP-Referer, optionnel). */
@@ -24,6 +31,9 @@ export const DEFAULT_OPENROUTER_CONFIG: OpenRouterConfig = {
   timeoutMs: 30_000,
   maxRetries: 3,
   retryBaseMs: 1_000,
+  chatTimeoutMs: 180_000,
+  chatMaxRetries: 5,
+  retryMaxMs: 60_000,
   modelsCacheTtlMs: 24 * 3600 * 1000,
   appTitle: APP_NAME,
 };
@@ -65,7 +75,7 @@ export { maskKey } from '@emilio/shared';
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-export class OpenRouterClient {
+export class OpenRouterClient implements LlmClient {
   private apiKey: string | null = null;
 
   constructor(
@@ -95,33 +105,116 @@ export class OpenRouterClient {
     return h;
   }
 
-  /** GET JSON avec délai max, réessais (429 / 5xx / réseau) et mapping d'erreurs §20. Aucun réessai sur 4xx. */
-  private async getJson<T>(path: string, withAuth: boolean): Promise<T> {
+  /**
+   * Requête JSON avec délai max, réessais (429 / 5xx / réseau, backoff exponentiel + aléa) et mapping d'erreurs §20.
+   * Aucun réessai sur 400 / 401 / 402 / 403 / 404.
+   */
+  private async requestJson<T>(
+    method: 'GET' | 'POST',
+    path: string,
+    opts: {
+      withAuth: boolean;
+      body?: unknown;
+      timeoutMs?: number;
+      maxRetries?: number;
+      signal?: AbortSignal;
+    },
+  ): Promise<T> {
+    const maxRetries = opts.maxRetries ?? this.cfg.maxRetries;
     let lastErr: AppError | null = null;
-    for (let attempt = 0; attempt <= this.cfg.maxRetries; attempt++) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      if (opts.signal?.aborted) throw new DOMException('Interrompu', 'AbortError');
       if (attempt > 0) {
-        const backoff = this.cfg.retryBaseMs * 2 ** (attempt - 1);
+        const backoff = Math.min(this.cfg.retryBaseMs * 2 ** (attempt - 1), this.cfg.retryMaxMs);
         await this.wait(backoff + Math.random() * backoff * 0.25);
       }
       let res: Response;
       try {
+        const timeout = AbortSignal.timeout(opts.timeoutMs ?? this.cfg.timeoutMs);
         res = await this.fetchImpl(`${this.cfg.baseUrl}${path}`, {
-          headers: this.headers(withAuth),
-          signal: AbortSignal.timeout(this.cfg.timeoutMs),
+          method,
+          headers: {
+            ...this.headers(opts.withAuth),
+            ...(opts.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+          },
+          body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+          signal: opts.signal ? AbortSignal.any([opts.signal, timeout]) : timeout,
         });
       } catch (e) {
+        if (opts.signal?.aborted) throw new DOMException('Interrompu', 'AbortError');
         lastErr = new AppError('E_NETWORK', e instanceof Error ? e.message : String(e));
         continue;
       }
       if (res.ok) return (await res.json()) as T;
       const err = mapHttpError(res.status);
-      if (res.status === 429 || res.status >= 500) {
+      if (res.status === 429 || res.status === 408 || res.status >= 500) {
         lastErr = err;
         continue;
       }
       throw err;
     }
     throw lastErr ?? new AppError('E_INTERNAL');
+  }
+
+  private getJson<T>(path: string, withAuth: boolean): Promise<T> {
+    return this.requestJson<T>('GET', path, { withAuth });
+  }
+
+  /** Appel de génération (POST /chat/completions) — CdC §14.1. Le coût vient de `usage.cost` (renvoyé par défaut). */
+  async complete(req: LlmRequest): Promise<LlmResponse> {
+    if (!this.apiKey) throw new AppError('E_KEY_MISSING');
+    const t0 = this.now();
+    const body: Record<string, unknown> = {
+      model: req.model,
+      messages: req.messages,
+      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
+      ...(req.maxTokens !== undefined ? { max_tokens: req.maxTokens } : {}),
+    };
+    if (req.jsonSchema) {
+      body.response_format = {
+        type: 'json_schema',
+        json_schema: { name: req.jsonSchema.name, strict: true, schema: req.jsonSchema.schema },
+      };
+      // Ne router que vers des fournisseurs qui gèrent réellement response_format.
+      body.provider = { require_parameters: true };
+    }
+    const json = await this.requestJson<{
+      id?: string;
+      model?: string;
+      choices?: { message?: { content?: string | null } }[];
+      usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number };
+      error?: { code?: number | string; message?: string };
+    }>('POST', '/chat/completions', {
+      withAuth: true,
+      body,
+      timeoutMs: req.timeoutMs ?? this.cfg.chatTimeoutMs,
+      maxRetries: this.cfg.chatMaxRetries,
+      signal: req.signal,
+    });
+    if (json.error) {
+      const code = Number(json.error.code);
+      throw Number.isFinite(code)
+        ? mapHttpError(code)
+        : new AppError('E_REMOTE', json.error.message);
+    }
+    const content = json.choices?.[0]?.message?.content;
+    if (typeof content !== 'string' || content.length === 0) {
+      throw new AppError('E_REMOTE', 'Réponse vide du modèle');
+    }
+    return {
+      content,
+      model: json.model ?? req.model,
+      promptTokens: json.usage?.prompt_tokens ?? 0,
+      completionTokens: json.usage?.completion_tokens ?? 0,
+      costUsd: typeof json.usage?.cost === 'number' ? json.usage.cost : null,
+      generationId: json.id ?? null,
+      latencyMs: this.now() - t0,
+    };
+  }
+
+  /** Sonde légère de connectivité / de validité de la clé (reprise automatique, §8.6). */
+  async ping(): Promise<void> {
+    await this.getJson('/key', true);
   }
 
   /** Teste la clé (GET /key) et, si possible, lit le crédit de compte (GET /credits). */
@@ -183,9 +276,12 @@ export class OpenRouterClient {
 }
 
 export function mapHttpError(status: number): AppError {
+  if (status === 400) return new AppError('E_BAD_REQUEST', `HTTP ${status}`);
   if (status === 401 || status === 403) return new AppError('E_KEY_INVALID', `HTTP ${status}`);
   if (status === 402) return new AppError('E_NO_CREDIT', `HTTP ${status}`);
   if (status === 429) return new AppError('E_RATE_LIMIT', `HTTP ${status}`);
-  if (status === 404) return new AppError('E_MODEL_UNAVAILABLE', `HTTP ${status}`);
+  if (status === 404 || status === 503)
+    return new AppError('E_MODEL_UNAVAILABLE', `HTTP ${status}`);
+  if (status === 408) return new AppError('E_NETWORK', `HTTP ${status}`);
   return new AppError('E_REMOTE', `HTTP ${status}`);
 }

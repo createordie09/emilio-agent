@@ -75,6 +75,48 @@ function browserMock(): EmilioApi {
       },
     },
     models: { list: () => ok({ models, fetchedAt: new Date().toISOString(), fromCache: false }) },
+    // Missions : non simulées hors Electron (le moteur n'existe pas dans le navigateur).
+    missions: {
+      list: () => ok([]),
+      get: () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { code: 'E_ENGINE' as const, messageFr: 'Moteur indisponible hors Electron.' },
+        }),
+      createDemo: () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { code: 'E_ENGINE' as const, messageFr: 'Moteur indisponible hors Electron.' },
+        }),
+      start: () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { code: 'E_ENGINE' as const, messageFr: 'Moteur indisponible hors Electron.' },
+        }),
+      pause: () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { code: 'E_ENGINE' as const, messageFr: 'Moteur indisponible hors Electron.' },
+        }),
+      resume: () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { code: 'E_ENGINE' as const, messageFr: 'Moteur indisponible hors Electron.' },
+        }),
+      cancel: () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { code: 'E_ENGINE' as const, messageFr: 'Moteur indisponible hors Electron.' },
+        }),
+      retry: () =>
+        Promise.resolve({
+          ok: false as const,
+          error: { code: 'E_ENGINE' as const, messageFr: 'Moteur indisponible hors Electron.' },
+        }),
+      simulate: () => ok(null),
+      events: () => ok([]),
+    },
+    onEvent: () => () => {},
     ui: {
       get: () => ok(ui),
       set: (p) => {

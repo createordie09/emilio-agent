@@ -77,5 +77,29 @@ for (const theme of ['clair', 'sombre']) {
     await page.locator(`#${id}`).screenshot({ path: join(out, `design-${id}-${t}.png`) });
   }
 }
+// --- J2 : dashboard de mission (mode simulé) ---
+await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1360, 860));
+for (const theme of ['clair', 'sombre']) {
+  const t = theme === 'clair' ? 'light' : 'dark';
+  await go('#/parametres');
+  await page.getByRole('tab', { name: 'Apparence' }).click();
+  await page.getByRole('radio', { name: theme === 'clair' ? 'Clair' : 'Sombre' }).click();
+  await go('#/missions');
+  await page.getByRole('button', { name: /Lancer une mission factice/ }).click();
+  await page.getByText(/Phase P0 terminée/).waitFor({ timeout: 15000 });
+  await page.waitForTimeout(2500);
+  await page.screenshot({ path: join(out, `mission-en-cours-${t}.png`) });
+  await page.getByRole('button', { name: 'Crédit épuisé' }).click();
+  await page.getByRole('button', { name: 'Reprendre' }).waitFor({ timeout: 20000 });
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: join(out, `mission-pause-credit-${t}.png`) });
+  await page.getByRole('button', { name: 'Recharger le crédit' }).click();
+  await page.getByText('Terminée', { exact: true }).first().waitFor({ timeout: 60000 });
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: join(out, `mission-terminee-${t}.png`) });
+  await go('#/missions');
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: join(out, `missions-liste-${t}.png`) });
+}
 await app.close();
 console.log('Captures écrites dans', out);

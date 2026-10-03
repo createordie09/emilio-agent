@@ -66,6 +66,7 @@ export class EngineHost implements EngineClient {
     private readonly dbPath: string,
     private readonly onReady: (raw: EngineClient) => Promise<void>,
     private readonly requestTimeoutMs = 60_000,
+    private readonly onLive: (payload: unknown) => void = () => {},
   ) {}
 
   start(): Promise<void> {
@@ -77,6 +78,7 @@ export class EngineHost implements EngineClient {
       this.proc = proc;
       proc.onMessage((msg) => {
         if ('event' in msg) {
+          if (msg.event === 'live') this.onLive(msg.payload);
           if (msg.event === 'ready') {
             this.onReady({ request: (m, p) => this.send(m, p) }).then(resolveReady, rejectReady);
           }

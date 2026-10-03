@@ -64,7 +64,7 @@ export function Sidebar({
 }: {
   nav: NavItem[];
   footerNav?: NavItem[];
-  recent?: { id: string; title: string }[];
+  recent?: { id: string; title: string; to?: string }[];
   onNewMission?: () => void;
   collapsed?: boolean;
   onToggle?: () => void;
@@ -139,12 +139,14 @@ export function Sidebar({
           {recent && recent.length > 0 ? (
             <ul className="space-y-0.5">
               {recent.slice(0, 5).map((r) => (
-                <li
-                  key={r.id}
-                  className="flex h-9 items-center gap-3 rounded-md px-3 t-small text-text-muted hover:bg-primary-softer"
-                >
-                  <Clock className="size-4 shrink-0" strokeWidth={1.75} />
-                  <span className="truncate">{r.title}</span>
+                <li key={r.id}>
+                  <NavLink
+                    to={r.to ?? '/missions'}
+                    className="flex h-9 items-center gap-3 rounded-md px-3 t-small text-text-muted hover:bg-primary-softer hover:text-primary-strong"
+                  >
+                    <Clock className="size-4 shrink-0" strokeWidth={1.75} />
+                    <span className="truncate">{r.title}</span>
+                  </NavLink>
                 </li>
               ))}
             </ul>

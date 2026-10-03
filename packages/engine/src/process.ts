@@ -21,8 +21,10 @@ const dbPath = process.env.EMILIO_DB_PATH;
 if (!dbPath) throw new Error('EMILIO_DB_PATH manquant.');
 
 const engine = new EngineService({ dbPath });
+engine.onLive((payload) => parentPort.postMessage({ event: 'live', payload }));
 parentPort.on('message', async ({ data }) => {
   const result = await engine.handle(data.method, data.params);
   parentPort.postMessage({ id: data.id, result });
 });
+engine.start();
 parentPort.postMessage({ event: 'ready' });

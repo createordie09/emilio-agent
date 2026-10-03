@@ -116,3 +116,55 @@ describe('IPC handlers — préférences UI', () => {
     });
   });
 });
+
+describe('IPC handlers — missions', () => {
+  const recorder = () => {
+    const calls: { method: string; params: unknown }[] = [];
+    const engine = {
+      async request(method: string, params?: unknown) {
+        calls.push({ method, params });
+        if (method === 'getSetting')
+          return {
+            ok: true,
+            value: (params as { key: string }).key === 'ui_settings' ? { devMode: devMode } : null,
+          };
+        return { ok: true, value: { id: 'm1' } };
+      },
+    } as unknown as EngineClient;
+    return { engine, calls };
+  };
+  let devMode = false;
+
+  it('relaie pause / reprise / annulation / réessai au moteur avec l’identifiant', async () => {
+    const { engine, calls } = recorder();
+    const { handlers } = createHandlers({ engine, cipher: cipher(), appInfo: () => ({}) });
+    await handlers[IPC.missionsPause]('m1');
+    await handlers[IPC.missionsResume]('m1');
+    await handlers[IPC.missionsCancel]('m1');
+    await handlers[IPC.missionsRetry]('m1');
+    expect(calls.map((c) => c.method)).toEqual([
+      'pauseMission',
+      'resumeMission',
+      'cancelMission',
+      'retryMission',
+    ]);
+    expect(calls.every((c) => (c.params as { id: string }).id === 'm1')).toBe(true);
+  });
+
+  it('mission factice et pannes simulées : refusées hors mode développeur', async () => {
+    devMode = false;
+    const { engine, calls } = recorder();
+    const { handlers } = createHandlers({ engine, cipher: cipher(), appInfo: () => ({}) });
+    expect(await handlers[IPC.missionsCreateDemo]()).toMatchObject({
+      ok: false,
+      error: { code: 'E_BAD_REQUEST' },
+    });
+    expect(await handlers[IPC.missionsSimulate]('no_credit')).toMatchObject({ ok: false });
+    expect(calls.some((c) => c.method === 'createDemoMission' || c.method === 'simulate')).toBe(
+      false,
+    );
+    devMode = true;
+    expect(await handlers[IPC.missionsCreateDemo]()).toMatchObject({ ok: true });
+    expect(await handlers[IPC.missionsSimulate]('no_credit')).toMatchObject({ ok: true });
+  });
+});
