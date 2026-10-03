@@ -33,7 +33,7 @@ test('isolation du renderer, moteur, clé, modèles, thème', async () => {
     // Paramètres → À propos : le moteur répond (utilityProcess / IPC / SQLite migré).
     await page.evaluate(() => (location.hash = '#/parametres'));
     await page.getByRole('tab', { name: 'À propos' }).click();
-    await expect(page.getByText(/En marche · v0\.6\.0 · base v5/)).toBeVisible();
+    await expect(page.getByText(/En marche · v0\.7\.0 · base v6/)).toBeVisible();
 
     // Clé : enregistrement (chiffré), jamais renvoyée en clair.
     await page.getByRole('tab', { name: 'Clé et modèles' }).click();

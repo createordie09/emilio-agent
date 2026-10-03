@@ -122,6 +122,14 @@ pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 - Règles : seuls les alias `A…` / `E…` sont montrés au modèle ; marqueur inconnu = refusé ; citation = littérale ; nombre = justifié ; aucune donnée de terrain inventée (trame `[DONNÉES À INSÉRER]`) ; dédicace / remerciements = `[À COMPLÉTER]`. Réglages : `resources/writing-config.json`.
 - Tâches : `p4.analyse`, `p5.redaction.<nœud>` (chaînées par chapitre), `p5.general.<nœud>`, `p5.liminaires`. La mission s'arrête après P5 (`stopAfterPhase`).
 
+## Jury et révisions (J7)
+
+- `packages/engine/src/jury/` : `JuryService` (P6 par chapitre : jurés → consolidation par le code → président → recherche complémentaire → révision → réévaluation ; P7 : harmonisation, évaluation globale, `refreshFinal`). Réglages : `resources/jury-config.json` (grille C1–C9, seuils, plafonds).
+- Les jurés ne notent que leurs critères ; totaux et verdicts **toujours recalculés par le code**. Une révision qui dégrade est annulée ; toutes les versions sont conservées (`drafts.version`, `current_version_id`).
+- Tâches : `p6.review.<chapitre>`, `p7.global`, `p7.finalize` ; la mission s'arrête après P7. `ModelCaller` limite les appels simultanés par mission.
+- Écran : onglets Jury et Brouillons de la page mission (`JuryPanel`, `DraftsPanel`, diff dans `renderer/src/lib/diff.ts`).
+- Tests : `test/pipeline.ts` (`runMission`, `withJury` — sans cette option, P6/P7 sont ignorées par les tests de rédaction).
+
 ## Qualité
 
 TypeScript `strict`, ESLint + Prettier, aucune sortie d'agent non validée par zod. Mode LLM simulé (mock) obligatoire dès J2 (§21.2) : aucun test ne doit faire d'appel payant.

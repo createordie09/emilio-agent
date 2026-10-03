@@ -40,8 +40,11 @@ import { IngestService } from './kb/ingest';
 import { PlanningService } from './planning/service';
 import { DataAnalysisService } from './analysis/service';
 import { SectionWriter } from './writing/writer';
+import { JuryService } from './jury/service';
+import { loadJuryConfig } from './jury/config';
 import { loadWritingConfig } from './writing/config';
 import { writingMockRespond } from './writing/mock-responder';
+import { juryMockRespond } from './jury/mock-responder';
 import { OutlineRepo } from './planning/outline';
 import { loadEstimation, loadPlanConfig, loadStructures } from './planning/config';
 import { BriefSchema, WORK_TYPE_LABEL_FR } from '@emilio/shared';
@@ -58,7 +61,7 @@ import {
   type OpenRouterConfig,
 } from './llm/openrouter';
 
-export const ENGINE_VERSION = '0.6.0';
+export const ENGINE_VERSION = '0.7.0';
 
 export type EngineOptions = {
   dbPath: string;
@@ -106,6 +109,7 @@ export class EngineService {
   readonly planning: PlanningService;
   readonly analysis: DataAnalysisService;
   readonly writer: SectionWriter;
+  readonly jury: JuryService;
   readonly mockSources: MockSourceConnector[] = mockConnectors();
   private sourceKeys = new Map<string, string>();
   private readonly opts: EngineOptions;
@@ -125,7 +129,10 @@ export class EngineService {
         delayMs: 400,
         costPerCallUsd: 0.002,
         respond: (req) =>
-          researchMockRespond(req) ?? planningMockRespond(req) ?? writingMockRespond(req),
+          researchMockRespond(req) ??
+          planningMockRespond(req) ??
+          writingMockRespond(req) ??
+          juryMockRespond(req),
         ...opts.mockOptions,
       });
     this.journal = new EventJournal(this.db);
@@ -162,6 +169,22 @@ export class EngineService {
           const r = await this.writer.writeGeneral(task.missionId, String(task.input.nodeId));
           return { words: r.words, skipped: r.skipped };
         },
+        'p6.review': async (task) => {
+          const r = await this.jury.reviewChapter(task.missionId, String(task.input.chapterId));
+          return { status: r.status, score: r.finalScore, rounds: r.rounds };
+        },
+        'p7.global': async (task) => {
+          const h = await this.jury.harmonize(task.missionId);
+          const g = await this.jury.reviewGlobal(task.missionId);
+          return {
+            harmonisation: h.applied,
+            status: g?.status ?? null,
+            score: g?.finalScore ?? null,
+          };
+        },
+        'p7.finalize': async (task) => ({
+          refreshed: await this.jury.refreshFinal(task.missionId),
+        }),
         'p5.front': async (task) => {
           const f = await this.writer.writeFrontMatter(task.missionId);
           return { pages: f.length };
@@ -254,6 +277,18 @@ export class EngineService {
       analysis: this.analysis,
       cfg: writing,
       contextLength: (model) => this.contextOf(model),
+    });
+    this.jury = new JuryService({
+      db: this.db,
+      missions: this.missions,
+      journal: this.journal,
+      caller,
+      outline: this.outline,
+      writer: this.writer,
+      research: this.research,
+      analysis: this.analysis,
+      cfg: loadJuryConfig(opts.resourcesDir),
+      writing,
     });
     this.planning = new PlanningService({
       db: this.db,
@@ -569,6 +604,18 @@ export class EngineService {
         return this.analysis.view(id());
       case 'getFrontMatter':
         return this.writer.frontMatter(id());
+      case 'getJury':
+        return this.jury.view(id());
+      case 'listSectionVersions':
+        return this.writer.versions(String(p.nodeId));
+      case 'getSectionVersion': {
+        const row = this.db
+          .prepare('SELECT outline_node_id AS n FROM drafts WHERE id=?')
+          .get(String(p.draftId)) as { n: string } | undefined;
+        const d = row ? this.writer.detail(row.n, String(p.draftId)) : null;
+        if (!d) throw new AppError('E_BAD_REQUEST', 'Version introuvable.');
+        return d;
+      }
       case 'generatePlan':
         return this.planning.start(id());
       case 'regeneratePlan':

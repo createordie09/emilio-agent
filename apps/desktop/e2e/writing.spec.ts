@@ -24,8 +24,9 @@ test('analyse des données et rédaction : tableaux calculés, sections ancrées
     await expect(page.getByText('Terminée', { exact: true }).first()).toBeVisible({
       timeout: 180_000,
     });
-    await expect(page.getByText(/jusqu'à P5/).first()).toBeVisible();
+    await expect(page.getByText(/jusqu'à P7/).first()).toBeVisible();
 
+    await page.getByRole('tab', { name: 'Analyse' }).click();
     // Analyse des données (P4) : chiffres calculés par le code, interprétation contrôlée, hypothèses.
     const analyse = page.getByRole('region', { name: 'Analyse des données' });
     await expect(analyse).toContainText('60 répondants');
@@ -37,6 +38,7 @@ test('analyse des données et rédaction : tableaux calculés, sections ancrées
       analyse.getByRole('list', { name: 'Hypothèses' }).getByRole('listitem'),
     ).toHaveCount(2);
 
+    await page.getByRole('tab', { name: 'Rédaction' }).click();
     // Rédaction (P5) : toutes les sections, ancrage, lecture avec preuves.
     const redaction = page.getByRole('region', { name: 'Rédaction' });
     const items = redaction.getByRole('list', { name: 'Sections rédigées' }).getByRole('listitem');
@@ -67,6 +69,19 @@ test('analyse des données et rédaction : tableaux calculés, sections ancrées
     await front.locator('summary', { hasText: 'Dédicace' }).click();
     await expect(front.getByText(/\[À COMPLÉTER : dédicace/)).toBeVisible();
     await expect(front.getByText('À compléter par vous').first()).toBeVisible();
+
+    // Jury (P6/P7) : grille par juré, notes sur 20, révisions, évaluation globale.
+    await page.getByRole('tab', { name: 'Jury' }).click();
+    const jury = page.getByRole('region', { name: 'Jury' });
+    await expect(jury.getByRole('article').first()).toContainText('/ 20');
+    await expect(jury.getByRole('table', { name: 'Grille d’évaluation' }).first()).toBeVisible();
+    await expect(jury.getByRole('article', { name: 'Ensemble du travail' })).toBeVisible();
+
+    // Brouillons : versions conservées et comparaison phrase par phrase.
+    await page.getByRole('tab', { name: 'Brouillons' }).click();
+    const drafts = page.getByRole('region', { name: 'Brouillons' });
+    await expect(drafts.getByRole('list', { name: 'Versions' })).toBeVisible();
+    await expect(drafts.getByText('Version courante')).toBeVisible();
   } finally {
     await app.close();
   }

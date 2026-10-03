@@ -99,3 +99,26 @@ export const useFrontMatter = (missionId: string | undefined, enabled = true) =>
     enabled: Boolean(missionId) && enabled,
     queryFn: () => unwrap(api.writing.frontMatter(missionId!)),
   });
+
+export const useJury = (missionId: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: ['writing', 'jury', missionId],
+    enabled: Boolean(missionId) && enabled,
+    queryFn: () => unwrap(api.writing.jury(missionId!)),
+  });
+
+export const useVersions = (nodeId: string | null) =>
+  useQuery({
+    queryKey: ['writing', 'versions', nodeId],
+    enabled: Boolean(nodeId),
+    gcTime: 0,
+    queryFn: () => unwrap(api.writing.versions(nodeId!)),
+  });
+
+export const useVersion = (draftId: string | null) =>
+  useQuery({
+    queryKey: ['writing', 'version', draftId],
+    enabled: Boolean(draftId),
+    gcTime: 0,
+    queryFn: () => unwrap(api.writing.version(draftId!)),
+  });

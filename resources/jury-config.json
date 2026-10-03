@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "description": "Jury simulé (CdC §13) : grille d'évaluation, spécialisation des jurés, seuils. La grille de l'établissement, si elle est fournie, la remplacera (conversion à venir).",
+  "criteria": [
+    {
+      "id": "C1",
+      "label": "Pertinence et clarté de la problématique, cohérence avec les objectifs et hypothèses",
+      "points": 3,
+      "jurors": ["juror_methodologist"]
+    },
+    {
+      "id": "C2",
+      "label": "Qualité, actualité et pertinence de la revue de littérature",
+      "points": 3,
+      "jurors": ["juror_specialist"]
+    },
+    {
+      "id": "C3",
+      "label": "Maîtrise des concepts et du cadre théorique",
+      "points": 2,
+      "jurors": ["juror_specialist"]
+    },
+    {
+      "id": "C4",
+      "label": "Rigueur méthodologique (méthode adaptée, justifiée, limites assumées)",
+      "points": 3,
+      "jurors": ["juror_methodologist"]
+    },
+    {
+      "id": "C5",
+      "label": "Qualité de l'analyse et de l'interprétation des résultats",
+      "points": 3,
+      "jurors": ["juror_methodologist", "juror_specialist"]
+    },
+    {
+      "id": "C6",
+      "label": "Discussion, apport, recommandations, contextualisation",
+      "points": 2,
+      "jurors": ["juror_specialist"]
+    },
+    {
+      "id": "C7",
+      "label": "Structure, logique, enchaînements",
+      "points": 2,
+      "jurors": ["juror_form"]
+    },
+    {
+      "id": "C8",
+      "label": "Langue, style, orthographe, typographie",
+      "points": 1,
+      "jurors": ["juror_form"]
+    },
+    {
+      "id": "C9",
+      "label": "Respect des normes (citations, bibliographie, mise en page)",
+      "points": 1,
+      "jurors": ["juror_form"]
+    }
+  ],
+  "jurors": {
+    "juror_methodologist": {
+      "label": "Méthodologiste",
+      "focus": "cohérence problématique-hypothèses-méthode, validité de l'échantillonnage, justesse des analyses, honnêteté sur les limites."
+    },
+    "juror_specialist": {
+      "label": "Spécialiste",
+      "focus": "maîtrise des concepts, actualité et pertinence de la littérature, profondeur de l'analyse, apport, contextualisation africaine."
+    },
+    "juror_form": {
+      "label": "Forme",
+      "focus": "structure, clarté, langue, orthographe, typographie, respect des normes de citation, équilibre des parties."
+    }
+  },
+  "thresholds": {
+    "section": 14,
+    "chapter": 14,
+    "global": { "standard": 14, "eleve": 15, "tres_eleve": 16 }
+  },
+  "verdictMargin": 3,
+  "gainMinimal": 0.5,
+  "spreadMax": 4,
+  "maxResearchPerRound": 2,
+  "revisionSeverities": ["majeure", "mineure"],
+  "globalSample": { "lowest": 3, "random": 2 },
+  "textCharsMax": 60000,
+  "harmonizerWordsMax": 60
+}
