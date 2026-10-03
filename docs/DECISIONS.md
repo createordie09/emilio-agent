@@ -109,3 +109,8 @@ Format : contexte → décision → conséquences. Référence au cahier des cha
 
 - Écrans `Mes missions` et `Mission` volontairement minimaux : composants existants du design system, frise des phases, indicateurs, tâches, flux d'événements en direct (poussés du moteur vers le renderer, regroupés sur 150 ms). À reprendre selon la DA validée et selon §6.6 (onglets, panneau d'indicateurs) en J3+.
 - Version du moteur : 0.2.0.
+
+## ADR-016 — Validation de la DA (point d'arrêt §22)
+
+- Direction artistique (design system §6.1, page `/design`, captures clair et sombre de `docs/screenshots/`) **validée par le porteur du projet** le 3 octobre 2026. Les écrans des jalons suivants peuvent être construits dessus.
+- Le dashboard de mission de J2 reste provisoire et sera repris selon la §6.6.
