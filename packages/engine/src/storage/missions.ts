@@ -148,7 +148,7 @@ export class MissionRepo {
         `SELECT COUNT(*) AS total, SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS done FROM tasks WHERE mission_id=?`,
       )
       .get(id) as { total: number; done: number | null };
-    const cfg = JSON.parse(m.config_json ?? '{}') as { budgetMaxUsd?: number };
+    const cfg = JSON.parse(m.config_json ?? '{}') as { budgetMaxUsd?: number; llmMode?: string };
     return {
       id: m.id,
       title: m.title,
@@ -156,6 +156,7 @@ export class MissionRepo {
       currentPhase: m.current_phase,
       costSpentUsd: m.cost_spent_usd,
       budgetMaxUsd: cfg.budgetMaxUsd ?? null,
+      simulated: cfg.llmMode === 'mock',
       tasksTotal: c.total,
       tasksDone: c.done ?? 0,
       startedAt: m.started_at,

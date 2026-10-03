@@ -7,12 +7,14 @@
   "types": "src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "sources:check": "vitest run --config vitest.live.config.ts"
   },
   "dependencies": {
     "@emilio/shared": "workspace:*",
     "better-sqlite3": "^13.0.3",
     "exceljs": "^4.4.0",
+    "fast-xml-parser": "^5.11.2",
     "mammoth": "^1.13.0",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "^6.3.289",

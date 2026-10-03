@@ -150,3 +150,36 @@ Format : contexte → décision → conséquences. Référence au cahier des cha
 - Étape 4 : 6 profils de normes dans `resources/norms-profiles.json` (valeurs = usages courants, à ajuster selon l'établissement, §15.2). Les fichiers CSL et la mise en forme finale restent en J8.
 - Robustesse : fichiers de configuration absents → listes vides (le moteur démarre) ; corrompus → erreur explicite. Dossier `resources/` résolu parmi plusieurs candidats (variable, installateur, dépôt). Un défaut de ce type empêchait l'ouverture de la fenêtre ; corrigé.
 - Version du moteur : 0.3.0. Schéma : migration 0002 (`chunks_vec`, unicité `(mission_id, sha256)`).
+
+## ADR-021 — Connecteurs de sources (J4, §11.2)
+
+- Dix connecteurs : OpenAlex, Crossref, HAL, Semantic Scholar, Unpaywall, DOAJ, arXiv, Europe PMC, CORE (clé obligatoire), Open Library (ISBN). Un module par service (`packages/engine/src/sources/`), interface commune `SourceConnector` (`search`, `lookupDoi`, `test`) ; aucune URL, clé ni identifiant en dur dans l'interface : adresses de base dans le module du connecteur, clés lues depuis la configuration.
+- Activation par défaut : OpenAlex, Crossref, HAL, Semantic Scholar, Unpaywall, DOAJ ; arXiv et Europe PMC selon la discipline (`extraConnectorsForDiscipline`) ; CORE seulement avec clé.
+- **État de la vérification des API (important)** : les formes de requête et de réponse ont été écrites d'après les documentations officielles, mais **le réseau de l'environnement cloud bloque ces domaines** (HTTP 403 du proxy, constaté par « Tester les connexions »). Les tests s'appuient donc sur des **réponses simulées dérivées de la documentation, non enregistrées sur le vrai service**. Aucun connecteur n'est validé en réel. Pour le faire : autoriser les domaines dans les paramètres réseau de l'environnement, ou sur votre machine lancer `EMILIO_CONTACT_EMAIL=vous@exemple.fr pnpm sources:check` (tests `test-live/`, exclus de la CI ; les réponses sont enregistrées dans `test-live/recorded/`, ignoré par git).
+- Clés facultatives (Semantic Scholar, CORE) : chiffrées par `safeStorage`, jamais envoyées au renderer (masquées), jamais journalisées ; refus de stockage si le chiffrement n'est pas disponible (même règle que la clé OpenRouter).
+- Adresse de contact : ajoutée au `User-Agent` (`mailto:`), utilisée par OpenAlex/Crossref (« polite pool ») et exigée par Unpaywall ; vide → connecteur Unpaywall désactivé, pas d'invention d'adresse.
+- Messages d'erreur : codes dédiés `E_SOURCE_AUTH` / `E_SOURCE_REMOTE` (un refus d'un service bibliographique n'est plus présenté comme « clé OpenRouter invalide » — défaut trouvé sur la capture des réglages).
+
+## ADR-022 — Client HTTP des sources (J4)
+
+- `SourceHttp` : limitation de débit par connecteur (requêtes/seconde configurables), réessais sur 429/408/5xx avec `Retry-After` respecté et temporisation exponentielle bornée, 401/403 sans réessai, panne réseau → `E_NETWORK` après les réessais, 404 → `null` quand autorisé. Cache en base (`source_cache`, migration 0003) avec durée de vie par défaut de 7 jours (`cacheTtlMs`), pour ne pas solliciter deux fois les mêmes services.
+- Tous les paramètres (débits, délais, durées de cache) sont dans `DEFAULT_HTTP_CONFIG`, surchargeables ; `fetch` et l'horloge sont injectés pour les tests.
+
+## ADR-023 — Déduplication et score de qualité (J4, §11.3–11.4)
+
+- Déduplication : DOI normalisé d'abord, puis titre normalisé + année (± 0). Fusion des champs manquants et conservation de toutes les origines.
+- Score de qualité §11.4 : somme pondérée de critères mesurables (type de document, identifiant, récence, citations, texte intégral, revue ; bonus Afrique et import utilisateur ; pertinence 0,6 / qualité 0,4 pour le classement) ; **poids et seuils dans `resources/quality-weights.json`**, pas dans le code. Le score oriente le classement, il ne décide jamais seul de l'intégrité.
+- Export CSL-JSON (`sources/csl.ts`) pour J8 ; matrice section ↔ sources (migration 0003, `section_sources`).
+
+## ADR-024 — Vérification d'existence (J4, §12.1)
+
+- DOI : Crossref puis OpenAlex ; titre (similarité ≥ 0,85), année ± 1, premier auteur. Livre : ISBN via Open Library. URL : contrôle d'accès. Cas ambigus : arbitrage LLM (`source_verifier/arbitration`), sortie validée par zod.
+- Statuts : `verified`, `partially_verified`, `unverified`, `rejected`. **Une panne réseau ne rejette jamais une source** : elle reste `unverified` (test dédié). Seules les sources vérifiées ou partiellement vérifiées sont citables. Les preuves (méthode, date, valeurs annoncées/trouvées) sont stockées dans `evidence_json` et affichées.
+
+## ADR-025 — Recherche documentaire par section (J4, §9 P3)
+
+- `ResearchService.researchSection` : requêtes (Chercheur, FR/EN) → connecteurs en parallèle → dédoublonnage → classement (Chercheur) → vérification → score → sélection ; **boucle de couverture jusqu'à 3 itérations élargies** si trop peu de sources vérifiées. Ce que les services renvoient n'est jamais cité sans vérification.
+- Texte intégral : accès ouvert via Unpaywall/OpenAlex/HAL/arXiv/CORE ; PDF téléchargé → ingéré dans la base de connaissances (J3) ; sinon statut « résumé seul » ou « indisponible » (jamais d'invention).
+- **Fiches de lecture** (`document_analyst/reading-note`) : le modèle résume les extraits ; **le code** vérifie que chaque citation existe littéralement (`quoteExists`, normalisation tolérante des espaces, apostrophes, guillemets, tirets, césures) dans un extrait fourni et ≤ 40 mots ; sinon elle est supprimée et comptée (affichée à l'utilisateur).
+- Mode simulé par mission (corpus fictif de DOI `10.5555/*`, PDF générés, source fantôme rejetée) : aucune requête réseau ni LLM payant en test ; bouton « Recherche de démonstration » (mode développeur).
+- Version du moteur : 0.4.0. Prompts documentés dans `docs/PROMPTS.md` (version `recherche-1`).

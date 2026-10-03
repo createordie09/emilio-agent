@@ -13,6 +13,9 @@ export const ERROR_MESSAGES_FR = {
   E_PARSE_FILE: 'Impossible de lire ce fichier.',
   E_MODEL_UNAVAILABLE: 'Le modèle demandé est indisponible.',
   E_REMOTE: 'Le service OpenRouter a renvoyé une erreur inattendue.',
+  E_SOURCE_AUTH:
+    "Un service de recherche documentaire a refusé l'accès (clé absente ou invalide, ou domaine bloqué par le réseau).",
+  E_SOURCE_REMOTE: 'Un service de recherche documentaire a renvoyé une erreur.',
   E_ENGINE: "Le moteur de l'application ne répond pas.",
   E_INTERNAL: "Une erreur interne s'est produite.",
 } as const;

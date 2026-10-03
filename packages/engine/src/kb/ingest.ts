@@ -12,7 +12,7 @@ import { newId, nowIso, type Db } from '../storage/db';
 import type { FileAdapter } from '../storage/file-adapter';
 import { chunkDocument } from './chunk';
 import type { EmbeddingAdapter } from './embeddings';
-import { DATA_EXT, TEXT_EXT, extractText } from './extract';
+import { DATA_EXT, TEXT_EXT, extractText, type ExtractedPage } from './extract';
 import { profileDataFile } from './profile';
 import type { KbStore } from './store';
 import type { EventJournal } from '../events/journal';
@@ -87,6 +87,32 @@ export class IngestService {
 
   constructor(private readonly d: IngestDeps) {
     this.maxBytes = d.maxFileBytes ?? 200 * 1024 * 1024;
+  }
+
+  /**
+   * Indexe des pages de texte déjà extraites pour une source existante (texte intégral d'une source trouvée en
+   * ligne, ou résumé seul). Idempotent : les extraits précédents de la source sont remplacés.
+   */
+  async indexPages(
+    missionId: string,
+    sourceId: string,
+    pages: ExtractedPage[],
+  ): Promise<{ chunks: number }> {
+    const chunks = chunkDocument(pages);
+    this.d.store.removeSource(sourceId);
+    if (!chunks.length) return { chunks: 0 };
+    const emb = this.d.embedder();
+    const vectors: Float32Array[] = [];
+    for (let i = 0; i < chunks.length; i += 16) {
+      const part = chunks.slice(i, i + 16).filter((c) => !c.isBibliography);
+      if (part.length) vectors.push(...(await emb.embedPassages(part.map((c) => c.text))));
+    }
+    let k = 0;
+    const aligned = chunks.map((c) =>
+      c.isBibliography ? new Float32Array(emb.dim) : vectors[k++]!,
+    );
+    this.d.store.insertChunks(missionId, sourceId, chunks, aligned);
+    return { chunks: chunks.length };
   }
 
   /** Attend la fin de tous les traitements en cours (tests, finalisation d'une mission). */

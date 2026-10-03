@@ -104,6 +104,12 @@ pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 - Seuls les documents de référence (`sources.type != 'document_interne'`) sont citables.
 - Fixtures de test : `packages/engine/test/fixtures` (régénérables par `generate.mjs`).
 
+## Sources documentaires (J4)
+
+- Connecteurs `packages/engine/src/sources/*` (HTTP commun : cache, débit, réessais) → `ResearchService` (requêtes → recherche → dédoublonnage → classement → vérification §12.1 → fiches de lecture). Citations contrôlées littéralement par le code ; une panne réseau ne rejette jamais une source.
+- Poids de qualité : `resources/quality-weights.json`. Prompts : `docs/PROMPTS.md`.
+- Les API n'ont **pas** été validées en réel (réseau bloqué dans le cloud) : `EMILIO_CONTACT_EMAIL=… pnpm sources:check` sur une machine avec accès.
+
 ## Qualité
 
 TypeScript `strict`, ESLint + Prettier, aucune sortie d'agent non validée par zod. Mode LLM simulé (mock) obligatoire dès J2 (§21.2) : aucun test ne doit faire d'appel payant.

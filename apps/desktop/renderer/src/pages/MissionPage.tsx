@@ -34,6 +34,7 @@ import { avatarRole, PHASES, relativeTime, STATUS_FR } from '@/lib/mission-label
 import { useMission, useMissionEvents } from '@/lib/queries';
 import { useToasts } from '@/stores/toasts';
 import { useUi } from '@/stores/ui';
+import { SourcesPanel } from '@/components/SourcesPanel';
 
 const TASK_ICON: Record<TaskSummary['status'], { icon: typeof CheckCircle2; cls: string }> = {
   done: { icon: CheckCircle2, cls: 'text-success' },
@@ -216,6 +217,8 @@ export function MissionPage() {
             <ActivityFeed title="Activité en direct" items={items} />
           </div>
         </div>
+
+        <SourcesPanel missionId={m.id} simulated={m.simulated} />
 
         {devMode && (
           <section className="space-y-3 rounded-lg border border-dashed border-border p-5">

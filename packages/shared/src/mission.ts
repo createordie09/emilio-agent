@@ -12,6 +12,8 @@ export type MissionSummary = {
   currentPhase: Phase | null;
   costSpentUsd: number;
   budgetMaxUsd: number | null;
+  /** Mission exécutée avec le client simulé (aucun appel payant). */
+  simulated: boolean;
   tasksTotal: number;
   tasksDone: number;
   startedAt: string | null;

@@ -22,6 +22,7 @@ import { fmtInt, fmtPerMillion, fmtUsd } from '@/lib/fr';
 import { useKeyInfo, useKeyStatus, useModels } from '@/lib/queries';
 import { useToasts } from '@/stores/toasts';
 import { useUi } from '@/stores/ui';
+import { SourcesSettings } from '@/pages/SourcesSettings';
 
 const Card = ({
   title,
@@ -500,6 +501,7 @@ export function SettingsPage() {
         >
           {[
             ['cle', 'Clé et modèles'],
+            ['sources', 'Sources documentaires'],
             ['apparence', 'Apparence'],
             ['apropos', 'À propos'],
           ].map(([v, l]) => (
@@ -512,6 +514,9 @@ export function SettingsPage() {
           <TabsContent value="cle" className="space-y-5">
             <KeySection />
             <ModelsSection />
+          </TabsContent>
+          <TabsContent value="sources">
+            <SourcesSettings />
           </TabsContent>
           <TabsContent value="apparence">
             <AppearanceSection />

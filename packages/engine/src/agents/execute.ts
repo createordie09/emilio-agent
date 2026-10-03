@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AppError } from '@emilio/shared';
+import { AppError, type AgentRole } from '@emilio/shared';
 import type { ModelCaller, CallResult } from '../llm/call-model';
 import type { QueuedTask } from '../queue/queue';
 import type { AgentDefinition } from './registry';
@@ -32,38 +32,44 @@ export function extractJson(text: string): unknown {
 
 export type Executed<T> = { output: T; call: Omit<CallResult, 'content'> };
 
+export type StructuredParams<T extends z.ZodType> = {
+  missionId: string;
+  taskId: string | null;
+  role: AgentRole;
+  label: string;
+  messages: { role: 'system' | 'user' | 'assistant'; content: string }[];
+  schema: T;
+  schemaName: string;
+  temperature: number;
+  promptVersion: string;
+  signal?: AbortSignal;
+};
+
 /**
- * Exécution d'une tâche LLM (CdC §8.3) : prompt → appel → validation zod ;
+ * Appel de modèle avec sortie JSON validée (CdC §8.3) : prompt → appel → validation zod ;
  * en cas d'échec de validation, UN réessai avec le message d'erreur renvoyé au modèle, puis échec E_SCHEMA.
  */
-export async function executeAgentTask<T extends z.ZodType>(
+export async function runStructured<T extends z.ZodType>(
   caller: ModelCaller,
-  agent: AgentDefinition<T>,
-  task: QueuedTask,
-  signal?: AbortSignal,
+  p: StructuredParams<T>,
 ): Promise<Executed<z.infer<T>>> {
-  const label = String(task.input.label ?? agent.role);
-  const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
-    { role: 'system', content: agent.systemPrompt({ label }) },
-    { role: 'user', content: JSON.stringify({ tache: label, entree: task.input }) },
-  ];
+  const messages = [...p.messages];
   const jsonSchema = {
-    name: agent.schemaName,
-    schema: z.toJSONSchema(agent.schema) as Record<string, unknown>,
+    name: p.schemaName,
+    schema: z.toJSONSchema(p.schema) as Record<string, unknown>,
   };
   let cost = { tokensIn: 0, tokensOut: 0, costUsd: 0, model: '' };
-
   for (let attempt = 0; attempt < 2; attempt++) {
     const res = await caller.call({
-      missionId: task.missionId,
-      taskId: task.id,
-      role: agent.role,
+      missionId: p.missionId,
+      taskId: p.taskId,
+      role: p.role,
       messages,
-      temperature: agent.temperature,
+      temperature: p.temperature,
       jsonSchema,
-      promptVersion: agent.promptVersion,
-      label,
-      signal,
+      promptVersion: p.promptVersion,
+      label: p.label,
+      signal: p.signal,
     });
     cost = {
       tokensIn: cost.tokensIn + res.tokensIn,
@@ -72,7 +78,7 @@ export async function executeAgentTask<T extends z.ZodType>(
       model: res.model,
     };
     try {
-      const parsed = agent.schema.safeParse(extractJson(res.content));
+      const parsed = p.schema.safeParse(extractJson(res.content));
       if (parsed.success) return { output: parsed.data, call: cost };
       messages.push(
         { role: 'assistant', content: res.content },
@@ -92,4 +98,29 @@ export async function executeAgentTask<T extends z.ZodType>(
     }
   }
   throw new AppError('E_SCHEMA');
+}
+
+/** Exécution d'une tâche d'agent de la file (prompt système de l'agent + entrée de la tâche). */
+export function executeAgentTask<T extends z.ZodType>(
+  caller: ModelCaller,
+  agent: AgentDefinition<T>,
+  task: QueuedTask,
+  signal?: AbortSignal,
+): Promise<Executed<z.infer<T>>> {
+  const label = String(task.input.label ?? agent.role);
+  return runStructured(caller, {
+    missionId: task.missionId,
+    taskId: task.id,
+    role: agent.role,
+    label,
+    messages: [
+      { role: 'system', content: agent.systemPrompt({ label }) },
+      { role: 'user', content: JSON.stringify({ tache: label, entree: task.input }) },
+    ],
+    schema: agent.schema,
+    schemaName: agent.schemaName,
+    temperature: agent.temperature,
+    promptVersion: agent.promptVersion,
+    signal,
+  });
 }

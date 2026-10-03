@@ -13,6 +13,16 @@ const api: EmilioApi = {
     remove: () => ipcRenderer.invoke(IPC.keyRemove),
   },
   models: { list: (opts) => ipcRenderer.invoke(IPC.modelsList, opts) },
+  sources: {
+    list: (missionId) => ipcRenderer.invoke(IPC.sourcesList, missionId),
+    get: (sourceId) => ipcRenderer.invoke(IPC.sourcesGet, sourceId),
+    config: () => ipcRenderer.invoke(IPC.sourcesConfig),
+    saveConfig: (patch) => ipcRenderer.invoke(IPC.sourcesSaveConfig, patch),
+    saveKey: (id, key) => ipcRenderer.invoke(IPC.sourcesSaveKey, id, key),
+    removeKey: (id) => ipcRenderer.invoke(IPC.sourcesRemoveKey, id),
+    test: () => ipcRenderer.invoke(IPC.sourcesTest),
+    demoResearch: (missionId) => ipcRenderer.invoke(IPC.sourcesDemoResearch, missionId),
+  },
   drafts: {
     list: () => ipcRenderer.invoke(IPC.draftsList),
     create: (opts) => ipcRenderer.invoke(IPC.draftsCreate, opts),

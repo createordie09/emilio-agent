@@ -9,6 +9,7 @@ import { Transform } from 'node:stream';
 export interface FileAdapter {
   copyIn(src: string, dest: string): Promise<{ sha256: string; size: number }>;
   write(path: string, content: string): Promise<void>;
+  writeBuffer(path: string, content: Buffer): Promise<void>;
   remove(path: string): Promise<void>;
   exists(path: string): boolean;
   size(path: string): Promise<number>;
@@ -33,6 +34,10 @@ export class LocalFileAdapter implements FileAdapter {
   async write(path: string, content: string): Promise<void> {
     await mkdir(dirname(path), { recursive: true });
     await writeFile(path, content, 'utf8');
+  }
+  async writeBuffer(path: string, content: Buffer): Promise<void> {
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, content);
   }
   async remove(path: string): Promise<void> {
     await rm(path, { recursive: true, force: true });
