@@ -16,7 +16,10 @@ export function useLiveSync(): void {
       void qc.invalidateQueries({ queryKey: ['mission'] });
       void qc.invalidateQueries({ queryKey: ['events'] });
     };
-    const off = api.onEvent(() => {
+    const off = api.onEvent((e) => {
+      // Les fichiers en cours de traitement (assistant, étape 5) rafraîchissent directement le brouillon.
+      if (e.kind === 'file.updated')
+        void qc.invalidateQueries({ queryKey: ['draft', e.missionId] });
       timer ??= setTimeout(flush, 150);
     });
     return () => {

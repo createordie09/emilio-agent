@@ -4,3 +4,5 @@ out
 *.log
 .DS_Store
 docs/screenshots/tmp
+resources/models/*
+!resources/models/.gitkeep

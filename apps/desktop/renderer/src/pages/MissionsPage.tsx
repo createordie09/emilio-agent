@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { FlaskConical, FolderKanban } from 'lucide-react';
+import { FlaskConical, FolderKanban, Plus } from 'lucide-react';
 import {
   ActionCard,
   Button,
@@ -41,12 +41,18 @@ export function MissionsPage() {
         title="Mes missions"
         breadcrumb={['Mes missions']}
         toolbar={
-          devMode ? (
-            <Button variant="ink" size="sm" onClick={createDemo}>
-              <FlaskConical className="size-4" />
-              Lancer une mission factice (mode simulé)
+          <>
+            <Button size="sm" onClick={() => nav('/missions/nouvelle')}>
+              <Plus className="size-4" />
+              Nouvelle mission
             </Button>
-          ) : undefined
+            {devMode && (
+              <Button variant="ink" size="sm" onClick={createDemo}>
+                <FlaskConical className="size-4" />
+                Lancer une mission factice (mode simulé)
+              </Button>
+            )}
+          </>
         }
       />
       <div className="px-8 pb-8">
@@ -55,7 +61,7 @@ export function MissionsPage() {
           <EmptyState
             icon={FolderKanban}
             title="Aucune mission pour l'instant"
-            text="L'assistant de création de mission arrive dans le prochain jalon. Le mode développeur permet déjà d'essayer le moteur avec une mission factice, sans aucun coût."
+            text="Créez votre première mission avec l'assistant. Le mode développeur permet aussi d'essayer le moteur avec une mission factice, sans aucun coût."
           />
         )}
         <div className="grid grid-cols-2 gap-4">

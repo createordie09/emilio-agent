@@ -7,6 +7,8 @@ import { DesignPage } from '@/pages/DesignPage';
 import { SoonPage } from '@/pages/SoonPage';
 import { MissionsPage } from '@/pages/MissionsPage';
 import { MissionPage } from '@/pages/MissionPage';
+import { NewMissionPage } from '@/pages/NewMissionPage';
+import { WizardPage } from '@/pages/wizard/WizardPage';
 import { useLiveSync } from '@/lib/live';
 import { useUi } from '@/stores/ui';
 
@@ -20,6 +22,8 @@ export function App() {
         <Route element={<AppLayout />}>
           <Route index element={<HomePage />} />
           <Route path="missions" element={<MissionsPage />} />
+          <Route path="missions/nouvelle" element={<NewMissionPage />} />
+          <Route path="missions/nouvelle/:draftId" element={<WizardPage />} />
           <Route path="missions/:id" element={<MissionPage />} />
           <Route path="bibliotheque" element={<SoonPage title="Bibliothèque de sources" />} />
           <Route path="parametres" element={<SettingsPage />} />

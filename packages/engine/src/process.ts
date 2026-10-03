@@ -20,7 +20,13 @@ if (!parentPort) throw new Error('Ce module doit être exécuté dans un process
 const dbPath = process.env.EMILIO_DB_PATH;
 if (!dbPath) throw new Error('EMILIO_DB_PATH manquant.');
 
-const engine = new EngineService({ dbPath });
+const engine = new EngineService({
+  dbPath,
+  dataDir: process.env.EMILIO_DATA_DIR,
+  modelsDir: process.env.EMILIO_MODELS_DIR,
+  presetsPath: process.env.EMILIO_PRESETS_PATH,
+  normsProfilesPath: process.env.EMILIO_NORMS_PATH,
+});
 engine.onLive((payload) => parentPort.postMessage({ event: 'live', payload }));
 parentPort.on('message', async ({ data }) => {
   const result = await engine.handle(data.method, data.params);

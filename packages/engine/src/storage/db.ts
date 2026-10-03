@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import * as sqliteVec from 'sqlite-vec';
 import { v7 as uuidv7 } from 'uuid';
 
 export type Db = Database.Database;
@@ -25,7 +26,17 @@ export function loadMigrations(files: Record<string, string> = migrationFiles): 
 }
 
 /** Applique les migrations manquantes, chacune dans une transaction. Ne modifie jamais une migration livrée. */
+/** Charge l'extension sqlite-vec (idempotent). */
+export function ensureVec(db: Db): void {
+  try {
+    db.prepare('SELECT vec_version()').get();
+  } catch {
+    sqliteVec.load(db);
+  }
+}
+
 export function runMigrations(db: Db, migrations: Migration[] = loadMigrations()): number {
+  ensureVec(db);
   db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
     version INTEGER PRIMARY KEY, name TEXT NOT NULL, applied_at TEXT NOT NULL)`);
   const applied = new Set(

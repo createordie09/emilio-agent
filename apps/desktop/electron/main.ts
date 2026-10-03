@@ -1,6 +1,7 @@
-import { app, BrowserWindow, ipcMain, safeStorage, session, shell } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell } from 'electron';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { APP_NAME, IPC } from '@emilio/shared';
+import { APP_NAME, FILE_KIND_LABEL_FR, IPC, type FileKind } from '@emilio/shared';
 import { EngineHost, type EngineClient } from './engine-host';
 import { createHandlers, type SecretCipher } from './ipc/handlers';
 
@@ -86,6 +87,17 @@ function createWindow(): BrowserWindow {
   return win;
 }
 
+/** Dossier `resources/` : variable d'environnement, installateur, ou dépôt de sources (dev, quel que soit le point d'entrée). */
+function resolveResourcesDir(): string {
+  const candidates = [
+    process.env.EMILIO_RESOURCES_DIR,
+    app.isPackaged ? join(process.resourcesPath, 'resources') : undefined,
+    join(app.getAppPath(), '../../resources'),
+    join(app.getAppPath(), '../../../../resources'),
+  ].filter((c): c is string => Boolean(c));
+  return candidates.find((c) => existsSync(join(c, 'presets.json'))) ?? candidates[0]!;
+}
+
 async function bootstrap(): Promise<void> {
   session.defaultSession.webRequest.onHeadersReceived((details, cb) => {
     cb({
@@ -96,9 +108,16 @@ async function bootstrap(): Promise<void> {
   const engineEntry = join(__dirname, 'engine.js');
   const dbPath = join(app.getPath('userData'), 'emilio.db');
   let restore: (raw: EngineClient) => Promise<void> = async () => {};
+  const resources = resolveResourcesDir();
   const engine = new EngineHost(
     engineEntry,
     dbPath,
+    {
+      EMILIO_DATA_DIR: app.getPath('userData'),
+      EMILIO_MODELS_DIR: join(resources, 'models'),
+      EMILIO_PRESETS_PATH: join(resources, 'presets.json'),
+      EMILIO_NORMS_PATH: join(resources, 'norms-profiles.json'),
+    },
     (raw) => restore(raw),
     60_000,
     (payload) =>
@@ -107,6 +126,29 @@ async function bootstrap(): Promise<void> {
   const { handlers, restoreKey } = createHandlers({
     engine,
     cipher,
+    pickFiles: async (kind: FileKind) => {
+      const filters: Record<FileKind, { name: string; extensions: string[] }[]> = {
+        field_data: [{ name: 'Tableurs (CSV, XLSX)', extensions: ['csv', 'xlsx'] }],
+        template: [{ name: 'Gabarits Word (DOCX)', extensions: ['docx'] }],
+        user_document: [
+          { name: 'Documents (PDF, DOCX, TXT)', extensions: ['pdf', 'docx', 'txt', 'md'] },
+        ],
+        institution_guidelines: [
+          { name: 'Documents (PDF, DOCX, TXT)', extensions: ['pdf', 'docx', 'txt', 'md'] },
+        ],
+        existing_work: [
+          { name: 'Documents (PDF, DOCX, TXT)', extensions: ['pdf', 'docx', 'txt', 'md'] },
+        ],
+      };
+      const win = BrowserWindow.getFocusedWindow() ?? undefined;
+      const opts = {
+        title: `Importer : ${FILE_KIND_LABEL_FR[kind]}`,
+        properties: ['openFile', 'multiSelections'] as ('openFile' | 'multiSelections')[],
+        filters: filters[kind],
+      };
+      const r = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
+      return r.canceled ? [] : r.filePaths;
+    },
     appInfo: () => ({
       name: APP_NAME,
       version: app.getVersion(),

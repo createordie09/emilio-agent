@@ -37,7 +37,7 @@ export function AppLayout() {
             .map((m) => ({ id: m.id, title: m.title, to: `/missions/${m.id}` }))}
           collapsed={collapsed}
           onToggle={toggle}
-          onNewMission={() => nav('/missions')}
+          onNewMission={() => nav('/missions/nouvelle')}
           credit={
             <CreditCard
               amount={noKey ? '—' : fmtUsd(credit)}

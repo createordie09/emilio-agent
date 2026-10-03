@@ -14,6 +14,16 @@ import {
   type MissionDetail,
   type MissionEvent,
   type MissionSummary,
+  type AddFileResult,
+  type BriefDraft,
+  type DraftDetail,
+  type DraftSummary,
+  type FileKind,
+  type FinalizeOptions,
+  type MissionFileInfo,
+  type NormsProfileInfo,
+  type PresetInfo,
+  type WorkType,
 } from '@emilio/shared';
 import type { EngineClient } from '../engine-host';
 
@@ -24,7 +34,13 @@ export interface SecretCipher {
   decrypt(b64: string): string;
 }
 
-export type HandlerDeps = { engine: EngineClient; cipher: SecretCipher; appInfo: () => unknown };
+export type HandlerDeps = {
+  engine: EngineClient;
+  cipher: SecretCipher;
+  appInfo: () => unknown;
+  /** Boîte de dialogue système de choix de fichiers (Electron `dialog`), filtrée selon le type d'import. */
+  pickFiles?: (kind: FileKind) => Promise<string[]>;
+};
 
 const KEY_ENC = 'openrouter_key_encrypted';
 const KEY_MASK = 'openrouter_key_masked';
@@ -71,6 +87,30 @@ export function createHandlers(d: HandlerDeps) {
     d.engine.request<MissionSummary>(method, { id });
 
   const handlers = {
+    [IPC.draftsList]: async () => d.engine.request<DraftSummary[]>('listDrafts'),
+    [IPC.draftsCreate]: async (opts?: { workType?: WorkType; titre?: string }) =>
+      d.engine.request<DraftDetail>('createDraft', {
+        workType: opts?.workType,
+        titre: opts?.titre,
+      }),
+    [IPC.draftsGet]: async (id: string) => d.engine.request<DraftDetail>('getDraft', { id }),
+    [IPC.draftsSave]: async (id: string, brief: BriefDraft) =>
+      d.engine.request<DraftDetail>('saveDraft', { id, brief }),
+    [IPC.draftsRemove]: async (id: string) => d.engine.request<null>('deleteDraft', { id }),
+    [IPC.draftsFinalize]: async (id: string, opts?: FinalizeOptions) =>
+      d.engine.request<MissionSummary>('finalizeDraft', {
+        id,
+        confirmNoFieldData: Boolean(opts?.confirmNoFieldData),
+      }),
+    [IPC.filesPick]: async (kind: FileKind): Promise<Result<string[]>> =>
+      guard(async () => ok(d.pickFiles ? await d.pickFiles(kind) : [])),
+    [IPC.filesAdd]: async (id: string, items: { path: string; kind: FileKind }[]) =>
+      d.engine.request<AddFileResult[]>('addFiles', { id, items }),
+    [IPC.filesRemove]: async (id: string, fileId: string) =>
+      d.engine.request<MissionFileInfo[]>('removeFile', { id, fileId }),
+    [IPC.filesList]: async (id: string) => d.engine.request<MissionFileInfo[]>('listFiles', { id }),
+    [IPC.catalogPresets]: async () => d.engine.request<PresetInfo[]>('listPresets'),
+    [IPC.catalogNorms]: async () => d.engine.request<NormsProfileInfo[]>('listNormsProfiles'),
     [IPC.missionsList]: async () => d.engine.request<MissionSummary[]>('listMissions'),
     [IPC.missionsGet]: async (id: string) => d.engine.request<MissionDetail>('getMission', { id }),
     [IPC.missionsCreateDemo]: async (opts?: { budgetUsd?: number }) =>

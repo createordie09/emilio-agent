@@ -64,6 +64,7 @@ export class EngineHost implements EngineClient {
   constructor(
     private readonly entry: string,
     private readonly dbPath: string,
+    private readonly extraEnv: Record<string, string> = {},
     private readonly onReady: (raw: EngineClient) => Promise<void>,
     private readonly requestTimeoutMs = 60_000,
     private readonly onLive: (payload: unknown) => void = () => {},
@@ -73,6 +74,7 @@ export class EngineHost implements EngineClient {
     this.ready = new Promise<void>((resolveReady, rejectReady) => {
       const proc = spawnEngine(this.entry, {
         ...process.env,
+        ...this.extraEnv,
         EMILIO_DB_PATH: this.dbPath,
       } as Record<string, string>);
       this.proc = proc;

@@ -167,7 +167,11 @@ export class MissionRepo {
 
   list(): MissionSummary[] {
     return (
-      this.db.prepare('SELECT id FROM missions ORDER BY created_at DESC, id DESC').all() as {
+      this.db
+        .prepare(
+          "SELECT id FROM missions WHERE status != 'draft' ORDER BY created_at DESC, id DESC",
+        )
+        .all() as {
         id: string;
       }[]
     ).map((r) => this.summary(r.id));

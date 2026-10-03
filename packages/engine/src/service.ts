@@ -9,6 +9,7 @@ import {
   type MissionSummary,
   type Result,
 } from '@emilio/shared';
+import { dirname } from 'node:path';
 import { openDatabase, schemaVersion, type Db } from './storage/db';
 import { SettingsRepo } from './storage/settings';
 import { MissionRepo } from './storage/missions';
@@ -20,6 +21,12 @@ import { createDemoMission } from './orchestrator/demo';
 import { ModelCaller } from './llm/call-model';
 import { MockLlmClient, type MockOptions } from './llm/mock';
 import { demoRegistry, type AgentRegistry } from './agents/registry';
+import { IngestService } from './kb/ingest';
+import { KbStore } from './kb/store';
+import { resolveEmbedder, type EmbeddingAdapter } from './kb/embeddings';
+import { LocalFileAdapter } from './storage/file-adapter';
+import { DraftService } from './wizard/drafts';
+import { loadNormsProfiles, loadPresets, seedNormsProfiles } from './wizard/catalog';
 import {
   OpenRouterClient,
   DEFAULT_OPENROUTER_CONFIG,
@@ -27,7 +34,7 @@ import {
   type OpenRouterConfig,
 } from './llm/openrouter';
 
-export const ENGINE_VERSION = '0.2.0';
+export const ENGINE_VERSION = '0.3.0';
 
 export type EngineOptions = {
   dbPath: string;
@@ -38,6 +45,14 @@ export type EngineOptions = {
   mockOptions?: MockOptions;
   runner?: Partial<RunnerConfig>;
   agents?: AgentRegistry;
+  /** Dossier de données utilisateur (missions/<id>/uploads…). Défaut : dossier de la base. */
+  dataDir?: string;
+  /** Dossier des modèles embarqués (multilingual-e5-small). Absent → embeddeur de repli lexical. */
+  modelsDir?: string;
+  embedder?: EmbeddingAdapter;
+  /** Fichiers de configuration (préréglages de modèles, profils de normes). */
+  presetsPath?: string;
+  normsProfilesPath?: string;
 };
 
 /** Façade du moteur : indépendante d'Electron (CdC §4.6), pilotée par le process utilitaire ou par les tests. */
@@ -51,9 +66,15 @@ export class EngineService {
   readonly queue: QueueAdapter;
   readonly checkpoints: CheckpointRepo;
   readonly runner: MissionRunner;
+  readonly store: KbStore;
+  readonly ingest: IngestService;
+  readonly drafts: DraftService;
+  readonly embedder: EmbeddingAdapter;
+  private readonly opts: EngineOptions;
   private live = new Set<(e: EngineLiveEvent) => void>();
 
   constructor(opts: EngineOptions) {
+    this.opts = opts;
     this.db = openDatabase(opts.dbPath);
     this.settings = new SettingsRepo(this.db);
     this.llm = new OpenRouterClient(this.settings, opts.fetch, {
@@ -96,12 +117,35 @@ export class EngineService {
       config: opts.runner,
       onMissionUpdated: (m) => this.emit({ kind: 'mission.updated', mission: m }),
     });
+    const dataDir = opts.dataDir ?? dirname(opts.dbPath);
+    this.embedder = opts.embedder ?? resolveEmbedder(opts.modelsDir);
+    this.store = new KbStore(this.db);
+    this.ingest = new IngestService({
+      db: this.db,
+      files: new LocalFileAdapter(),
+      store: this.store,
+      embedder: () => this.embedder,
+      dataDir,
+      journal: this.journal,
+      emit: (missionId, file) => this.emit({ kind: 'file.updated', missionId, file }),
+    });
+    seedNormsProfiles(this.db, loadNormsProfiles(opts.normsProfilesPath));
+    this.drafts = new DraftService(
+      this.db,
+      this.missions,
+      this.ingest,
+      this.store,
+      this.journal,
+      dataDir,
+      () => this.presets(),
+    );
     this.journal.subscribe((event) => this.emit({ kind: 'mission.event', event }));
   }
 
   /** Démarre la boucle d'orchestration et reprend les missions interrompues (§8.6). */
   start(): void {
     this.runner.recoverOnStart();
+    this.ingest.recover();
     this.runner.startLoop();
   }
 
@@ -112,6 +156,13 @@ export class EngineService {
 
   private emit(e: EngineLiveEvent): void {
     this.live.forEach((l) => l(e));
+  }
+
+  private presets() {
+    const cache = this.settings.get<{ models: import('@emilio/shared').ModelInfo[] }>(
+      'openrouter_models_cache',
+    );
+    return loadPresets(this.opts.presetsPath, cache?.models ?? null);
   }
 
   private isMock(missionId: string): boolean {
@@ -168,6 +219,38 @@ export class EngineService {
         return this.llm.testKey();
       case 'listModels':
         return this.llm.listModels({ refresh: Boolean(p.refresh) });
+      case 'listDrafts':
+        return this.drafts.list();
+      case 'createDraft':
+        return this.drafts.create({
+          workType: p.workType as never,
+          titre: p.titre as string | undefined,
+        });
+      case 'getDraft':
+        return this.drafts.get(id());
+      case 'saveDraft':
+        return this.drafts.save(id(), p.brief as never);
+      case 'deleteDraft':
+        await this.drafts.remove(id());
+        return null;
+      case 'finalizeDraft':
+        return this.drafts.finalize(id(), { confirmNoFieldData: Boolean(p.confirmNoFieldData) });
+      case 'addFiles':
+        return this.ingest.add(id(), p.items as { path: string; kind: never }[]);
+      case 'removeFile':
+        return this.ingest.remove(id(), String(p.fileId));
+      case 'listFiles':
+        return this.ingest.list(id());
+      case 'listPresets':
+        return this.presets();
+      case 'listNormsProfiles':
+        return loadNormsProfiles(this.opts.normsProfilesPath);
+      case 'searchKb':
+        return this.store.search(this.embedder, {
+          missionId: id(),
+          query: String(p.query),
+          limit: p.limit as number | undefined,
+        });
       case 'listMissions':
         return this.missions.list();
       case 'getMission':
@@ -216,6 +299,7 @@ export class EngineService {
 
   async close(): Promise<void> {
     await this.runner.stop();
+    await this.ingest.idle();
     this.db.close();
   }
 }
