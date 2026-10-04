@@ -1,6 +1,6 @@
 import { AppError, APP_NAME, type KeyInfo, type ModelInfo, type ModelList } from '@emilio/shared';
 import type { SettingsRepo } from '../storage/settings';
-import type { LlmClient, LlmRequest, LlmResponse } from './types';
+import { TRUNCATED, type LlmClient, type LlmRequest, type LlmResponse } from './types';
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -189,7 +189,7 @@ export class OpenRouterClient implements LlmClient {
     const json = await this.requestJson<{
       id?: string;
       model?: string;
-      choices?: { message?: { content?: string | null } }[];
+      choices?: { finish_reason?: string | null; message?: { content?: string | null } }[];
       usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number };
       error?: { code?: number | string; message?: string };
     }>('POST', '/chat/completions', {
@@ -208,6 +208,8 @@ export class OpenRouterClient implements LlmClient {
     }
     const content = json.choices?.[0]?.message?.content;
     if (typeof content !== 'string' || content.length === 0) {
+      // Modèle à raisonnement dont la réflexion a consommé toute la limite de jetons : réponse vide mais récupérable.
+      if (json.choices?.[0]?.finish_reason === 'length') throw new AppError('E_REMOTE', TRUNCATED);
       throw new AppError('E_REMOTE', 'Réponse vide du modèle');
     }
     return {

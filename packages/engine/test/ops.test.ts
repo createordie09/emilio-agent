@@ -13,7 +13,17 @@ import {
   PRIVACY_DENY_KEY,
   type FetchLike,
 } from '../src/llm/openrouter';
-import { shrinkLongest, EngineService, HashEmbedder, MockLlmClient, FileLogger } from '../src';
+import {
+  shrinkLongest,
+  EngineService,
+  HashEmbedder,
+  MockLlmClient,
+  FileLogger,
+  ModelCaller,
+  DEFAULT_MAX_OUTPUT_TOKENS,
+  TRUNCATED,
+} from '../src';
+import { AppError } from '@emilio/shared';
 import { runMission, ask, RES } from './pipeline';
 
 const json = (body: unknown, status = 200) =>
@@ -262,4 +272,49 @@ describe('modèles de secours (§8.6)', () => {
       expect(new Set(alts).size).toBe(alts.length);
     }
   }, 60_000);
+});
+
+describe('plafond de jetons de sortie (J10)', () => {
+  it('chaque appel porte max_tokens (16 000 par défaut) ; une réponse tronquée est retentée une fois avec le double', async () => {
+    const { engine, id } = await runMission({ withExport: false });
+    const seen: (number | undefined)[] = [];
+    const stub = {
+      async complete(req: { maxTokens?: number }) {
+        seen.push(req.maxTokens);
+        if (seen.length === 1) throw new AppError('E_REMOTE', TRUNCATED);
+        return {
+          content: '{}',
+          model: 'a/b',
+          promptTokens: 1,
+          completionTokens: 1,
+          costUsd: 0,
+          generationId: null,
+          latencyMs: 1,
+        };
+      },
+    };
+    const caller = new ModelCaller(engine.db, engine.missions, engine.journal, () => stub as never);
+    const r = await caller.call({
+      missionId: id,
+      role: 'orchestrator',
+      messages: [{ role: 'user', content: 'x' }],
+    });
+    expect(r.content).toBe('{}');
+    expect(seen).toEqual([DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS * 2]);
+  }, 60_000);
+
+  it('une réponse vide dont la raison est la limite de jetons est signalée comme tronquée', async () => {
+    const a = client(async () =>
+      json({ choices: [{ finish_reason: 'length', message: { content: null } }], usage: {} }),
+    );
+    await expect(
+      a.c.complete({ model: 'a/b', messages: [{ role: 'user', content: 'x' }], maxTokens: 100 }),
+    ).rejects.toMatchObject({ detail: TRUNCATED });
+    const b = client(async () =>
+      json({ choices: [{ finish_reason: 'stop', message: { content: null } }], usage: {} }),
+    );
+    await expect(
+      b.c.complete({ model: 'a/b', messages: [{ role: 'user', content: 'x' }] }),
+    ).rejects.toMatchObject({ detail: 'Réponse vide du modèle' });
+  });
 });

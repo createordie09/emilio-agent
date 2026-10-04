@@ -31,3 +31,6 @@ export type LlmResponse = {
 export interface LlmClient {
   complete(req: LlmRequest): Promise<LlmResponse>;
 }
+
+/** Détail d'erreur d'une réponse coupée par la limite de jetons de sortie (le réessai double la limite). */
+export const TRUNCATED = 'réponse tronquée';

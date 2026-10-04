@@ -3,7 +3,8 @@ import { AppError, type AgentRole } from '@emilio/shared';
 import { newId, nowIso, type Db } from '../storage/db';
 import type { EventJournal } from '../events/journal';
 import type { MissionRepo } from '../storage/missions';
-import { clampParallelism, type MissionExecConfig } from './exec-config';
+import { clampParallelism, DEFAULT_MAX_OUTPUT_TOKENS, type MissionExecConfig } from './exec-config';
+import { TRUNCATED } from './types';
 import type { ChatMessage, LlmClient, LlmResponse } from './types';
 
 export type PriceGrid = (model: string) => { prompt: number; completion: number } | null;
@@ -33,6 +34,8 @@ export type CallParams = {
   jsonSchema?: { name: string; schema: Record<string, unknown> } | null;
   promptVersion?: string;
   label?: string;
+  /** Plafond de jetons de sortie de cet appel ; défaut : réglage de la mission. */
+  maxTokens?: number;
   signal?: AbortSignal;
 };
 
@@ -104,6 +107,7 @@ export class ModelCaller {
     const client = this.clientFor(cfg.llmMode);
     let lastErr: unknown;
     let shrunk = false;
+    let doubled = false;
     for (let i = 0; i < chain.length; i++) {
       const model = chain[i]!;
       const t0 = Date.now();
@@ -113,6 +117,7 @@ export class ModelCaller {
           messages: p.messages,
           temperature: p.temperature,
           jsonSchema: p.jsonSchema,
+          maxTokens: p.maxTokens ?? cfg.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
           signal: p.signal,
           meta: { role: p.role, label: p.label },
         });
@@ -129,6 +134,19 @@ export class ModelCaller {
       } catch (e) {
         lastErr = e;
         if (e instanceof AppError) this.logError(p, model, e, Date.now() - t0);
+        // Réponse tronquée avant la fin (modèle à raisonnement : les jetons de réflexion ont tout consommé) : un seul réessai avec le double.
+        if (e instanceof AppError && e.detail === TRUNCATED && !doubled) {
+          doubled = true;
+          p = {
+            ...p,
+            maxTokens: Math.min(
+              64_000,
+              (p.maxTokens ?? cfg.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS) * 2,
+            ),
+          };
+          i--;
+          continue;
+        }
         // Prompt trop long : un seul nouvel essai, avec le plus long message raccourci (silencieux, CdC §20).
         if (e instanceof AppError && e.code === 'E_CONTEXT_OVERFLOW' && !shrunk) {
           shrunk = true;
