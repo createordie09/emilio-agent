@@ -296,6 +296,7 @@ describe('plafond de jetons de sortie (J10)', () => {
     const caller = new ModelCaller(engine.db, engine.missions, engine.journal, () => stub as never);
     const r = await caller.call({
       missionId: id,
+      taskId: null,
       role: 'orchestrator',
       messages: [{ role: 'user', content: 'x' }],
     });
