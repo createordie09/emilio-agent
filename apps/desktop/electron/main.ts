@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell } from 'electron';
-import { existsSync } from 'node:fs';
+import { copyFileSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { APP_NAME, FILE_KIND_LABEL_FR, IPC, type FileKind } from '@emilio/shared';
+import { APP_NAME, FILE_KIND_LABEL_FR, IPC, type FileKind, type HostRequest } from '@emilio/shared';
 import { EngineHost, type EngineClient } from './engine-host';
 import { createHandlers, type SecretCipher } from './ipc/handlers';
 
@@ -98,6 +98,38 @@ function resolveResourcesDir(): string {
   return candidates.find((c) => existsSync(join(c, 'presets.json'))) ?? candidates[0]!;
 }
 
+/** Rendu PDF demandé par le moteur (CdC §16.2) : page HTML locale → `printToPDF` (A4, signets, numéros de page). */
+async function renderPdf(req: HostRequest): Promise<string | void> {
+  if (req.method !== 'renderPdf') return 'Appel inconnu.';
+  const win = new BrowserWindow({
+    show: false,
+    webPreferences: {
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false,
+      javascript: false,
+    },
+  });
+  try {
+    await win.loadFile(req.params.htmlPath);
+    const pdf = await win.webContents.printToPDF({
+      pageSize: 'A4',
+      printBackground: true,
+      preferCSSPageSize: true,
+      displayHeaderFooter: true,
+      headerTemplate: '<span></span>',
+      footerTemplate:
+        '<div style="font-size:9px;width:100%;text-align:center;font-family:serif"><span class="pageNumber"></span></div>',
+      generateDocumentOutline: true,
+    });
+    writeFileSync(req.params.pdfPath, pdf);
+  } catch (e) {
+    return (e as Error).message;
+  } finally {
+    win.destroy();
+  }
+}
+
 async function bootstrap(): Promise<void> {
   session.defaultSession.webRequest.onHeadersReceived((details, cb) => {
     cb({
@@ -124,6 +156,7 @@ async function bootstrap(): Promise<void> {
     60_000,
     (payload) =>
       BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(IPC.engineLive, payload)),
+    renderPdf,
   );
   const { handlers, restoreKey } = createHandlers({
     engine,
@@ -150,6 +183,15 @@ async function bootstrap(): Promise<void> {
       };
       const r = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
       return r.canceled ? [] : r.filePaths;
+    },
+    revealFile: (path: string) => shell.showItemInFolder(path),
+    saveFileAs: async (path: string, filename: string) => {
+      const win = BrowserWindow.getFocusedWindow() ?? undefined;
+      const opts = { title: 'Enregistrer le fichier', defaultPath: filename };
+      const r = win ? await dialog.showSaveDialog(win, opts) : await dialog.showSaveDialog(opts);
+      if (r.canceled || !r.filePath) return false;
+      copyFileSync(path, r.filePath);
+      return true;
     },
     appInfo: () => ({
       name: APP_NAME,

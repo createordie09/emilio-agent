@@ -14,7 +14,7 @@ describe('EngineService', () => {
   it('ping renvoie la version du schéma', async () => {
     const e = mk();
     const r = await e.handle('ping', undefined);
-    expect(r).toEqual({ ok: true, value: { ok: true, engineVersion: '0.7.0', schemaVersion: 6 } });
+    expect(r).toEqual({ ok: true, value: { ok: true, engineVersion: '0.8.0', schemaVersion: 7 } });
     e.close();
   });
 

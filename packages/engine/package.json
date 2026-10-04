@@ -12,12 +12,16 @@
   },
   "dependencies": {
     "@emilio/shared": "workspace:*",
+    "@resvg/resvg-js": "^2.6.2",
     "better-sqlite3": "^13.0.3",
+    "citeproc": "^2.4.63",
+    "docx": "^9.8.1",
     "exceljs": "^4.4.0",
     "fast-xml-parser": "^5.11.2",
     "mammoth": "^1.13.0",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "^6.3.289",
+    "pptxgenjs": "^4.0.1",
     "sqlite-vec": "^0.1.9",
     "uuid": "^11.0.0",
     "zod": "^4.0.0"
@@ -26,7 +30,6 @@
     "@types/better-sqlite3": "^7.6.0",
     "@types/node": "^22.0.0",
     "@types/papaparse": "^5.5.2",
-    "docx": "^9.8.1",
     "vitest": "^3.0.0"
   },
   "optionalDependencies": {

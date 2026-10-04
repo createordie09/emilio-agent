@@ -81,7 +81,7 @@ describe('rédaction P5 (mode simulé) — bout en bout', () => {
     // Journal en français, une ligne par section.
     const ev = engine.journal.list(id, 800).map((e) => e.messageFr);
     expect(ev.filter((m) => m.startsWith('Rédacteur : section ')).length).toBe(list.length);
-    expect(ev.some((m) => m.includes("Étapes disponibles terminées (jusqu'à P7)"))).toBe(true);
+    expect(ev.some((m) => m.includes('Mission terminée.'))).toBe(true);
     await engine.close();
   });
 

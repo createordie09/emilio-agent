@@ -93,7 +93,7 @@ test('cadrage et plan : génération simulée, édition de l’arbre, nouvelle v
     await expect(page.getByText('Terminée', { exact: true }).first()).toBeVisible({
       timeout: 90_000,
     });
-    await expect(page.getByText(/Étapes disponibles terminées/).first()).toBeVisible();
+    await expect(page.getByText('Mission terminée.').first()).toBeVisible();
     await expect(page.getByRole('list', { name: 'Liste des sources' })).toBeVisible();
 
     // Le plan validé reste consultable, en lecture seule.

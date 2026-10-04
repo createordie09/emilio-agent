@@ -45,6 +45,9 @@ import { loadJuryConfig } from './jury/config';
 import { loadWritingConfig } from './writing/config';
 import { writingMockRespond } from './writing/mock-responder';
 import { juryMockRespond } from './jury/mock-responder';
+import { ExportService } from './export/service';
+import { exportMockRespond } from './export/mock-responder';
+import type { PdfAdapter } from './export/pdf';
 import { OutlineRepo } from './planning/outline';
 import { loadEstimation, loadPlanConfig, loadStructures } from './planning/config';
 import { BriefSchema, WORK_TYPE_LABEL_FR } from '@emilio/shared';
@@ -61,7 +64,7 @@ import {
   type OpenRouterConfig,
 } from './llm/openrouter';
 
-export const ENGINE_VERSION = '0.7.0';
+export const ENGINE_VERSION = '0.8.0';
 
 export type EngineOptions = {
   dbPath: string;
@@ -85,6 +88,8 @@ export type EngineOptions = {
   resourcesDir?: string;
   /** Substitut de `fetch` pour les connecteurs de sources (tests). */
   sourcesFetch?: FetchLike;
+  /** Rendu PDF fourni par l'application (Electron) ; sans lui le PDF est signalé comme non produit. */
+  pdf?: PdfAdapter;
 };
 
 /** Façade du moteur : indépendante d'Electron (CdC §4.6), pilotée par le process utilitaire ou par les tests. */
@@ -110,6 +115,8 @@ export class EngineService {
   readonly analysis: DataAnalysisService;
   readonly writer: SectionWriter;
   readonly jury: JuryService;
+  readonly exporter: ExportService;
+  private pdfAdapter: PdfAdapter | undefined;
   readonly mockSources: MockSourceConnector[] = mockConnectors();
   private sourceKeys = new Map<string, string>();
   private readonly opts: EngineOptions;
@@ -132,7 +139,8 @@ export class EngineService {
           researchMockRespond(req) ??
           planningMockRespond(req) ??
           writingMockRespond(req) ??
-          juryMockRespond(req),
+          juryMockRespond(req) ??
+          exportMockRespond(req),
         ...opts.mockOptions,
       });
     this.journal = new EventJournal(this.db);
@@ -185,6 +193,22 @@ export class EngineService {
         'p7.finalize': async (task) => ({
           refreshed: await this.jury.refreshFinal(task.missionId),
         }),
+        'p8.format': async (task) => this.exporter.format(task.missionId),
+        'p9.docx': async (task) => ({ file: (await this.exporter.docx(task.missionId)).filename }),
+        'p9.pdf': async (task) => ({
+          file: (await this.exporter.pdf(task.missionId))?.filename ?? null,
+        }),
+        'p9.slides': async (task) => ({
+          file: (await this.exporter.slides(task.missionId, task.id))?.filename ?? null,
+        }),
+        'p9.fiche': async (task) => ({
+          file: (await this.exporter.fiche(task.missionId, task.id)).filename,
+        }),
+        'p9.final': async (task) => {
+          const c = await this.exporter.check(task.missionId);
+          return { ok: c.ok, items: c.items.length, placeholders: c.placeholders.length };
+        },
+        'p9.report': async (task) => ({ file: this.exporter.report(task.missionId).filename }),
         'p5.front': async (task) => {
           const f = await this.writer.writeFrontMatter(task.missionId);
           return { pages: f.length };
@@ -290,6 +314,18 @@ export class EngineService {
       cfg: loadJuryConfig(opts.resourcesDir),
       writing,
     });
+    this.pdfAdapter = opts.pdf;
+    this.exporter = new ExportService({
+      db: this.db,
+      journal: this.journal,
+      caller,
+      outline: this.outline,
+      analysis: this.analysis,
+      jury: this.jury,
+      resourcesDir: opts.resourcesDir,
+      dataDir,
+      pdf: () => this.pdfAdapter,
+    });
     this.planning = new PlanningService({
       db: this.db,
       missions: this.missions,
@@ -307,6 +343,11 @@ export class EngineService {
       onUpdated: (id) => this.emit({ kind: 'mission.updated', mission: this.missions.summary(id) }),
     });
     this.journal.subscribe((event) => this.emit({ kind: 'mission.event', event }));
+  }
+
+  /** Rendu PDF (fourni après la construction par le processus qui héberge le moteur). */
+  setPdfAdapter(a: PdfAdapter | undefined): void {
+    this.pdfAdapter = a;
   }
 
   /** Démarre la boucle d'orchestration et reprend les missions interrompues (§8.6). */
@@ -606,6 +647,10 @@ export class EngineService {
         return this.writer.frontMatter(id());
       case 'getJury':
         return this.jury.view(id());
+      case 'getExports':
+        return this.exporter.overview(id());
+      case 'getDeliverable':
+        return this.exporter.deliverable(String(p.deliverableId));
       case 'listSectionVersions':
         return this.writer.versions(String(p.nodeId));
       case 'getSectionVersion': {

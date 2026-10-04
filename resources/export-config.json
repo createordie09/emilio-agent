@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "description": "Réglages de P8 / P9 (CdC §9, §16). Couleur d'accent du diaporama : configurable (§16.3).",
+  "docx": {
+    "headingFont": "Times New Roman",
+    "captionSizePt": 10,
+    "sourceSizePt": 9,
+    "tocLevels": 3
+  },
+  "pdf": { "pageCss": "A4", "tocPageNumbers": true },
+  "pptx": {
+    "accentColor": "6D4AE0",
+    "textColor": "1F2937",
+    "mutedColor": "6B7280",
+    "backgroundColor": "FFFFFF",
+    "fontFace": "Calibri",
+    "maxBulletsPerSlide": 5,
+    "maxWordsPerBullet": 12,
+    "defaultSlides": 15,
+    "notesWordsMax": 220
+  },
+  "fiche": { "questionsMin": 20, "questionsMax": 30 },
+  "finalCheck": { "groundingMin": 0.9, "lengthTolerance": 0.15 },
+  "sigles": { "minLetters": 2, "maxLetters": 8, "minOccurrences": 1 },
+  "charts": {
+    "width": 640,
+    "height": 360,
+    "barColor": "#6D4AE0",
+    "textColor": "#1F2937",
+    "gridColor": "#E5E7EB",
+    "fontFile": "fonts/Inter-Regular.ttf",
+    "boldFontFile": "fonts/Inter-Bold.ttf"
+  }
+}

@@ -33,6 +33,7 @@ import {
   type PlanNodeInput,
   type PlanNodePatch,
   type PlanOverview,
+  type ExportOverview,
   type JuryScopeView,
   type SectionDraftDetail,
   type SectionVersionSummary,
@@ -55,6 +56,9 @@ export type HandlerDeps = {
   appInfo: () => unknown;
   /** Boîte de dialogue système de choix de fichiers (Electron `dialog`), filtrée selon le type d'import. */
   pickFiles?: (kind: FileKind) => Promise<string[]>;
+  /** Affiche un fichier dans l'explorateur ; « Enregistrer sous… » (renvoie faux si l'utilisateur annule). */
+  revealFile?: (path: string) => void;
+  saveFileAs?: (path: string, filename: string) => Promise<boolean>;
 };
 
 const KEY_ENC = 'openrouter_key_encrypted';
@@ -234,6 +238,25 @@ export function createHandlers(d: HandlerDeps) {
       d.engine.request<SectionVersionSummary[]>('listSectionVersions', { nodeId }),
     [IPC.writingVersion]: async (draftId: string) =>
       d.engine.request<SectionDraftDetail>('getSectionVersion', { draftId }),
+    [IPC.exportsOverview]: async (missionId: string) =>
+      d.engine.request<ExportOverview>('getExports', { id: missionId }),
+    [IPC.exportsReveal]: async (deliverableId: string) =>
+      guard(async () => {
+        const f = await d.engine.request<{ path: string }>('getDeliverable', { deliverableId });
+        if (!f.ok) return f;
+        d.revealFile?.(f.value.path);
+        return ok(null);
+      }),
+    [IPC.exportsSaveAs]: async (deliverableId: string) =>
+      guard(async () => {
+        const f = await d.engine.request<{ path: string; filename: string }>('getDeliverable', {
+          deliverableId,
+        });
+        if (!f.ok) return f;
+        return ok({
+          saved: d.saveFileAs ? await d.saveFileAs(f.value.path, f.value.filename) : false,
+        });
+      }),
     [IPC.writingFrontMatter]: async (missionId: string) =>
       d.engine.request<FrontMatterView[]>('getFrontMatter', { id: missionId }),
     [IPC.planGenerate]: async (id: string) => mission('generatePlan')(id),

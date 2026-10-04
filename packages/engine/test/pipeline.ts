@@ -11,6 +11,8 @@ import {
   planningMockRespond,
   writingMockRespond,
   juryMockRespond,
+  exportMockRespond,
+  type PdfAdapter,
   type LlmRequest,
 } from '../src';
 
@@ -18,10 +20,17 @@ export const RES = join(__dirname, '../../../resources');
 export const FX = (f: string) => join(__dirname, 'fixtures', f);
 export type Respond = (req: LlmRequest) => string | undefined;
 export const base: Respond = (r) =>
-  researchMockRespond(r) ?? planningMockRespond(r) ?? writingMockRespond(r) ?? juryMockRespond(r);
+  researchMockRespond(r) ??
+  planningMockRespond(r) ??
+  writingMockRespond(r) ??
+  juryMockRespond(r) ??
+  exportMockRespond(r);
 
 export type Opts = {
   withJury?: boolean;
+  /** P8 / P9 (mise en forme et livrables) : ignorées par défaut. */
+  withExport?: boolean;
+  pdf?: PdfAdapter;
   brief?: BriefDraft;
   respond?: Respond;
   data?: boolean;
@@ -48,6 +57,7 @@ export async function runMission(o: Opts = {}) {
     qualityWeightsPath: join(RES, 'quality-weights.json'),
     resourcesDir: RES,
     runner: { tickMs: 5 },
+    ...(o.pdf ? { pdf: o.pdf } : {}),
   });
   const brief: BriefDraft = {
     ...defaultBrief('memoire_master'),
@@ -77,10 +87,14 @@ export async function runMission(o: Opts = {}) {
   await engine.planning.idle();
   const v = await engine.handle('validatePlan', { id: d.id });
   expect(v.ok).toBe(true);
-  // Les tests de la rédaction (J6) s'arrêtent après P5 ; ceux du jury (J7) passent `withJury`.
+  // Les tests de la rédaction (J6) s'arrêtent après P5 ; ceux du jury (J7) passent `withJury` ; ceux des livrables (J8) `withExport`.
   if (!o.withJury)
     engine.db
       .prepare("UPDATE tasks SET status='skipped' WHERE mission_id=? AND phase IN ('P6','P7')")
+      .run(d.id);
+  if (!o.withExport)
+    engine.db
+      .prepare("UPDATE tasks SET status='skipped' WHERE mission_id=? AND phase IN ('P8','P9')")
       .run(d.id);
   const summary = await engine.runner.runUntilSettled(d.id, 6000);
   return { engine, mock, id: d.id, summary };

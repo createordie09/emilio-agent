@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "description": "Profils d'export (CdC §15.1) : style de citation CSL, bibliographie et mise en page par profil de normes. Les valeurs sont des usages courants, à ajuster selon le guide de l'établissement. Les styles CSL (CC BY-SA 3.0) viennent du dépôt officiel citation-style-language/styles.",
+  "defaultProfileId": "afrique-francophone-standard",
+  "styles": {
+    "iso690-author-date-fr": {
+      "file": "iso690-author-date-fr.csl",
+      "mode": "auteur_date",
+      "label": "ISO 690 (auteur-date)"
+    },
+    "apa": { "file": "apa.csl", "mode": "auteur_date", "label": "APA 7e édition" },
+    "iso690-numeric-fr": {
+      "file": "iso690-numeric-fr.csl",
+      "mode": "numerique",
+      "label": "ISO 690 (numérique)"
+    },
+    "nlm": { "file": "nlm-citation-sequence.csl", "mode": "numerique", "label": "NLM / Vancouver" },
+    "chicago-notes-fr": {
+      "file": "chicago-notes-bibliography-fr.csl",
+      "mode": "notes",
+      "label": "Notes de bas de page (Chicago, français)"
+    }
+  },
+  "locale": "locales-fr-FR.xml",
+  "bibliographyGroups": [
+    { "id": "ouvrages", "label": "Ouvrages", "types": ["ouvrage", "chapitre"] },
+    { "id": "articles", "label": "Articles scientifiques", "types": ["article"] },
+    { "id": "theses_memoires", "label": "Mémoires et thèses", "types": ["these", "memoire"] },
+    { "id": "rapports", "label": "Rapports", "types": ["rapport"] },
+    { "id": "textes_officiels", "label": "Textes officiels", "types": ["texte_officiel"] },
+    { "id": "webographie", "label": "Webographie", "types": ["site_web", "donnees"] }
+  ],
+  "profiles": {
+    "afrique-francophone-standard": {
+      "style": "iso690-author-date-fr",
+      "ibidem": false,
+      "bibliography": { "groupByType": true, "title": "Bibliographie" },
+      "layout": {
+        "margins": { "top": 2.5, "bottom": 2.5, "left": 3, "right": 2.5 },
+        "paragraphIndent": 1.25,
+        "headingNumbering": "decimal",
+        "footnotesFontSize": 10
+      },
+      "personne": "nous"
+    },
+    "apa7-fr": {
+      "style": "apa",
+      "ibidem": false,
+      "bibliography": { "groupByType": false, "title": "Références" },
+      "layout": {
+        "margins": { "top": 2.54, "bottom": 2.54, "left": 2.54, "right": 2.54 },
+        "paragraphIndent": 1.27,
+        "headingNumbering": "decimal",
+        "footnotesFontSize": 10
+      },
+      "personne": "impersonnel"
+    },
+    "iso690-auteur-date": {
+      "style": "iso690-author-date-fr",
+      "ibidem": false,
+      "bibliography": { "groupByType": false, "title": "Références bibliographiques" },
+      "layout": {
+        "margins": { "top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5 },
+        "paragraphIndent": 1.25,
+        "headingNumbering": "decimal",
+        "footnotesFontSize": 10
+      },
+      "personne": "impersonnel"
+    },
+    "iso690-notes": {
+      "style": "iso690-numeric-fr",
+      "ibidem": false,
+      "bibliography": { "groupByType": false, "title": "Références bibliographiques" },
+      "layout": {
+        "margins": { "top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5 },
+        "paragraphIndent": 1.25,
+        "headingNumbering": "decimal",
+        "footnotesFontSize": 10
+      },
+      "personne": "impersonnel"
+    },
+    "notes-sciences-humaines": {
+      "style": "chicago-notes-fr",
+      "ibidem": true,
+      "bibliography": { "groupByType": true, "title": "Bibliographie" },
+      "layout": {
+        "margins": { "top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5 },
+        "paragraphIndent": 1.25,
+        "headingNumbering": "romain_alphabetique",
+        "footnotesFontSize": 10
+      },
+      "personne": "nous"
+    },
+    "vancouver": {
+      "style": "nlm",
+      "ibidem": false,
+      "bibliography": { "groupByType": false, "title": "Références" },
+      "layout": {
+        "margins": { "top": 2.5, "bottom": 2.5, "left": 2.5, "right": 2.5 },
+        "paragraphIndent": 1.25,
+        "headingNumbering": "decimal",
+        "footnotesFontSize": 10
+      },
+      "personne": "impersonnel"
+    }
+  },
+  "fallbackStyleForMode": { "auteur_date": "iso690-author-date-fr", "notes": "chicago-notes-fr" }
+}

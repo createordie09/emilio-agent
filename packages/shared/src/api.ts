@@ -9,6 +9,7 @@ import type {
 } from './sources';
 import type { ThemePreference } from './constants';
 import type { JuryScopeView, SectionVersionSummary } from './jury';
+import type { ExportOverview } from './export';
 import type { MissionDetail, MissionEvent, MissionSummary } from './mission';
 import type { BriefDraft, WorkType } from './brief';
 import type {
@@ -87,6 +88,14 @@ export interface EmilioApi {
     versions(nodeId: string): Promise<Result<SectionVersionSummary[]>>;
     version(draftId: string): Promise<Result<SectionDraftDetail>>;
   };
+  /** Livrables (CdC §16) : fichiers produits et contrôle final ; l'ouverture et l'enregistrement passent par le processus principal. */
+  exports: {
+    overview(missionId: string): Promise<Result<ExportOverview>>;
+    /** Affiche le fichier dans l'explorateur de fichiers. */
+    reveal(deliverableId: string): Promise<Result<null>>;
+    /** « Enregistrer sous… » : copie le livrable à l'endroit choisi par l'utilisateur. */
+    saveAs(deliverableId: string): Promise<Result<{ saved: boolean }>>;
+  };
   /** Cadrage, plan et validation (CdC §9 P1–P2, §6.5, §14.5). */
   plan: {
     /** Lance P1 + P2 (en arrière-plan) ; l'avancement arrive par les événements. */
@@ -164,6 +173,8 @@ export { IPC } from './ipc';
 /** Protocole main ↔ moteur (utilityProcess, via parentPort). */
 export type EngineMethod =
   | 'ping'
+  | 'getExports'
+  | 'getDeliverable'
   | 'getSetting'
   | 'setSetting'
   | 'deleteSetting'
@@ -218,4 +229,13 @@ export type EngineMethod =
   | 'getSectionVersion';
 export type EngineRequest = { id: number; method: EngineMethod; params?: unknown };
 export type EngineResponse = { id: number; result: Result<unknown> };
-export type EngineEvent = { event: 'ready' | 'log' | 'live'; payload?: unknown };
+export type EngineEvent = { event: 'ready' | 'log' | 'live' | 'host'; payload?: unknown };
+
+/** Appel du moteur vers le processus principal (ce que le moteur ne peut pas faire seul, ex. rendre un PDF). */
+export type HostRequest = {
+  id: number;
+  method: 'renderPdf';
+  params: { htmlPath: string; pdfPath: string };
+};
+/** Réponse du processus principal à un `HostRequest`. */
+export type HostReply = { hostReply: { id: number; ok: boolean; message?: string } };

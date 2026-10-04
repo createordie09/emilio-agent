@@ -46,6 +46,7 @@ import { AnalysisPanel } from '@/components/AnalysisPanel';
 import { WritingPanel } from '@/components/WritingPanel';
 import { JuryPanel } from '@/components/JuryPanel';
 import { DraftsPanel } from '@/components/DraftsPanel';
+import { DeliverablesPanel } from '@/components/DeliverablesPanel';
 
 const TASK_ICON: Record<TaskSummary['status'], { icon: typeof CheckCircle2; cls: string }> = {
   done: { icon: CheckCircle2, cls: 'text-success' },
@@ -307,6 +308,7 @@ export function MissionPage() {
             {planned && <TabsTrigger value="writing">Rédaction</TabsTrigger>}
             {planned && <TabsTrigger value="jury">Jury</TabsTrigger>}
             {planned && <TabsTrigger value="drafts">Brouillons</TabsTrigger>}
+            {planned && <TabsTrigger value="deliverables">Livrables</TabsTrigger>}
           </TabsList>
           <TabsContent value="sources">
             <SourcesPanel missionId={m.id} simulated={m.simulated} />
@@ -324,6 +326,9 @@ export function MissionPage() {
               </TabsContent>
               <TabsContent value="drafts">
                 <DraftsPanel missionId={m.id} />
+              </TabsContent>
+              <TabsContent value="deliverables">
+                <DeliverablesPanel missionId={m.id} />
               </TabsContent>
             </>
           )}

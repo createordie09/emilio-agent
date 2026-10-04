@@ -923,6 +923,49 @@ export class PlanningService {
       input: { handler: 'p7.finalize' },
       dependsOnKeys: ['p7.global'],
     });
+    // P8 : mise en forme (citations, bibliographie, listes) ; P9 : livrables demandés, contrôle final, rapport de mission.
+    tasks.push({
+      key: 'p8.format',
+      phase: 'P8',
+      agentRole: 'local',
+      label: 'Mise en forme et bibliographie',
+      input: { handler: 'p8.format' },
+      dependsOnKeys: ['p7.finalize'],
+    });
+    const lv = brief.livrables;
+    const genKeys: string[] = [];
+    const gen = (key: string, label: string, handler: string) => {
+      genKeys.push(key);
+      tasks.push({
+        key,
+        phase: 'P9',
+        agentRole: 'local',
+        label,
+        input: { handler },
+        dependsOnKeys: ['p8.format'],
+      });
+    };
+    if (lv.docx) gen('p9.docx', 'Document Word', 'p9.docx');
+    if (lv.pdf) gen('p9.pdf', 'Document PDF', 'p9.pdf');
+    if (lv.pptx) gen('p9.slides', 'Diaporama de soutenance', 'p9.slides');
+    if (lv.fichePreparation) gen('p9.fiche', 'Fiche de préparation à la soutenance', 'p9.fiche');
+    tasks.push({
+      key: 'p9.final',
+      phase: 'P9',
+      agentRole: 'local',
+      label: 'Contrôle final',
+      input: { handler: 'p9.final' },
+      dependsOnKeys: genKeys.length ? genKeys : ['p8.format'],
+    });
+    if (lv.rapportMission)
+      tasks.push({
+        key: 'p9.report',
+        phase: 'P9',
+        agentRole: 'local',
+        label: 'Rapport de mission',
+        input: { handler: 'p9.report' },
+        dependsOnKeys: ['p9.final'],
+      });
     this.d.db.transaction(() => {
       const t = nowIso();
       const nextBrief = {
@@ -950,7 +993,7 @@ export class PlanningService {
           id,
         );
       const cfg = this.cfg(id);
-      this.d.missions.setConfig(id, { ...cfg, stopAfterPhase: 'P7' });
+      this.d.missions.setConfig(id, { ...cfg, stopAfterPhase: undefined });
       this.d.queue.enqueue(id, tasks);
       start();
     })();

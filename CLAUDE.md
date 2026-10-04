@@ -130,6 +130,14 @@ pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 - Écran : onglets Jury et Brouillons de la page mission (`JuryPanel`, `DraftsPanel`, diff dans `renderer/src/lib/diff.ts`).
 - Tests : `test/pipeline.ts` (`runMission`, `withJury` — sans cette option, P6/P7 sont ignorées par les tests de rédaction).
 
+## Livrables (J8)
+
+- `packages/engine/src/export/` : `assemble.ts` (plan + versions courantes → `DocModel` : citations CSL via `bibliography.ts`, typographie, sigles, listes, tableaux/figures renumérotés, annexes) → `docx.ts`, `html.ts` (+ PDF), `pptx.ts`, `fiche.ts`, `report.ts`, `final-check.ts` ; `ExportService` orchestre. Réglages : `resources/export-profiles.json` (profil → style CSL), `resources/export-config.json`, styles dans `resources/csl/`, police des figures dans `resources/fonts/`.
+- Tâches : `p8.format`, `p9.docx`, `p9.pdf`, `p9.slides`, `p9.fiche`, `p9.final`, `p9.report` (selon `brief.livrables`). Le moteur ne rend pas le PDF lui-même : `PdfAdapter` → message `host` vers le processus principal (`printToPDF`).
+- Une source non citable ou un marqueur inconnu n'apparaît jamais dans un livrable ; sigles, dédicace, remerciements, page de garde incomplète : `[À COMPLÉTER]`.
+- Écran : onglet Livrables (`DeliverablesPanel`). Dépendances natives (`@resvg/resvg-js`…) à déclarer aussi dans `apps/desktop/package.json` (sinon elles sont embarquées dans le bundle et ne se chargent pas).
+- Tests : `test/export.test.ts` ; `runMission({ withExport: true })` (sans cette option P8/P9 sont ignorées).
+
 ## Qualité
 
 TypeScript `strict`, ESLint + Prettier, aucune sortie d'agent non validée par zod. Mode LLM simulé (mock) obligatoire dès J2 (§21.2) : aucun test ne doit faire d'appel payant.
