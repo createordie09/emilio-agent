@@ -37,7 +37,21 @@ export type FinalCheckView = {
   placeholders: PlaceholderView[];
 };
 
+export type MissionSummaryView = {
+  /** Note finale du jury (évaluation globale), si elle a eu lieu. */
+  finalScore: number | null;
+  /** Estimation du nombre de pages (≈ 350 mots par page). */
+  pages: number;
+  words: number;
+  sources: number;
+  durationMin: number | null;
+  costUsd: number;
+  /** Points d'attention signalés (sections acceptées avec réserves, contrôle final…). */
+  attention: string[];
+};
+
 export type ExportOverview = {
+  summary: MissionSummaryView | null;
   deliverables: DeliverableView[];
   /** Livrables demandés mais non produits, avec la raison (jamais silencieux). */
   skipped: { kind: DeliverableKind; reasonFr: string }[];

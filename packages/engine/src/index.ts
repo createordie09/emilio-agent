@@ -102,3 +102,7 @@ export * from './export/report';
 export * from './export/schemas';
 export * from './export/mock-responder';
 export * from './export/service';
+export * from './ops/service';
+export * from './ops/logger';
+export * from './ops/costs';
+export * from './ops/archive';

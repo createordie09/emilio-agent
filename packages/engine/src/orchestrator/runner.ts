@@ -66,6 +66,8 @@ export type RunnerDeps = {
   };
   now?: () => number;
   config?: Partial<RunnerConfig>;
+  /** Reprise automatique autorisée (préférence de l'utilisateur, §8.6) ; vrai par défaut. */
+  autoResume?: () => boolean | undefined;
   onMissionUpdated?: (m: MissionSummary) => void;
 };
 
@@ -99,7 +101,7 @@ export class MissionRunner {
   recoverOnStart(): { orphans: number; resumed: string[] } {
     const orphans = this.d.queue.recoverOrphans({ all: true });
     const running = this.d.missions.idsByStatus('running');
-    if (!this.cfg.autoResumeOnStart) {
+    if (!(this.d.autoResume?.() ?? this.cfg.autoResumeOnStart)) {
       for (const id of running) {
         this.d.missions.transition(id, 'paused', {
           reason: 'Application relancée : mission mise en pause. Cliquez sur Reprendre.',
@@ -452,6 +454,7 @@ export class MissionRunner {
   /** Reprise automatique après crédit épuisé / coupure réseau (§8.6). */
   async checkAutoResume(): Promise<string[]> {
     const resumed: string[] = [];
+    if (this.d.autoResume?.() === false) return resumed;
     for (const id of this.d.missions.idsByStatus('paused_no_credit')) {
       if (await this.d.probes.credit(id).catch(() => false)) {
         this.resume(id);

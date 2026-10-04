@@ -32,6 +32,49 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@resvg/resvg-js':
+        specifier: ^2.6.2
+        version: 2.6.2
+      better-sqlite3:
+        specifier: ^13.0.3
+        version: 13.0.3
+      citeproc:
+        specifier: ^2.4.63
+        version: 2.4.63
+      docx:
+        specifier: ^9.8.1
+        version: 9.8.1
+      electron-updater:
+        specifier: ^6.8.9
+        version: 6.8.9
+      exceljs:
+        specifier: ^4.4.0
+        version: 4.4.0
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
+      mammoth:
+        specifier: ^1.13.0
+        version: 1.13.0
+      papaparse:
+        specifier: ^5.5.0
+        version: 5.7.0
+      pdfjs-dist:
+        specifier: ^6.3.289
+        version: 6.3.289
+      pptxgenjs:
+        specifier: ^4.0.1
+        version: 4.0.1
+      sqlite-vec:
+        specifier: ^0.1.9
+        version: 0.1.9
+      uuid:
+        specifier: ^11.0.0
+        version: 11.1.1
+      zod:
+        specifier: ^4.0.0
+        version: 4.6.5
+    devDependencies:
       '@emilio/engine':
         specifier: workspace:*
         version: link:../../packages/engine
@@ -47,6 +90,9 @@ importers:
       '@fontsource/source-serif-4':
         specifier: ^5.0.0
         version: 5.3.0
+      '@playwright/test':
+        specifier: ^1.50.0
+        version: 1.63.0
       '@radix-ui/react-dialog':
         specifier: ^1.1.0
         version: 1.1.23(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -59,76 +105,12 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.1.0
         version: 1.2.16(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@resvg/resvg-js':
-        specifier: ^2.6.2
-        version: 2.6.2
-      '@tanstack/react-query':
-        specifier: ^5.0.0
-        version: 5.104.1(react@19.3.0)
-      better-sqlite3:
-        specifier: ^13.0.3
-        version: 13.0.3
-      citeproc:
-        specifier: ^2.4.63
-        version: 2.4.63
-      class-variance-authority:
-        specifier: ^0.7.0
-        version: 0.7.1
-      clsx:
-        specifier: ^2.1.0
-        version: 2.1.1
-      docx:
-        specifier: ^9.8.1
-        version: 9.8.1
-      exceljs:
-        specifier: ^4.4.0
-        version: 4.4.0
-      lucide-react:
-        specifier: ^1.51.0
-        version: 1.51.0(@types/react@19.3.0)(react@19.3.0)
-      mammoth:
-        specifier: ^1.13.0
-        version: 1.13.0
-      papaparse:
-        specifier: ^5.5.0
-        version: 5.7.0
-      pdfjs-dist:
-        specifier: ^6.3.289
-        version: 6.3.289
-      pptxgenjs:
-        specifier: ^4.0.1
-        version: 4.0.1
-      react:
-        specifier: ^19.0.0
-        version: 19.3.0
-      react-dom:
-        specifier: ^19.0.0
-        version: 19.3.0(react@19.3.0)
-      react-router-dom:
-        specifier: ^7.0.0
-        version: 7.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      sqlite-vec:
-        specifier: ^0.1.9
-        version: 0.1.9
-      tailwind-merge:
-        specifier: ^3.0.0
-        version: 3.7.0
-      uuid:
-        specifier: ^11.0.0
-        version: 11.1.1
-      zod:
-        specifier: ^4.0.0
-        version: 4.6.5
-      zustand:
-        specifier: ^5.0.0
-        version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
-    devDependencies:
-      '@playwright/test':
-        specifier: ^1.50.0
-        version: 1.63.0
       '@tailwindcss/vite':
         specifier: ^4.0.0
         version: 4.3.3(vite@7.3.6(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0))
+      '@tanstack/react-query':
+        specifier: ^5.0.0
+        version: 5.104.1(react@19.3.0)
       '@testing-library/jest-dom':
         specifier: ^6.0.0
         version: 6.10.0(@testing-library/dom@10.4.2)
@@ -147,6 +129,12 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^5.0.0
         version: 5.2.0(vite@7.3.6(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0))
+      class-variance-authority:
+        specifier: ^0.7.0
+        version: 0.7.1
+      clsx:
+        specifier: ^2.1.0
+        version: 2.1.1
       electron:
         specifier: ^44.5.1
         version: 44.5.1
@@ -159,6 +147,21 @@ importers:
       jsdom:
         specifier: ^26.0.0
         version: 26.1.0
+      lucide-react:
+        specifier: ^1.51.0
+        version: 1.51.0(@types/react@19.3.0)(react@19.3.0)
+      react:
+        specifier: ^19.0.0
+        version: 19.3.0
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.3.0(react@19.3.0)
+      react-router-dom:
+        specifier: ^7.0.0
+        version: 7.18.4(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      tailwind-merge:
+        specifier: ^3.0.0
+        version: 3.7.0
       tailwindcss:
         specifier: ^4.0.0
         version: 4.3.3
@@ -168,6 +171,9 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.7(@types/debug@4.1.13)(@types/node@22.20.5)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)
+      zustand:
+        specifier: ^5.0.0
+        version: 5.0.15(@types/react@19.3.0)(react@19.3.0)
     optionalDependencies:
       '@huggingface/transformers':
         specifier: ^4.3.0
@@ -196,6 +202,9 @@ importers:
       fast-xml-parser:
         specifier: ^5.11.2
         version: 5.11.2
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
       mammoth:
         specifier: ^1.13.0
         version: 1.13.0
@@ -2374,6 +2383,9 @@ packages:
   electron-to-chromium@1.5.444:
     resolution: {integrity: sha512-5ss/uJfoDYDHT0lfJzT6FbcskIzROIOPf0BbbFkGcvDzoJU7i//9GDrwwIHQVmIsrAGiF3ihpADBRIsrEFt1rQ==}
 
+  electron-updater@6.8.9:
+    resolution: {integrity: sha512-ZhVxM9iGONUpZGI1FxdMRgJjUFXi7AYGVa5PwKlO1tV1/4zDxQmfKpXOHVztKrd6L9rLcFjERvi1Mf2vxyTkig==}
+
   electron-vite@5.0.0:
     resolution: {integrity: sha512-OHp/vjdlubNlhNkPkL/+3JD34ii5ov7M0GpuXEVdQeqdQ3ulvVR7Dg/rNBLfS5XPIFwgoBLDf9sjjrL+CuDyRQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -2557,6 +2569,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fflate@0.8.3:
+    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
 
   file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
@@ -3700,6 +3715,9 @@ packages:
 
   tiny-async-pool@1.3.0:
     resolution: {integrity: sha512-01EAw5EDrcVrdgyCLgoSPvqznC0sVxDSVeiOz09FUpjh71G79VCqneOr+xvt7T1r76CF6ZZfPjHorN2+d+3mqA==}
+
+  tiny-typed-emitter@2.1.0:
+    resolution: {integrity: sha512-qVtvMxeXbVej0cQWKqVSSAHmKZEHAvxdF8HEUBFWts8h+xEo5m/lEiPakuyZ3BnCBjOD8i24kzNOiOLLgsSxhA==}
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
@@ -6131,6 +6149,19 @@ snapshots:
 
   electron-to-chromium@1.5.444: {}
 
+  electron-updater@6.8.9:
+    dependencies:
+      builder-util-runtime: 9.7.0
+      fs-extra: 10.1.0
+      js-yaml: 4.3.2
+      lazy-val: 1.0.5
+      lodash.escaperegexp: 4.1.2
+      lodash.isequal: 4.5.0
+      semver: 7.7.4
+      tiny-typed-emitter: 2.1.0
+    transitivePeerDependencies:
+      - supports-color
+
   electron-vite@5.0.0(vite@7.3.6(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0)):
     dependencies:
       '@babel/core': 7.29.7
@@ -6388,6 +6419,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
       picomatch: 4.0.7
+
+  fflate@0.8.3: {}
 
   file-entry-cache@8.0.0:
     dependencies:
@@ -7546,6 +7579,8 @@ snapshots:
   tiny-async-pool@1.3.0:
     dependencies:
       semver: 5.7.2
+
+  tiny-typed-emitter@2.1.0: {}
 
   tinybench@2.9.0: {}
 

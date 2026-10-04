@@ -1,0 +1,54 @@
+# Empaquetage (CdC §4, J9). Windows : installateur NSIS ; les autres cibles servent seulement à vérifier la configuration.
+appId: app.emilio.agent
+productName: emilio agent
+copyright: emilio agent
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+  # Moteur d'embeddings : seuls les binaires Windows x64 servent (le build de release est fait sous Windows).
+  - '!**/node_modules/onnxruntime-node/bin/napi-v*/{linux,darwin}/**'
+  - '!**/node_modules/onnxruntime-node/bin/napi-v*/win32/arm64/**'
+  - '!**/node_modules/**/*.{md,map,ts}'
+electronLanguages:
+  - fr
+  - en-US
+executableName: emilio-agent
+# Modules natifs et dépendances chargées par le moteur (processus utilitaire) : hors de l'archive asar.
+asarUnpack:
+  - '**/*.node'
+  - node_modules/@resvg/**
+  - node_modules/sqlite-vec*/**
+  - node_modules/better-sqlite3/**
+# Ressources de configuration (modèles d'IA, profils de normes, styles CSL, polices des figures) : jamais dans l'archive.
+extraResources:
+  - from: ../../resources
+    to: resources
+    filter:
+      - '**/*'
+      - '!**/.gitkeep'
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.png
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: emilio agent
+  deleteAppDataOnUninstall: false
+  installerLanguages: [fr_FR]
+  language: '1036'
+linux:
+  target: dir
+  category: Office
+publish:
+  provider: github
+  owner: createordie09
+  repo: emilio-agent
+  releaseType: release

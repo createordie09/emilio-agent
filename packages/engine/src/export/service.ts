@@ -214,6 +214,22 @@ export class ExportService {
     });
   }
 
+  // ------------------------------------------------------------------ erreurs
+
+  /** Erreur de génération (§20 E_EXPORT) : message clair ; les erreurs déjà typées (crédit, réseau, budget…) passent telles quelles. */
+  private exportError(kind: DeliverableKind, e: unknown): Error {
+    if (e instanceof AppError) return e;
+    return new AppError('E_EXPORT', `${DELIVERABLE_LABEL_FR[kind]} : ${(e as Error).message}`);
+  }
+
+  private async guarded<T>(kind: DeliverableKind, f: () => Promise<T>): Promise<T> {
+    try {
+      return await f();
+    } catch (e) {
+      throw this.exportError(kind, e);
+    }
+  }
+
   // ------------------------------------------------------------------ état
 
   private dir(missionId: string): string {
@@ -320,6 +336,7 @@ export class ExportService {
     const order: DeliverableKind[] = ['docx', 'pdf', 'pptx', 'fiche', 'rapport'];
     const st = this.state(missionId);
     return {
+      summary: this.summary(missionId),
       deliverables: rows
         .filter((r) => existsSync(r.path))
         .sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind))
@@ -386,6 +403,10 @@ export class ExportService {
   }
 
   async docx(missionId: string): Promise<DeliverableView> {
+    return this.guarded('docx', () => this.docxInner(missionId));
+  }
+
+  private async docxInner(missionId: string): Promise<DeliverableView> {
     const doc = this.assemble(missionId);
     const buf = await buildDocx(doc, this.cfg);
     const filename = `memoire-${slug(this.title(missionId))}.docx`;
@@ -531,6 +552,13 @@ export class ExportService {
   }
 
   async slides(missionId: string, taskId: string | null): Promise<DeliverableView | null> {
+    return this.guarded('pptx', () => this.slidesInner(missionId, taskId));
+  }
+
+  private async slidesInner(
+    missionId: string,
+    taskId: string | null,
+  ): Promise<DeliverableView | null> {
     const brief = this.brief(missionId);
     const doc = this.assemble(missionId);
     const nodes = this.d.outline.list(missionId);
@@ -673,6 +701,10 @@ export class ExportService {
   }
 
   async fiche(missionId: string, taskId: string | null): Promise<DeliverableView> {
+    return this.guarded('fiche', () => this.ficheInner(missionId, taskId));
+  }
+
+  private async ficheInner(missionId: string, taskId: string | null): Promise<DeliverableView> {
     const brief = this.brief(missionId);
     const doc = this.assemble(missionId);
     const nodes = this.d.outline.list(missionId);
@@ -788,7 +820,81 @@ export class ExportService {
     return res;
   }
 
+  /** Points d'attention (§6.8) : sections acceptées avec réserves, contrôle final, emplacements à compléter. */
+  private attention(missionId: string, jury = this.d.jury.view(missionId)): string[] {
+    const st = this.state(missionId);
+    return [
+      ...jury
+        .filter((s) => s.status === 'accepte_avec_reserves')
+        .map(
+          (s) =>
+            `${s.title} : accepté avec réserves (${s.reasons.join(' ; ') || 'note inférieure au seuil'}).`,
+        ),
+      ...(st.check?.items
+        .filter((i) => i.status !== 'ok' && i.id !== 'emplacements')
+        .map((i) => `${i.label} : ${i.detail ?? ''}`.trim()) ?? []),
+      ...(st.check?.placeholders.length
+        ? [
+            `${st.check.placeholders.length} emplacement(s) à compléter par vous (liste dans le contrôle final).`,
+          ]
+        : []),
+    ];
+  }
+
+  /** Résumé de fin de mission (§6.8). */
+  summary(missionId: string): ExportOverview['summary'] {
+    const m = this.d.db
+      .prepare(
+        'SELECT created_at, started_at, finished_at, cost_spent_usd FROM missions WHERE id=?',
+      )
+      .get(missionId) as
+      | {
+          created_at: string;
+          started_at: string | null;
+          finished_at: string | null;
+          cost_spent_usd: number;
+        }
+      | undefined;
+    if (!m) return null;
+    const g = this.d.db
+      .prepare(
+        "SELECT final_score FROM review_outcomes WHERE mission_id=? AND scope='global' AND target_id=''",
+      )
+      .get(missionId) as { final_score: number | null } | undefined;
+    const w = this.d.db
+      .prepare(
+        `SELECT COALESCE(SUM(d.word_count),0) AS w FROM outline_nodes n
+         JOIN drafts d ON d.id = COALESCE(n.current_version_id, (SELECT id FROM drafts WHERE outline_node_id=n.id ORDER BY version DESC LIMIT 1))
+         WHERE n.mission_id=?`,
+      )
+      .get(missionId) as { w: number };
+    const t0 = Date.parse(m.started_at ?? m.created_at);
+    const t1 = Date.parse(m.finished_at ?? nowIso());
+    return {
+      finalScore: g?.final_score ?? null,
+      words: w.w,
+      pages: Math.round(w.w / 350),
+      sources: this.state(missionId).bib?.cited ?? 0,
+      durationMin: Number.isFinite(t1 - t0) ? Math.max(0, Math.round((t1 - t0) / 60000)) : null,
+      costUsd: m.cost_spent_usd,
+      attention: this.attention(missionId),
+    };
+  }
+
+  /** Livrable demandé mais non produit (budget atteint, rendu indisponible…) : signalé, jamais en silence. */
+  skipDeliverable(missionId: string, kind: DeliverableKind, reasonFr: string): void {
+    this.skip(missionId, kind, reasonFr);
+  }
+
   report(missionId: string): DeliverableView {
+    try {
+      return this.reportInner(missionId);
+    } catch (e) {
+      throw this.exportError('rapport', e);
+    }
+  }
+
+  private reportInner(missionId: string): DeliverableView {
     const brief = this.brief(missionId);
     const db = this.d.db;
     const m = db
@@ -826,22 +932,7 @@ export class ExportService {
       .all(missionId) as { title: string; verification_json: string | null }[];
     const st = this.state(missionId);
     const jury = this.d.jury.view(missionId);
-    const attention = [
-      ...jury
-        .filter((s) => s.status === 'accepte_avec_reserves')
-        .map(
-          (s) =>
-            `${s.title} : accepté avec réserves (${s.reasons.join(' ; ') || 'note inférieure au seuil'}).`,
-        ),
-      ...(st.check?.items
-        .filter((i) => i.status !== 'ok' && i.id !== 'emplacements')
-        .map((i) => `${i.label} : ${i.detail ?? ''}`.trim()) ?? []),
-      ...(st.check?.placeholders.length
-        ? [
-            `${st.check.placeholders.length} emplacement(s) à compléter par vous (liste ci-dessous).`,
-          ]
-        : []),
-    ];
+    const attention = this.attention(missionId, jury);
     const connectors: Record<string, number> = {};
     const logs = db
       .prepare(

@@ -62,6 +62,7 @@ export class EngineHost implements EngineClient {
   private restarts: number[] = [];
   private ready: Promise<void> = Promise.resolve();
   private stopping = false;
+  private restarted = false;
 
   constructor(
     private readonly entry: string,
@@ -81,6 +82,7 @@ export class EngineHost implements EngineClient {
         ...process.env,
         ...this.extraEnv,
         EMILIO_DB_PATH: this.dbPath,
+        ...(this.restarted ? { EMILIO_ENGINE_RESTARTED: '1' } : {}),
       } as Record<string, string>);
       this.proc = proc;
       proc.onMessage((msg) => {
@@ -130,6 +132,7 @@ export class EngineHost implements EngineClient {
     this.restarts = this.restarts.filter((t) => now - t < 10 * 60_000);
     if (this.restarts.length >= 3) return;
     this.restarts.push(now);
+    this.restarted = true;
     void this.start();
   }
 

@@ -56,6 +56,25 @@ const api: EmilioApi = {
     events: (id, opts) => ipcRenderer.invoke(IPC.missionsEvents, id, opts),
     setSimulated: (id, simulated) => ipcRenderer.invoke(IPC.missionsSetSimulated, id, simulated),
   },
+  ops: {
+    prefs: () => ipcRenderer.invoke(IPC.opsPrefs),
+    setPrefs: (patch) => ipcRenderer.invoke(IPC.opsSetPrefs, patch),
+    costs: (id) => ipcRenderer.invoke(IPC.opsCosts, id),
+    techLog: (id) => ipcRenderer.invoke(IPC.opsTechLog, id),
+    raiseBudget: (id, usd) => ipcRenderer.invoke(IPC.opsRaiseBudget, id, usd),
+    finalizeNow: (id) => ipcRenderer.invoke(IPC.opsFinalizeNow, id),
+    exportLogs: () => ipcRenderer.invoke(IPC.opsExportLogs),
+    exportMission: (id) => ipcRenderer.invoke(IPC.opsExportMission, id),
+    importMission: () => ipcRenderer.invoke(IPC.opsImportMission),
+    update: () => ipcRenderer.invoke(IPC.opsUpdate),
+    checkUpdate: () => ipcRenderer.invoke(IPC.opsCheckUpdate),
+    installUpdate: () => ipcRenderer.invoke(IPC.opsInstallUpdate),
+    onUpdate: (cb) => {
+      const h = (_e: unknown, s: Parameters<typeof cb>[0]) => cb(s);
+      ipcRenderer.on(IPC.updateState, h);
+      return () => ipcRenderer.removeListener(IPC.updateState, h);
+    },
+  },
   exports: {
     overview: (missionId) => ipcRenderer.invoke(IPC.exportsOverview, missionId),
     reveal: (id) => ipcRenderer.invoke(IPC.exportsReveal, id),

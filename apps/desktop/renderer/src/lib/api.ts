@@ -142,8 +142,32 @@ function browserMock(): EmilioApi {
       events: () => ok([]),
       setSimulated: nope,
     },
+    ops: {
+      prefs: () =>
+        ok({
+          autoResumeMissions: true,
+          notifications: true,
+          preventSleep: true,
+          denyDataCollection: false,
+          checkUpdates: true,
+          onboardingDone: true,
+        }),
+      setPrefs: nope,
+      costs: nope,
+      techLog: () => ok([]),
+      raiseBudget: nope,
+      finalizeNow: nope,
+      exportLogs: nope,
+      exportMission: nope,
+      importMission: nope,
+      update: () => ok({ status: 'inactive' as const }),
+      checkUpdate: () => ok({ status: 'inactive' as const }),
+      installUpdate: () => ok(null),
+      onUpdate: () => () => {},
+    },
     exports: {
-      overview: () => ok({ deliverables: [], skipped: [], finalCheck: null, bibliography: null }),
+      overview: () =>
+        ok({ summary: null, deliverables: [], skipped: [], finalCheck: null, bibliography: null }),
       reveal: nope,
       saveAs: nope,
     },

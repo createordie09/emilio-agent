@@ -169,9 +169,23 @@ export class DraftService {
     }
     if (!ex?.budgetMaxUsd) throw new AppError('E_BAD_REQUEST', 'Budget maximal requis');
 
+    // Modèles de secours (§8.6, E_MODEL_UNAVAILABLE) : pour chaque rôle, les modèles des AUTRES préréglages (jamais d'identifiant inventé).
+    const fallbackModels: NonNullable<MissionExecConfig['fallbackModels']> = {};
+    for (const role of AGENT_ROLES) {
+      const alt = [
+        ...new Set(
+          this.presets()
+            .filter((p) => p.id !== preset?.id)
+            .map((p) => p.models[role])
+            .filter((m): m is string => Boolean(m) && m !== models[role]),
+        ),
+      ];
+      if (alt.length) fallbackModels[role] = alt;
+    }
     const config: MissionExecConfig = {
       llmMode: 'real',
       models,
+      ...(Object.keys(fallbackModels).length ? { fallbackModels } : {}),
       budgetMaxUsd: ex.budgetMaxUsd,
       parallelism: ex.parallelism,
     };

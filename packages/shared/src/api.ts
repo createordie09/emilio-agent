@@ -10,6 +10,7 @@ import type {
 import type { ThemePreference } from './constants';
 import type { JuryScopeView, SectionVersionSummary } from './jury';
 import type { ExportOverview } from './export';
+import type { AppPrefs, CostsView, MissionArchiveInfo, TechCallView } from './ops';
 import type { MissionDetail, MissionEvent, MissionSummary } from './mission';
 import type { BriefDraft, WorkType } from './brief';
 import type {
@@ -87,6 +88,26 @@ export interface EmilioApi {
     /** Historique des versions d'une section (onglet « Brouillons »). */
     versions(nodeId: string): Promise<Result<SectionVersionSummary[]>>;
     version(draftId: string): Promise<Result<SectionDraftDetail>>;
+  };
+  /** Exploitation : préférences, coûts, journal technique, journaux, archives de mission (J9). */
+  ops: {
+    prefs(): Promise<Result<AppPrefs>>;
+    setPrefs(patch: Partial<AppPrefs>): Promise<Result<AppPrefs>>;
+    costs(missionId: string): Promise<Result<CostsView>>;
+    techLog(missionId: string): Promise<Result<TechCallView[]>>;
+    /** Budget atteint : relève le plafond puis reprend. */
+    raiseBudget(missionId: string, budgetUsd: number): Promise<Result<MissionSummary>>;
+    /** Budget atteint : passe directement à la finalisation (P8–P9) avec l'état actuel. */
+    finalizeNow(missionId: string): Promise<Result<MissionSummary>>;
+    /** Zip des journaux (sans clé ni contenu des documents) ; l'utilisateur choisit l'emplacement. */
+    exportLogs(): Promise<Result<{ saved: boolean }>>;
+    exportMission(missionId: string): Promise<Result<{ saved: boolean }>>;
+    importMission(): Promise<Result<MissionArchiveInfo | null>>;
+    /** Version et état des mises à jour (le processus principal répond). */
+    update(): Promise<Result<UpdateState>>;
+    checkUpdate(): Promise<Result<UpdateState>>;
+    installUpdate(): Promise<Result<null>>;
+    onUpdate(cb: (s: UpdateState) => void): () => void;
   };
   /** Livrables (CdC §16) : fichiers produits et contrôle final ; l'ouverture et l'enregistrement passent par le processus principal. */
   exports: {
@@ -171,8 +192,23 @@ export interface EmilioApi {
 export { IPC } from './ipc';
 
 /** Protocole main ↔ moteur (utilityProcess, via parentPort). */
+export type UpdateState = {
+  status: 'inactive' | 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'error';
+  version?: string;
+  message?: string;
+};
+
 export type EngineMethod =
   | 'ping'
+  | 'getPrefs'
+  | 'setPrefs'
+  | 'getCosts'
+  | 'getTechLog'
+  | 'raiseBudget'
+  | 'finalizeNow'
+  | 'exportLogsData'
+  | 'exportMissionData'
+  | 'importMissionData'
   | 'getExports'
   | 'getDeliverable'
   | 'getSetting'

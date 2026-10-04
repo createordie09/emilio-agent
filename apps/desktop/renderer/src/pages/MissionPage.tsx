@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   CircleDashed,
   Coins,
+  Download,
   ListChecks,
   Loader2,
   Pause,
@@ -47,6 +48,9 @@ import { WritingPanel } from '@/components/WritingPanel';
 import { JuryPanel } from '@/components/JuryPanel';
 import { DraftsPanel } from '@/components/DraftsPanel';
 import { DeliverablesPanel } from '@/components/DeliverablesPanel';
+import { CostsPanel } from '@/components/CostsPanel';
+import { TechLogPanel } from '@/components/TechLogPanel';
+import { BudgetActions } from '@/components/BudgetActions';
 
 const TASK_ICON: Record<TaskSummary['status'], { icon: typeof CheckCircle2; cls: string }> = {
   done: { icon: CheckCircle2, cls: 'text-success' },
@@ -160,6 +164,15 @@ export function MissionPage() {
                 Voir le plan
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={act(() => api.ops.exportMission(m.id))}
+              title="Enregistre la mission (texte, sources, versions, livrables) dans un fichier"
+            >
+              <Download className="size-4" />
+              Exporter la mission
+            </Button>
             {canCancel && (
               <Button variant="ghost" size="sm" onClick={act(() => api.missions.cancel(m.id))}>
                 <Square className="size-4" />
@@ -174,6 +187,9 @@ export function MissionPage() {
           <p role="alert" className="t-small rounded-md bg-danger-soft p-3 text-danger">
             {m.error.messageFr}
           </p>
+        )}
+        {m.status === 'paused_budget' && (
+          <BudgetActions missionId={m.id} spent={m.costSpentUsd} budget={m.budgetMaxUsd ?? 0} />
         )}
         {m.status === 'briefing' && (
           <section
@@ -309,9 +325,17 @@ export function MissionPage() {
             {planned && <TabsTrigger value="jury">Jury</TabsTrigger>}
             {planned && <TabsTrigger value="drafts">Brouillons</TabsTrigger>}
             {planned && <TabsTrigger value="deliverables">Livrables</TabsTrigger>}
+            <TabsTrigger value="costs">Coûts</TabsTrigger>
+            <TabsTrigger value="techlog">Journal technique</TabsTrigger>
           </TabsList>
           <TabsContent value="sources">
             <SourcesPanel missionId={m.id} simulated={m.simulated} />
+          </TabsContent>
+          <TabsContent value="costs">
+            <CostsPanel missionId={m.id} />
+          </TabsContent>
+          <TabsContent value="techlog">
+            <TechLogPanel missionId={m.id} />
           </TabsContent>
           {planned && (
             <>

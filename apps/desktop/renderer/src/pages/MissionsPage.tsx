@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { FlaskConical, FolderKanban, Plus } from 'lucide-react';
+import { FlaskConical, FolderKanban, Plus, Upload } from 'lucide-react';
 import {
   ActionCard,
   Button,
@@ -11,7 +11,7 @@ import {
   StatusBadge,
 } from '@/components/ui';
 import { api } from '@/lib/api';
-import { fmtUsd } from '@/lib/fr';
+import { errorText, fmtUsd } from '@/lib/fr';
 import { STATUS_FR } from '@/lib/mission-labels';
 import { useMissions } from '@/lib/queries';
 import { useToasts } from '@/stores/toasts';
@@ -23,6 +23,16 @@ export function MissionsPage() {
   const { data, isLoading } = useMissions();
   const devMode = useUi((s) => s.devMode);
   const push = useToasts((s) => s.push);
+
+  const importMission = async () => {
+    const r = await api.ops.importMission();
+    if (!r.ok)
+      return push({ tone: 'danger', title: 'Import impossible', description: errorText(r.error) });
+    if (r.value) {
+      push({ tone: 'success', title: 'Mission importée', description: r.value.title });
+      nav(`/missions/${r.value.missionId}`);
+    }
+  };
 
   const createDemo = async () => {
     const r = await api.missions.createDemo();
@@ -45,6 +55,10 @@ export function MissionsPage() {
             <Button size="sm" onClick={() => nav('/missions/nouvelle')}>
               <Plus className="size-4" />
               Nouvelle mission
+            </Button>
+            <Button variant="secondary" size="sm" onClick={importMission}>
+              <Upload className="size-4" />
+              Importer une mission
             </Button>
             {devMode && (
               <Button variant="ink" size="sm" onClick={createDemo}>

@@ -1,9 +1,33 @@
-import { app, BrowserWindow, dialog, ipcMain, safeStorage, session, shell } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Notification,
+  powerSaveBlocker,
+  safeStorage,
+  session,
+  shell,
+} from 'electron';
+import { autoUpdater } from 'electron-updater';
 import { copyFileSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { APP_NAME, FILE_KIND_LABEL_FR, IPC, type FileKind, type HostRequest } from '@emilio/shared';
+import {
+  APP_NAME,
+  DEFAULT_PREFS,
+  FILE_KIND_LABEL_FR,
+  IPC,
+  type AppPrefs,
+  type EngineLiveEvent,
+  type FileKind,
+  type HostRequest,
+  type MissionSummary,
+} from '@emilio/shared';
 import { EngineHost, type EngineClient } from './engine-host';
 import { createHandlers, type SecretCipher } from './ipc/handlers';
+import { StatusWatcher } from './notifier';
+import { PowerGuard } from './power';
+import { UpdateManager } from './updater';
 
 const isDev = !app.isPackaged && Boolean(process.env.ELECTRON_RENDERER_URL);
 
@@ -154,9 +178,39 @@ async function bootstrap(): Promise<void> {
     },
     (raw) => restore(raw),
     60_000,
-    (payload) =>
-      BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(IPC.engineLive, payload)),
+    (payload) => {
+      BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(IPC.engineLive, payload));
+      const e = payload as EngineLiveEvent;
+      if (e.kind === 'mission.updated') onMissionUpdated(e.mission);
+    },
     renderPdf,
+  );
+
+  // Préférences (notifications, anti-veille, mises à jour) : copie locale, rafraîchie à chaque modification.
+  let prefs: AppPrefs = { ...DEFAULT_PREFS };
+  const watcher = new StatusWatcher();
+  const power = new PowerGuard(
+    () => powerSaveBlocker.start('prevent-app-suspension'),
+    (id) => powerSaveBlocker.stop(id),
+    () => prefs.preventSleep,
+  );
+  const onMissionUpdated = (m: MissionSummary): void => {
+    power.update(m);
+    const notice = watcher.update(m);
+    if (!notice || !prefs.notifications || !Notification.isSupported()) return;
+    const n = new Notification({ title: notice.title, body: notice.body });
+    n.on('click', () => {
+      const w = BrowserWindow.getAllWindows()[0];
+      if (!w) return;
+      if (w.isMinimized()) w.restore();
+      w.focus();
+      void w.webContents.executeJavaScript(`location.hash = '#/missions/${m.id}'`);
+    });
+    n.show();
+  };
+  const updates = new UpdateManager(app.isPackaged ? autoUpdater : null, app.isPackaged);
+  updates.onChange((st) =>
+    BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(IPC.updateState, st)),
   );
   const { handlers, restoreKey } = createHandlers({
     engine,
@@ -184,6 +238,33 @@ async function bootstrap(): Promise<void> {
       const r = win ? await dialog.showOpenDialog(win, opts) : await dialog.showOpenDialog(opts);
       return r.canceled ? [] : r.filePaths;
     },
+    onPrefs: (p) => {
+      prefs = p;
+      power.sync();
+    },
+    update: {
+      state: () => updates.get(),
+      check: () => updates.check(),
+      install: () => updates.install(),
+    },
+    choosePath: {
+      save: async (defaultName) => {
+        const win = BrowserWindow.getFocusedWindow() ?? undefined;
+        const o = { title: 'Enregistrer le fichier', defaultPath: defaultName };
+        const r = win ? await dialog.showSaveDialog(win, o) : await dialog.showSaveDialog(o);
+        return r.canceled || !r.filePath ? null : r.filePath;
+      },
+      open: async (name, extensions) => {
+        const win = BrowserWindow.getFocusedWindow() ?? undefined;
+        const o = {
+          title: 'Ouvrir',
+          properties: ['openFile' as const],
+          filters: [{ name, extensions }],
+        };
+        const r = win ? await dialog.showOpenDialog(win, o) : await dialog.showOpenDialog(o);
+        return r.canceled || !r.filePaths[0] ? null : r.filePaths[0];
+      },
+    },
     revealFile: (path: string) => shell.showItemInFolder(path),
     saveFileAs: async (path: string, filename: string) => {
       const win = BrowserWindow.getFocusedWindow() ?? undefined;
@@ -207,7 +288,23 @@ async function bootstrap(): Promise<void> {
   }
   app.on('before-quit', () => engine.stop());
   await engine.start();
+  const [p, ms] = await Promise.all([
+    engine.request<AppPrefs>('getPrefs'),
+    engine.request<MissionSummary[]>('listMissions'),
+  ]);
+  if (p.ok) prefs = p.value;
+  // Tests E2E : l'onboarding (premier lancement) est passé d'office, sauf demande contraire. Ignoré dans la version installée.
+  if (!app.isPackaged && process.env.EMILIO_SKIP_ONBOARDING === '1' && !prefs.onboardingDone) {
+    const r = await engine.request<AppPrefs>('setPrefs', { patch: { onboardingDone: true } });
+    if (r.ok) prefs = r.value;
+  }
+  if (ms.ok) {
+    watcher.seed(ms.value);
+    ms.value.forEach((m) => power.update(m));
+  }
   createWindow();
+  // Mises à jour : vérification discrète peu après le démarrage (version installée uniquement).
+  if (app.isPackaged && prefs.checkUpdates) setTimeout(() => void updates.check(), 15_000);
 }
 
 if (!app.requestSingleInstanceLock()) {
