@@ -1,5 +1,12 @@
 import type { KeyInfo, KeyStatus, ModelList } from './models';
 import type { SerializedError } from './errors';
+import type {
+  ConnectorStatus,
+  SectionResearchSummary,
+  SourceDetail,
+  SourceSummary,
+  SourcesConfigInfo,
+} from './sources';
 import type { ThemePreference } from './constants';
 import type { MissionDetail, MissionEvent, MissionSummary } from './mission';
 import type { BriefDraft, WorkType } from './brief';
@@ -83,6 +90,21 @@ export interface EmilioApi {
     presets(): Promise<Result<PresetInfo[]>>;
     normsProfiles(): Promise<Result<NormsProfileInfo[]>>;
   };
+  /** Sources documentaires (CdC §11, §12) : liste, fiche, réglages, test des connexions. */
+  sources: {
+    list(missionId: string): Promise<Result<SourceSummary[]>>;
+    get(sourceId: string): Promise<Result<SourceDetail>>;
+    config(): Promise<Result<SourcesConfigInfo>>;
+    saveConfig(patch: {
+      contactEmail?: string;
+      enabled?: Record<string, boolean>;
+    }): Promise<Result<SourcesConfigInfo>>;
+    saveKey(connectorId: string, key: string): Promise<Result<SourcesConfigInfo>>;
+    removeKey(connectorId: string): Promise<Result<SourcesConfigInfo>>;
+    test(): Promise<Result<ConnectorStatus[]>>;
+    /** Mode développeur : recherche d'une section factice (mission simulée) avec les connecteurs simulés. */
+    demoResearch(missionId: string): Promise<Result<SectionResearchSummary>>;
+  };
   /** Abonnement aux événements du moteur en direct ; renvoie la fonction de désabonnement. */
   onEvent(cb: (e: EngineLiveEvent) => void): () => void;
   ui: {
@@ -123,7 +145,14 @@ export type EngineMethod =
   | 'cancelMission'
   | 'retryMission'
   | 'listEvents'
-  | 'simulate';
+  | 'simulate'
+  | 'listSources'
+  | 'getSource'
+  | 'getSourcesConfig'
+  | 'saveSourcesConfig'
+  | 'setSourceKey'
+  | 'testSources'
+  | 'demoResearch';
 export type EngineRequest = { id: number; method: EngineMethod; params?: unknown };
 export type EngineResponse = { id: number; result: Result<unknown> };
 export type EngineEvent = { event: 'ready' | 'log' | 'live'; payload?: unknown };

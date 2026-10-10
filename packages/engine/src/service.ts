@@ -20,6 +20,19 @@ import { MissionRunner, type RunnerConfig } from './orchestrator/runner';
 import { createDemoMission } from './orchestrator/demo';
 import { ModelCaller } from './llm/call-model';
 import { MockLlmClient, type MockOptions } from './llm/mock';
+import { ResearchService } from './research/research-service';
+import { researchMockRespond } from './research/mock-responder';
+import { getSource, listSources } from './research/catalog';
+import { SourceHttp, DEFAULT_HTTP_CONFIG } from './sources/http';
+import {
+  SourceRegistry,
+  DEFAULT_ENABLED,
+  CONNECTOR_LABELS,
+  type SourcesConfig,
+} from './sources/registry';
+import { mockConnectors, MockSourceConnector } from './sources/mock';
+import { mockBooks, mockFullTextHttp, mockPageHttp } from './sources/mock-pdf';
+import { loadQualityWeights } from './sources/score';
 import { demoRegistry, type AgentRegistry } from './agents/registry';
 import { IngestService } from './kb/ingest';
 import { KbStore } from './kb/store';
@@ -34,7 +47,7 @@ import {
   type OpenRouterConfig,
 } from './llm/openrouter';
 
-export const ENGINE_VERSION = '0.3.0';
+export const ENGINE_VERSION = '0.4.0';
 
 export type EngineOptions = {
   dbPath: string;
@@ -53,6 +66,9 @@ export type EngineOptions = {
   /** Fichiers de configuration (préréglages de modèles, profils de normes). */
   presetsPath?: string;
   normsProfilesPath?: string;
+  qualityWeightsPath?: string;
+  /** Substitut de `fetch` pour les connecteurs de sources (tests). */
+  sourcesFetch?: FetchLike;
 };
 
 /** Façade du moteur : indépendante d'Electron (CdC §4.6), pilotée par le process utilitaire ou par les tests. */
@@ -70,6 +86,11 @@ export class EngineService {
   readonly ingest: IngestService;
   readonly drafts: DraftService;
   readonly embedder: EmbeddingAdapter;
+  readonly sourceHttp: SourceHttp;
+  readonly sources: SourceRegistry;
+  readonly research: ResearchService;
+  readonly mockSources: MockSourceConnector[] = mockConnectors();
+  private sourceKeys = new Map<string, string>();
   private readonly opts: EngineOptions;
   private live = new Set<(e: EngineLiveEvent) => void>();
 
@@ -82,7 +103,13 @@ export class EngineService {
       ...opts.openrouter,
     });
     this.mock =
-      opts.mock ?? new MockLlmClient({ delayMs: 400, costPerCallUsd: 0.002, ...opts.mockOptions });
+      opts.mock ??
+      new MockLlmClient({
+        delayMs: 400,
+        costPerCallUsd: 0.002,
+        respond: researchMockRespond,
+        ...opts.mockOptions,
+      });
     this.journal = new EventJournal(this.db);
     this.missions = new MissionRepo(this.db, this.journal);
     this.queue = new SqliteQueue(this.db);
@@ -139,6 +166,38 @@ export class EngineService {
       dataDir,
       () => this.presets(),
     );
+    this.sourceHttp = new SourceHttp(
+      this.db,
+      opts.sourcesFetch,
+      { ...DEFAULT_HTTP_CONFIG, appVersion: ENGINE_VERSION },
+      () => this.sourcesConfig().contactEmail,
+    );
+    this.sources = new SourceRegistry(
+      this.sourceHttp,
+      () => this.sourcesConfig(),
+      (id) => this.sourceKeys.get(id),
+    );
+    this.research = new ResearchService({
+      db: this.db,
+      missions: this.missions,
+      journal: this.journal,
+      caller,
+      store: this.store,
+      ingest: this.ingest,
+      embedder: () => this.embedder,
+      files: new LocalFileAdapter(),
+      dataDir,
+      weights: loadQualityWeights(opts.qualityWeightsPath),
+      connectors: (mode, extra) =>
+        mode === 'mock' ? this.mockSources : this.sources.enabled(extra),
+      connector: (mode, id) =>
+        mode === 'mock' ? this.mockSources.find((c) => c.id === id) : this.sources.get(id),
+      verifyDeps: (mode) =>
+        mode === 'mock'
+          ? { books: mockBooks, http: mockPageHttp }
+          : { books: this.sources.books, http: this.sourceHttp },
+      fullTextHttp: (mode) => (mode === 'mock' ? mockFullTextHttp : this.sourceHttp),
+    });
     this.journal.subscribe((event) => this.emit({ kind: 'mission.event', event }));
   }
 
@@ -163,6 +222,26 @@ export class EngineService {
       'openrouter_models_cache',
     );
     return loadPresets(this.opts.presetsPath, cache?.models ?? null);
+  }
+
+  /** Réglages « Sources documentaires » (adresse de contact, activation par connecteur). */
+  sourcesConfig(): SourcesConfig {
+    return this.settings.get<SourcesConfig>('sources_config') ?? {};
+  }
+
+  private sourcesConfigInfo(masks: Record<string, string | null> = {}) {
+    const cfg = this.sourcesConfig();
+    return {
+      contactEmail: cfg.contactEmail ?? '',
+      connectors: Object.keys(CONNECTOR_LABELS).map((id) => ({
+        id,
+        label: CONNECTOR_LABELS[id]!,
+        enabled: cfg.enabled?.[id] ?? DEFAULT_ENABLED[id] ?? false,
+        needsKey: id === 'core',
+        keyConfigured: this.sourceKeys.has(id),
+        keyMasked: masks[id] ?? null,
+      })),
+    };
   }
 
   private isMock(missionId: string): boolean {
@@ -251,6 +330,68 @@ export class EngineService {
           query: String(p.query),
           limit: p.limit as number | undefined,
         });
+      case 'listSources':
+        return listSources(this.db, id());
+      case 'getSource': {
+        const d = getSource(this.db, id());
+        if (!d) throw new AppError('E_INTERNAL', 'Source introuvable');
+        return d;
+      }
+      case 'getSourcesConfig':
+        return this.sourcesConfigInfo((p.masks as Record<string, string | null> | undefined) ?? {});
+      case 'saveSourcesConfig': {
+        const cur = this.sourcesConfig();
+        const patch = p.config as Partial<SourcesConfig>;
+        this.settings.set('sources_config', {
+          ...cur,
+          ...(patch.contactEmail !== undefined ? { contactEmail: patch.contactEmail.trim() } : {}),
+          enabled: { ...cur.enabled, ...patch.enabled },
+        });
+        return this.sourcesConfigInfo((p.masks as Record<string, string | null> | undefined) ?? {});
+      }
+      case 'setSourceKey':
+        if (p.key) this.sourceKeys.set(String(p.connector), String(p.key));
+        else this.sourceKeys.delete(String(p.connector));
+        return null;
+      case 'testSources':
+        return this.sources.test();
+      case 'demoResearch': {
+        if (this.missions.config<{ llmMode: string }>(id()).llmMode !== 'mock')
+          throw new AppError(
+            'E_BAD_REQUEST',
+            'Recherche de démonstration : mission simulée uniquement',
+          );
+        const r = await this.research.researchSection({
+          missionId: id(),
+          sectionKey: 'demo-section-1',
+          title: 'Microfinance et inclusion financière',
+          objective:
+            'Analyser le rôle de la microfinance dans l’inclusion financière des ménages ruraux en Afrique de l’Ouest.',
+          keyQuestions: [
+            'Quel est le rôle des groupes de caution solidaire ?',
+            'Quels effets sur l’accès au crédit ?',
+          ],
+          discipline: 'Sciences de gestion',
+          workType: 'mémoire de master',
+          depth: 'normale',
+          minSources: 3,
+          prioriteAfrique: true,
+        });
+        return {
+          sectionKey: r.sectionKey,
+          iterations: r.iterations,
+          found: r.found,
+          merged: r.merged,
+          verified: r.verified,
+          rejected: r.rejected.map((x) => ({ title: x.title, reasonFr: x.reasonFr })),
+          retained: r.retained.length,
+          notes: r.notes,
+          quotesDropped: r.quotesDropped,
+          byConnector: r.byConnector,
+          warnings: r.warnings,
+          coverageOk: r.coverageOk,
+        };
+      }
       case 'listMissions':
         return this.missions.list();
       case 'getMission':

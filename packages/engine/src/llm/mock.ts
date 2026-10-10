@@ -7,7 +7,7 @@ export type MockOptions = {
   /** Coût simulé par appel (USD). */
   costPerCallUsd?: number;
   /** Fabrique de contenu ; par défaut : un JSON `{ resume, manques }` déterministe. */
-  respond?: (req: LlmRequest, callIndex: number) => string;
+  respond?: (req: LlmRequest, callIndex: number) => string | undefined;
   now?: () => number;
 };
 

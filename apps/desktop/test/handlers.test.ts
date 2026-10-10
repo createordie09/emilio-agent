@@ -168,3 +168,83 @@ describe('IPC handlers — missions', () => {
     expect(await handlers[IPC.missionsSimulate]('no_credit')).toMatchObject({ ok: true });
   });
 });
+
+describe('IPC handlers — sources documentaires', () => {
+  const setup = (dev: boolean, available = true) => {
+    const store = new Map<string, unknown>();
+    const keys = new Map<string, string | null>();
+    const engine = {
+      async request(method: string, params?: unknown) {
+        const p = (params ?? {}) as Record<string, unknown>;
+        if (method === 'getSetting')
+          return {
+            ok: true,
+            value: store.get(String(p.key)) ?? (p.key === 'ui_settings' ? { devMode: dev } : null),
+          };
+        if (method === 'setSetting') {
+          store.set(String(p.key), p.value);
+          return { ok: true, value: null };
+        }
+        if (method === 'deleteSetting') {
+          store.delete(String(p.key));
+          return { ok: true, value: null };
+        }
+        if (method === 'setSourceKey') {
+          keys.set(String(p.connector), (p.key as string | null) ?? null);
+          return { ok: true, value: null };
+        }
+        if (method === 'getSourcesConfig')
+          return { ok: true, value: { contactEmail: '', connectors: [], masks: p.masks } };
+        return { ok: true, value: { method, params } };
+      },
+    } as unknown as EngineClient;
+    return {
+      engine,
+      store,
+      keys,
+      ...createHandlers({ engine, cipher: cipher(available), appInfo: () => ({}) }),
+    };
+  };
+
+  it('clé de Semantic Scholar / CORE : chiffrée, masquée, transmise au moteur ; autres services refusés', async () => {
+    const { handlers, store, keys } = setup(false);
+    const r = await handlers[IPC.sourcesSaveKey]('core', 'core-secret-key-1234567890');
+    expect(r).toMatchObject({ ok: true });
+    expect(JSON.stringify([...store.values()])).not.toContain('core-secret-key-1234567890');
+    expect(store.get('source_key_masked:core')).toBe('core-sec…7890');
+    expect(keys.get('core')).toBe('core-secret-key-1234567890');
+    expect(JSON.stringify(r)).not.toContain('secret-key');
+    expect(await handlers[IPC.sourcesSaveKey]('openalex', 'x')).toMatchObject({
+      ok: false,
+      error: { code: 'E_BAD_REQUEST' },
+    });
+    await handlers[IPC.sourcesRemoveKey]('core');
+    expect(keys.get('core')).toBeNull();
+    expect(store.size).toBe(0);
+  });
+
+  it('refuse d’enregistrer une clé sans chiffrement disponible', async () => {
+    const { handlers, store } = setup(false, false);
+    expect(await handlers[IPC.sourcesSaveKey]('core', 'abc')).toMatchObject({
+      ok: false,
+      error: { code: 'E_KEY_STORAGE' },
+    });
+    expect(store.size).toBe(0);
+  });
+
+  it('restaure les clés de sources au démarrage du moteur', async () => {
+    const { handlers, keys, restoreKey } = setup(false);
+    await handlers[IPC.sourcesSaveKey]('semantic_scholar', 'cle-s2-0123456789abcd');
+    keys.clear();
+    await restoreKey();
+    expect(keys.get('semantic_scholar')).toBe('cle-s2-0123456789abcd');
+  });
+
+  it('la recherche de démonstration est réservée au mode développeur', async () => {
+    expect(await setup(false).handlers[IPC.sourcesDemoResearch]('m1')).toMatchObject({
+      ok: false,
+      error: { code: 'E_BAD_REQUEST' },
+    });
+    expect(await setup(true).handlers[IPC.sourcesDemoResearch]('m1')).toMatchObject({ ok: true });
+  });
+});

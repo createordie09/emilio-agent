@@ -80,6 +80,16 @@ function browserMock(): EmilioApi {
       },
     },
     models: { list: () => ok({ models, fetchedAt: new Date().toISOString(), fromCache: false }) },
+    sources: {
+      list: () => ok([]),
+      get: nope,
+      config: () => ok({ contactEmail: '', connectors: [] }),
+      saveConfig: nope,
+      saveKey: nope,
+      removeKey: nope,
+      test: () => ok([]),
+      demoResearch: nope,
+    },
     drafts: {
       list: () => ok([]),
       create: nope,

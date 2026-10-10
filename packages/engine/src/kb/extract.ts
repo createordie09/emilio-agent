@@ -57,7 +57,14 @@ async function extractPdf(buf: Buffer): Promise<ExtractedDoc> {
   let year: number | undefined;
   try {
     const m = (await doc.getMetadata()).info as Record<string, string | undefined>;
-    title = m.Title?.trim() || undefined;
+    // Métadonnées PDF souvent inutilisables (« about:blank », « Microsoft Word - … », « Untitled ») : on les ignore.
+    const t = m.Title?.trim();
+    title =
+      t &&
+      t.length >= 4 &&
+      !/^(about:|untitled|sans titre|microsoft word|document\d*$|https?:)/i.test(t)
+        ? t
+        : undefined;
     author = m.Author?.trim() || undefined;
     const y = /(\d{4})/.exec(m.CreationDate ?? '');
     year = y ? Number(y[1]) : undefined;

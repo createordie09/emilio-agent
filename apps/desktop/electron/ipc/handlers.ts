@@ -24,6 +24,11 @@ import {
   type NormsProfileInfo,
   type PresetInfo,
   type WorkType,
+  type ConnectorStatus,
+  type SectionResearchSummary,
+  type SourceDetail,
+  type SourceSummary,
+  type SourcesConfigInfo,
 } from '@emilio/shared';
 import type { EngineClient } from '../engine-host';
 
@@ -45,6 +50,10 @@ export type HandlerDeps = {
 const KEY_ENC = 'openrouter_key_encrypted';
 const KEY_MASK = 'openrouter_key_masked';
 const UI_KEY = 'ui_settings';
+/** Connecteurs de sources acceptant une clé d'API (facultative pour Semantic Scholar, obligatoire pour CORE). */
+const KEYED_CONNECTORS = ['semantic_scholar', 'core'];
+const skEnc = (id: string) => `source_key_encrypted:${id}`;
+const skMask = (id: string) => `source_key_masked:${id}`;
 export const DEFAULT_UI: UiSettings = { theme: 'systeme', reduceEffects: false, devMode: false };
 
 const ok = <T>(value: T): Result<T> => ({ ok: true, value });
@@ -63,6 +72,17 @@ export function createHandlers(d: HandlerDeps) {
 
   /** Au démarrage du moteur : recharge la clé déchiffrée en mémoire du moteur. */
   async function restoreKey(client: EngineClient = d.engine): Promise<void> {
+    if (d.cipher.isAvailable()) {
+      for (const id of KEYED_CONNECTORS) {
+        const e = await unwrap(client.request<string | null>('getSetting', { key: skEnc(id) }));
+        if (!e) continue;
+        try {
+          await unwrap(client.request('setSourceKey', { connector: id, key: d.cipher.decrypt(e) }));
+        } catch {
+          /* clé illisible : à ressaisir */
+        }
+      }
+    }
     const enc = await unwrap(client.request<string | null>('getSetting', { key: KEY_ENC }));
     if (!enc || !d.cipher.isAvailable()) return;
     try {
@@ -86,7 +106,61 @@ export function createHandlers(d: HandlerDeps) {
   const mission = (method: Parameters<EngineClient['request']>[0]) => (id: string) =>
     d.engine.request<MissionSummary>(method, { id });
 
+  const masks = async (): Promise<Record<string, string | null>> =>
+    Object.fromEntries(
+      await Promise.all(KEYED_CONNECTORS.map(async (id) => [id, await get<string>(skMask(id))])),
+    );
+  const sourcesConfig = async (): Promise<Result<SourcesConfigInfo>> =>
+    d.engine.request<SourcesConfigInfo>('getSourcesConfig', { masks: await masks() });
+  const keyedId = (id: unknown): string => {
+    if (typeof id !== 'string' || !KEYED_CONNECTORS.includes(id))
+      throw new AppError('E_BAD_REQUEST', 'Ce service n’utilise pas de clé');
+    return id;
+  };
+
   const handlers = {
+    [IPC.sourcesList]: async (missionId: string) =>
+      d.engine.request<SourceSummary[]>('listSources', { id: missionId }),
+    [IPC.sourcesGet]: async (sourceId: string) =>
+      d.engine.request<SourceDetail>('getSource', { id: sourceId }),
+    [IPC.sourcesConfig]: async () => guard(sourcesConfig),
+    [IPC.sourcesSaveConfig]: async (patch: {
+      contactEmail?: string;
+      enabled?: Record<string, boolean>;
+    }) =>
+      guard(async () =>
+        d.engine.request<SourcesConfigInfo>('saveSourcesConfig', {
+          config: patch,
+          masks: await masks(),
+        }),
+      ),
+    [IPC.sourcesSaveKey]: async (
+      connectorId: string,
+      key: string,
+    ): Promise<Result<SourcesConfigInfo>> =>
+      guard(async () => {
+        const id = keyedId(connectorId);
+        if (typeof key !== 'string' || !key.trim()) throw new AppError('E_KEY_MISSING');
+        if (!d.cipher.isAvailable()) throw new AppError('E_KEY_STORAGE');
+        await set(skEnc(id), d.cipher.encrypt(key.trim()));
+        await set(skMask(id), maskKey(key));
+        await unwrap(d.engine.request('setSourceKey', { connector: id, key: key.trim() }));
+        return sourcesConfig();
+      }),
+    [IPC.sourcesRemoveKey]: async (connectorId: string): Promise<Result<SourcesConfigInfo>> =>
+      guard(async () => {
+        const id = keyedId(connectorId);
+        await unwrap(d.engine.request('deleteSetting', { key: skEnc(id) }));
+        await unwrap(d.engine.request('deleteSetting', { key: skMask(id) }));
+        await unwrap(d.engine.request('setSourceKey', { connector: id, key: null }));
+        return sourcesConfig();
+      }),
+    [IPC.sourcesTest]: async () => d.engine.request<ConnectorStatus[]>('testSources'),
+    [IPC.sourcesDemoResearch]: async (missionId: string) =>
+      guard(async () => {
+        await requireDev();
+        return d.engine.request<SectionResearchSummary>('demoResearch', { id: missionId });
+      }),
     [IPC.draftsList]: async () => d.engine.request<DraftSummary[]>('listDrafts'),
     [IPC.draftsCreate]: async (opts?: { workType?: WorkType; titre?: string }) =>
       d.engine.request<DraftDetail>('createDraft', {

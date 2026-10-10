@@ -7,3 +7,4 @@ export * from './mission';
 export * from './brief';
 export * from './files';
 export * from './wizard';
+export * from './sources';

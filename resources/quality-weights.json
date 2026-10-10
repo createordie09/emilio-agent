@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "description": "Pondérations du score de qualité d'une source (CdC §11.4, valeurs de 0 à 1). Les poids de base somment à 1 ; les bonus s'y ajoutent puis le total est borné à 1.",
+  "weights": {
+    "type": 0.3,
+    "identifiant": 0.15,
+    "recence": 0.15,
+    "citations": 0.15,
+    "texteIntegral": 0.1,
+    "revue": 0.15
+  },
+  "bonus": { "afrique": 0.1, "importUtilisateur": 0.3 },
+  "typeScores": {
+    "article": 0.85,
+    "ouvrage": 0.9,
+    "chapitre": 0.8,
+    "these": 0.9,
+    "memoire": 0.55,
+    "rapport": 0.6,
+    "texte_officiel": 0.65,
+    "site_web": 0.3,
+    "donnees": 0.4
+  },
+  "recence": { "pleineValeurAns": 5, "valeurNulleAns": 40 },
+  "relevanceVsQuality": { "relevance": 0.6, "quality": 0.4 }
+}
