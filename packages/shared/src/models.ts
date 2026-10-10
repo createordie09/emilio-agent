@@ -12,6 +12,7 @@ export const ModelInfoSchema = z.object({
   supportsJsonMode: z.boolean(),
   /** Accepte le paramètre `reasoning` (effort de réflexion) ; absent = inconnu (cache ancien). */
   supportsReasoning: z.boolean().optional(),
+  supportsTemperature: z.boolean().optional(),
   inputModalities: z.array(z.string()),
   outputModalities: z.array(z.string()),
 });

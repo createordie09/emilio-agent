@@ -1,0 +1,871 @@
+{
+  "scenario": "C",
+  "label": "documentaire, préréglage équilibré",
+  "preset": "equilibre",
+  "budgetUsd": 1,
+  "status": "completed",
+  "costUsd": 0.813090395140001,
+  "wallSeconds": 1655,
+  "planSeconds": 44,
+  "estimate": {
+    "scenarios": {
+      "bas": {
+        "costUsd": 1.0976,
+        "durationSec": 2176
+      },
+      "moyen": {
+        "costUsd": 1.1942,
+        "durationSec": 2541
+      },
+      "haut": {
+        "costUsd": 1.2158,
+        "durationSec": 2555
+      }
+    },
+    "phases": [
+      {
+        "phase": "P3",
+        "labelFr": "Recherche approfondie et fiches de lecture",
+        "tokensIn": 207900,
+        "tokensOut": 48000,
+        "costUsd": {
+          "bas": 0.2224,
+          "moyen": 0.2224,
+          "haut": 0.2224
+        },
+        "durationSec": {
+          "bas": 456,
+          "moyen": 456,
+          "haut": 456
+        }
+      },
+      {
+        "phase": "P5",
+        "labelFr": "Rédaction, ancrage et résumés",
+        "tokensIn": 118000,
+        "tokensOut": 32185,
+        "costUsd": {
+          "bas": 0.2825,
+          "moyen": 0.2825,
+          "haut": 0.2825
+        },
+        "durationSec": {
+          "bas": 466,
+          "moyen": 466,
+          "haut": 466
+        }
+      },
+      {
+        "phase": "P6",
+        "labelFr": "Jury par chapitre et révisions",
+        "tokensIn": 45534,
+        "tokensOut": 110301,
+        "costUsd": {
+          "bas": 0.5049,
+          "moyen": 0.5157,
+          "haut": 0.5373
+        },
+        "durationSec": {
+          "bas": 859,
+          "moyen": 866,
+          "haut": 881
+        }
+      },
+      {
+        "phase": "P7",
+        "labelFr": "Évaluation globale et harmonisation",
+        "tokensIn": 59776,
+        "tokensOut": 30400,
+        "costUsd": {
+          "bas": 0.0858,
+          "moyen": 0.1716,
+          "haut": 0.1716
+        },
+        "durationSec": {
+          "bas": 358,
+          "moyen": 716,
+          "haut": 716
+        }
+      },
+      {
+        "phase": "P8",
+        "labelFr": "Bibliographie",
+        "tokensIn": 6000,
+        "tokensOut": 1500,
+        "costUsd": {
+          "bas": 0.002,
+          "moyen": 0.002,
+          "haut": 0.002
+        },
+        "durationSec": {
+          "bas": 37,
+          "moyen": 37,
+          "haut": 37
+        }
+      }
+    ],
+    "spentUsd": 0.0277,
+    "budgetMaxUsd": 1,
+    "exceedsBudget": {
+      "bas": true,
+      "moyen": true,
+      "haut": true
+    },
+    "partial": false,
+    "missingPrice": [],
+    "simulated": false,
+    "sectionCount": 11,
+    "targetWords": 2980,
+    "assumptions": [
+      "11 section(s) à rédiger, 2 980 mots visés.",
+      "Scénario bas : 1 ronde de jury par chapitre ; moyen : 1 ; haut : 1 (maximum permis).",
+      "Recherche « rapide », 3 agent(s) en parallèle.",
+      "Coefficients à calibrer après les premières missions réelles ; la durée dépend de la vitesse des modèles."
+    ],
+    "computedAt": "2026-10-10T12:20:54.203Z"
+  },
+  "phases": [
+    {
+      "phase": "P3",
+      "n": 23,
+      "cost": 0.1102324445,
+      "tin": 81332,
+      "tout": 66436,
+      "start": "2026-10-10T12:20:54.437Z",
+      "end": "2026-10-10T12:28:23.769Z",
+      "seconds": 449
+    },
+    {
+      "phase": "P5",
+      "n": 14,
+      "cost": 0.19702840695999999,
+      "tin": 119534,
+      "tout": 76930,
+      "start": "2026-10-10T12:28:07.315Z",
+      "end": "2026-10-10T12:41:21.213Z",
+      "seconds": 794
+    },
+    {
+      "phase": "P6",
+      "n": 4,
+      "cost": 0.32213541268,
+      "tin": 166786,
+      "tout": 96793,
+      "start": "2026-10-10T12:30:33.932Z",
+      "end": "2026-10-10T12:43:54.882Z",
+      "seconds": 801
+    },
+    {
+      "phase": "P7",
+      "n": 2,
+      "cost": 0.155955381,
+      "tin": 98725,
+      "tout": 42697,
+      "start": "2026-10-10T12:43:55.098Z",
+      "end": "2026-10-10T12:48:24.061Z",
+      "seconds": 269
+    },
+    {
+      "phase": "P8",
+      "n": 1,
+      "cost": 0,
+      "tin": 0,
+      "tout": 0,
+      "start": "2026-10-10T12:48:24.301Z",
+      "end": "2026-10-10T12:48:24.481Z",
+      "seconds": 0
+    },
+    {
+      "phase": "P9",
+      "n": 3,
+      "cost": 0,
+      "tin": 0,
+      "tout": 0,
+      "start": "2026-10-10T12:48:24.802Z",
+      "end": "2026-10-10T12:48:25.833Z",
+      "seconds": 1
+    }
+  ],
+  "outsideTasks": {
+    "cost": 0.02773875,
+    "tin": 2800,
+    "tout": 6837,
+    "n": 2
+  },
+  "byRole": [
+    {
+      "role": "section_writer",
+      "model": "google/gemini-3.8-flash",
+      "calls": 80,
+      "cost": 0.3849225,
+      "tin": 159480,
+      "tout": 70750,
+      "avgMs": 6921.3375,
+      "tps": 127.77515906427045
+    },
+    {
+      "role": "document_analyst",
+      "model": "google/gemini-3.8-flash",
+      "calls": 81,
+      "cost": 0.12242325,
+      "tin": 62741,
+      "tout": 20098,
+      "avgMs": 3107.938271604938,
+      "tps": 79.83538767711515
+    },
+    {
+      "role": "juror_specialist",
+      "model": "google/gemini-3.8-flash",
+      "calls": 10,
+      "cost": 0.06097275,
+      "tin": 33567,
+      "tout": 9546,
+      "avgMs": 9049.3,
+      "tps": 105.48882233984949
+    },
+    {
+      "role": "juror_methodologist",
+      "model": "google/gemini-3.8-flash",
+      "calls": 10,
+      "cost": 0.060099,
+      "tin": 33617,
+      "tout": 9303,
+      "avgMs": 8532.2,
+      "tps": 109.03401232976255
+    },
+    {
+      "role": "juror_form",
+      "model": "google/gemini-3.8-flash",
+      "calls": 10,
+      "cost": 0.0593565,
+      "tin": 33297,
+      "tout": 9169,
+      "avgMs": 7976.1,
+      "tps": 114.95593084339464
+    },
+    {
+      "role": "jury_president",
+      "model": "google/gemini-3.8-flash",
+      "calls": 17,
+      "cost": 0.0510585,
+      "tin": 20753,
+      "tout": 9465,
+      "avgMs": 5991.823529411765,
+      "tps": 92.9207449367275
+    },
+    {
+      "role": "outline_architect",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.023718,
+      "tin": 2254,
+      "tout": 5874,
+      "avgMs": 34870,
+      "tps": 168.45425867507888
+    },
+    {
+      "role": "grounding_checker",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 65,
+      "cost": 0.01821032456,
+      "tin": 62823,
+      "tout": 65582,
+      "avgMs": 12864.523076923077,
+      "tps": 78.42916835088508
+    },
+    {
+      "role": "researcher",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 73,
+      "cost": 0.0137405457,
+      "tin": 35477,
+      "tout": 60824,
+      "avgMs": 12012.013698630137,
+      "tps": 69.36434642486917
+    },
+    {
+      "role": "summarizer",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 32,
+      "cost": 0.00818502488,
+      "tin": 21701,
+      "tout": 27001,
+      "avgMs": 13159.15625,
+      "tps": 64.1212273773252
+    },
+    {
+      "role": "harmonizer",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.00638325,
+      "tin": 2921,
+      "tout": 1118,
+      "avgMs": 8786,
+      "tps": 127.24789437741862
+    },
+    {
+      "role": "orchestrator",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.00402075,
+      "tin": 546,
+      "tout": 963,
+      "avgMs": 8489,
+      "tps": 113.44092354812109
+    }
+  ],
+  "errors": [
+    {
+      "error": "E_MODEL_UNAVAILABLE",
+      "n": 99
+    },
+    {
+      "error": "E_REMOTE",
+      "n": 1
+    }
+  ],
+  "warnings": [
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Peu de sources trouvées pour la section « Objectifs » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Objectifs) : 2 source(s) retenue(s), 1 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Peu de sources trouvées pour la section « Vérification des hypothèses » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Vérification des hypothèses) : 2 source(s) retenue(s), 0 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Peu de sources trouvées pour la section « Limites » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Limites) : 2 source(s) retenue(s), 0 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Rédacteur : section 3.1 L'écosystème financier ouest-africain et la pénétration de la monnaie électronique rédigée (299 mots, ancrage 100 %, 2 correction(s), 1 phrase(s) supprimée(s)).",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » noté 10,0/20 — à réécrire (5 remarque(s) majeure(s)).",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Rédacteur : section 2.5 Difficultés et limites rédigée (78 mots, ancrage 100 %, 2 correction(s), 1 phrase(s) supprimée(s)).",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Préparation : « Rédaction — 4.1 Discussion des résultats et confrontation aux modèles théoriques » a échoué (Une erreur interne s'est produite.), nouvel essai.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » noté 8,8/20 — à réécrire (9 remarque(s) majeure(s)).",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Rédacteur : la révision de 1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière n’a pas abouti (erreur) ; la version actuelle est conservée.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » noté 10,0/20 — à réécrire (6 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » accepté avec réserves (10,0/20, seuil 14) — plateau atteint (gain inférieur au minimum).",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Jury : le chapitre « 3 Présentation du milieu d'étude et des résultats » noté 8,1/20 — à réécrire (6 remarque(s) majeure(s)).",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Préparation : « Rédaction — 4.1 Discussion des résultats et confrontation aux modèles théoriques » a échoué (Une erreur interne s'est produite.), nouvel essai.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » noté 10,9/20 — à réécrire (5 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » accepté avec réserves (10,9/20, seuil 14) — nombre maximal de rondes atteint.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Rédacteur : section 3.1 L'écosystème financier ouest-africain et la pénétration de la monnaie électronique révisée (ronde 1, 269 mots).",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash.",
+    "[warning] Le modèle anthropic/claude-sonnet-5.5 est indisponible, bascule sur google/gemini-3.8-flash."
+  ],
+  "sections": [
+    {
+      "section": "Introduction générale",
+      "words": 251,
+      "target": 240,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière",
+      "words": 297,
+      "target": 300,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "1.2 Revue critique de la littérature sur la digitalisation des services financiers",
+      "words": 299,
+      "target": 310,
+      "grounding": 1,
+      "groundingInitial": 0,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "2.1 Type d'étude",
+      "words": 126,
+      "target": 120,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "2.2 Population et échantillonnage",
+      "words": 126,
+      "target": 120,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "2.3 Outils de collecte",
+      "words": 122,
+      "target": 120,
+      "grounding": 0.6666666666666666,
+      "groundingInitial": 0.6666666666666666,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": [
+        "1 affirmation(s) seulement partiellement étayée(s) : à relire."
+      ]
+    },
+    {
+      "section": "2.4 Méthodes d'analyse",
+      "words": 126,
+      "target": 120,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "2.5 Difficultés et limites",
+      "words": 108,
+      "target": 100,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "3.1 L'écosystème financier ouest-africain et la pénétration de la monnaie électronique",
+      "words": 269,
+      "target": 340,
+      "grounding": 1,
+      "groundingInitial": null,
+      "removed": 1,
+      "rounds": 2,
+      "warnings": [
+        "Le texte compte 269 mots pour une cible de 340 (±10 %) : développe.",
+        "1 phrase(s) supprimée(s) par le contrôle d'intégrité."
+      ]
+    },
+    {
+      "section": "3.2 Pratiques et dynamiques d'adoption du paiement mobile chez les petits commerçants",
+      "words": 320,
+      "target": 340,
+      "grounding": 1,
+      "groundingInitial": 0.6666666666666666,
+      "removed": 0,
+      "rounds": 1,
+      "warnings": []
+    },
+    {
+      "section": "4.1 Discussion des résultats et confrontation aux modèles théoriques",
+      "words": 321,
+      "target": 330,
+      "grounding": 0.6,
+      "groundingInitial": 0.6666666666666666,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": [
+        "2 affirmation(s) seulement partiellement étayée(s) : à relire."
+      ]
+    },
+    {
+      "section": "4.2 Vérification des hypothèses et recommandations managériales",
+      "words": 263,
+      "target": 340,
+      "grounding": 1,
+      "groundingInitial": 0.5,
+      "removed": 2,
+      "rounds": 2,
+      "warnings": [
+        "Le texte compte 263 mots pour une cible de 340 (±10 %) : développe.",
+        "2 phrase(s) supprimée(s) par le contrôle d'intégrité."
+      ]
+    },
+    {
+      "section": "Conclusion générale",
+      "words": 205,
+      "target": 200,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    }
+  ],
+  "jury": [
+    {
+      "scope": "chapter",
+      "target": "01a125c2-50b3-7799-919c-50c4d74cec60",
+      "status": "accepte_avec_reserves",
+      "score": 10,
+      "rounds": 1,
+      "reasons": "[\"Note finale 10,0/20 inférieure au seuil de 14 (plateau atteint (gain inférieur au minimum)).\",\"1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière : Supprimer l'ensemble des balises de texte non rédigées ('INFORMATION MANQUANTE') et rédiger des définitions conceptuelles rigoureuses de la monnaie électronique et du mobile money face au compte bancaire classique.\",\"1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière : Opérationnaliser explicitement les trois dimensions de l'inclusion financière (accès, usage, qualité) en les adaptant aux réalités des petits commerçants.\",\"1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière : Recentrer l'analyse des SFD et de la monnaie électronique sur les besoins réels des commerçants urbains et périurbains (rotation des stocks, encaissement, fonds de roulement) au lieu de la microfinance rurale.\",\"1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière : Corriger le formatage des citations en adoptant strictement les normes APA (parenthèses simples à la place des crochets).\",\"1.2 Revue critique de la littérature sur la digitalisation des services financiers : Restructurer la revue de littérature par thématiques ou débats contradictoires pour éliminer la répétition descriptive et mot pour mot des études déjà citées en S1 (Adjovi et Houngbo 2021, Diallo 2017, Johnson et Okafor 2022, UEMOA 2020).\",\"1.2 Revue critique de la littérature sur la digitalisation des services financiers : Formuler des propositions ou hypothèses de recherche empiriques testables déduites des lacunes théoriques et empiriques identifiées.\"]"
+    },
+    {
+      "scope": "chapter",
+      "target": "01a125c2-50b4-7261-a001-0e0cb9830a7f",
+      "status": "accepte_avec_reserves",
+      "score": 10.88235294117647,
+      "rounds": 1,
+      "reasons": "[\"Note finale 10,9/20 inférieure au seuil de 14 (nombre maximal de rondes atteint).\",\"2.2 Population et échantillonnage : Supprimer les balises éditoriales brutes de texte manquant, définir précisément les critères d'identification des petits commerçants informels et expliciter le raisonnement analogique justifiant la transférabilité des données relatives aux ménages ruraux/agricoles (fusion R1, R4, R7).\",\"2.2 Population et échantillonnage : Insérer une phrase de transition logique expliquant l'apport du mécanisme d'engagement collectif de Sow (2019) dans la caractérisation de la population étudiée (R10).\",\"2.1 Type d'étude : Cibler l'apport épistémologique spécifique des références mobilisées (Diallo 2017, Adjovi & Houngbo 2021, Johnson & Okafor 2022) pour rompre avec la répétition mécanique du même bloc textuel (R8).\",\"2.1 Type d'étude : Démontrer explicitement pourquoi l'approche exploratoire qualitative sur données secondaires est la plus adaptée à l'analyse de la transformation des pratiques marchandes (R6).\",\"2.1 Type d'étude : Harmoniser les citations selon les normes académiques (ex. style APA) en remplaçant les formats composites par des parenthèses standard (R9).\"]"
+    },
+    {
+      "scope": "chapter",
+      "target": "01a125c2-50b4-7261-a001-293e640e164c",
+      "status": "accepte_avec_reserves",
+      "score": 9.5,
+      "rounds": 1,
+      "reasons": "[\"Note finale 9,5/20 inférieure au seuil de 14 (nombre maximal de rondes atteint).\",\"3.2 Pratiques et dynamiques d'adoption du paiement mobile chez les petits commerçants : Présenter les données empiriques issues de l'enquête menée par l'étudiant (statistiques descriptives, fréquences d'usage, montants moyens encaissés, motifs d'adoption déclarés) au lieu d'affirmer que les pratiques sont non documentées (R1, R5, R10).\",\"3.2 Pratiques et dynamiques d'adoption du paiement mobile chez les petits commerçants : Distinguer clairement les apports théoriques de la littérature (notamment Sow, 2019) des constats empiriques propres aux pratiques d'épargne et de crédit de l'échantillon enquêté (R7).\",\"3.2 Pratiques et dynamiques d'adoption du paiement mobile chez les petits commerçants : Supprimer les redondances dans les citations dans le texte en adoptant une syntaxe fluide telle que 'Johnson et Okafor (2022) étudient...' (R9).\",\"3.1 L'écosystème financier ouest-africain et la pénétration de la monnaie électronique : Intégrer les données macroéconomiques et institutionnelles de cadrage sur le milieu d'étude ouest-africain, notamment le cadre réglementaire de la BCEAO sur la monnaie électronique, le taux de bancarisation et le volume des transactions dans l'UEMOA (R3, R4).\",\"3.1 L'écosystème financier ouest-africain et la pénétration de la monnaie électronique : Recentrer l'analyse sur les pays de l'Afrique de l'Ouest (UEMOA/CEDEAO) en supprimant l'incursion non justifiée sur les entrepreneurs camerounais ou en explicitant rigoureusement la démarche comparative (R2, R6, R11).\",\"3.1 L'écosystème financier ouest-africain et la pénétration de la monnaie électronique : Harmoniser les appels de citations selon les normes académiques APA en remplaçant les crochets et parenthèses imbriquées par des parenthèses simples standards (R8).\"]"
+    },
+    {
+      "scope": "chapter",
+      "target": "01a125c2-50b4-7261-a001-34834dbde8b6",
+      "status": "accepte_avec_reserves",
+      "score": 7.75,
+      "rounds": 1,
+      "reasons": "[\"Note finale 7,8/20 inférieure au seuil de 14 (nombre maximal de rondes atteint).\",\"4.2 Vérification des hypothèses et recommandations managériales : Purger impérativement toutes les balises de travail textuelles de type '[INFORMATION MANQUANTE : ...]' dans l'ensemble de la section.\",\"4.2 Vérification des hypothèses et recommandations managériales : Énoncer explicitement le libellé de départ de chaque hypothèse (H1, H2, H3) et statuer rigoureusement sur leur validation, infirmation ou nuance à partir des données empiriques collectées.\",\"4.2 Vérification des hypothèses et recommandations managériales : Remplacer les renvois bibliographiques passifs et abstraits par des recommandations managériales concrètes, opérationnelles et ciblées pour les petits commerçants, les banques et les opérateurs de téléphonie (tarification adaptée, interopérabilité, éducation financière).\",\"4.1 Discussion des résultats et confrontation aux modèles théoriques : Recentrer l'analyse et la discussion sur la problématique centrale en traitant spécifiquement de l'impact de la digitalisation des services financiers (mobile money, wallets, tontines numériques) sur les petits commerçants urbains et périurbains, en éliminant les digressions sur les ménages ruraux et les institutions de microfinance agricole.\",\"4.1 Discussion des résultats et confrontation aux modèles théoriques : Supprimer la digression contextuelle abrupte relative à l'endettement des jeunes au Cameroun (Tchoumi, 2023) ou expliciter rigoureusement son analogie avec le contexte ouest-africain.\",\"4.1 Discussion des résultats et confrontation aux modèles théoriques : Harmoniser le formatage des appels de citations selon les normes académiques APA en supprimant l'usage non standard des crochets.\"]"
+    },
+    {
+      "scope": "global",
+      "target": "",
+      "status": "accepte_avec_reserves",
+      "score": 9.125,
+      "rounds": 1,
+      "reasons": "[\"Note finale 9,1/20 inférieure au seuil de 14 (nombre maximal de rondes atteint).\",\"Introduction générale : Rédiger explicitement un objectif général, des objectifs spécifiques et trois hypothèses testables alignées sur la problématique du paiement mobile (R1, R11).\",\"Introduction générale : Supprimer les balises de texte non rédigé signalant l'absence d'objectifs et d'hypothèses afin d'assurer le cadrage méthodologique dès l'introduction (R11).\",\"2.2 Population et échantillonnage : Justifier rigoureusement la transférabilité méthodologique des comportements financiers des ménages agricoles ruraux vers les commerçants informels urbains ou restreindre le champ de l'étude (R2, R7).\",\"2.2 Population et échantillonnage : Circonscrire l'analyse documentaire aux études traitant directement des micro-entrepreneurs informels si l'analogie n'est pas soutenable (R7).\",\"4.2 Vérification des hypothèses et recommandations managériales : Assurer la cohérence d'ensemble en rappelant les énoncés exacts des hypothèses H1, H2 et H3 préalablement introduites avant de procéder à leur test (R3, R6).\",\"4.2 Vérification des hypothèses et recommandations managériales : Développer des recommandations managériales opérationnelles et contextualisées pour l'ensemble des parties prenantes (commerçants, opérateurs de mobile money/fintechs, institutions de microfinance, régulateurs) en supprimant le formatage à puce unique (R5, R8, R13).\",\"Conclusion générale : Harmoniser la conclusion générale avec la section 4.2 en supprimant la mention prétendant qu'aucune hypothèse n'a été énoncée, et synthétiser clairement le statut de validation ou de non-confirmation des hypothèses H1, H2 et H3 (R4, R6, R12).\"]"
+    }
+  ],
+  "deliverables": [
+    {
+      "kind": "docx",
+      "size_bytes": 20991
+    },
+    {
+      "kind": "rapport",
+      "size_bytes": 28352
+    }
+  ],
+  "finalCheck": {
+    "at": "2026-10-10T12:48:25.551Z",
+    "ok": true,
+    "items": [
+      {
+        "id": "marqueurs",
+        "label": "Aucun marqueur de citation non résolu",
+        "status": "ok",
+        "detail": null
+      },
+      {
+        "id": "bibliographie",
+        "label": "Sources citées = bibliographie",
+        "status": "ok",
+        "detail": "7 source(s) citée(s), toutes dans la bibliographie."
+      },
+      {
+        "id": "ancrage",
+        "label": "Taux d’ancrage global ≥ 90 %",
+        "status": "ok",
+        "detail": "Taux d’ancrage moyen : 93 %."
+      },
+      {
+        "id": "longueur",
+        "label": "Longueur totale dans la tolérance (± 15 %)",
+        "status": "ok",
+        "detail": "2 833 mots rédigés pour 2 980 visés (95 %)."
+      },
+      {
+        "id": "numerotation",
+        "label": "Numérotation des tableaux et des figures continue",
+        "status": "ok",
+        "detail": "0 tableau(x), 0 figure(s)."
+      },
+      {
+        "id": "emplacements",
+        "label": "Emplacements à compléter",
+        "status": "avertissement",
+        "detail": "9 emplacement(s) à compléter par vous (listés ci-dessous)."
+      },
+      {
+        "id": "docx",
+        "label": "Le fichier Word s’ouvre sans erreur",
+        "status": "ok",
+        "detail": "Le fichier s’ouvre sans erreur (27 k caractères de texte)."
+      }
+    ],
+    "placeholders": [
+      {
+        "section": "Dédicace",
+        "text": "[À COMPLÉTER : dédicace — page personnelle, jamais rédigée par l’agent]"
+      },
+      {
+        "section": "Remerciements",
+        "text": "[À COMPLÉTER : remerciements au directeur ou à la directrice de mémoire]"
+      },
+      {
+        "section": "Remerciements",
+        "text": "[À COMPLÉTER : remerciements à la structure d’accueil ou aux enquêtés]"
+      },
+      {
+        "section": "Remerciements",
+        "text": "[À COMPLÉTER : remerciements à la famille et aux proches]"
+      },
+      {
+        "section": "Sigles et abréviations",
+        "text": "[À COMPLÉTER : définition de TAM]"
+      },
+      {
+        "section": "Sigles et abréviations",
+        "text": "[À COMPLÉTER : définition de UEMOA]"
+      },
+      {
+        "section": "Page de garde",
+        "text": "[À COMPLÉTER : établissement]"
+      },
+      {
+        "section": "Page de garde",
+        "text": "[À COMPLÉTER : nom de l’auteur]"
+      },
+      {
+        "section": "Page de garde",
+        "text": "[À COMPLÉTER : année académique]"
+      }
+    ]
+  },
+  "summary": {
+    "finalScore": 9.125,
+    "words": 2833,
+    "pages": 8,
+    "sources": 7,
+    "durationMin": 28,
+    "costUsd": 0.813090395140001,
+    "attention": [
+      "1 Clarification conceptuelle et revue de littérature : accepté avec réserves (Note finale 10,0/20 inférieure au seuil de 14 (plateau atteint (gain inférieur au minimum)). ; 1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière : Supprimer l'ensemble des balises de texte non rédigées ('INFORMATION MANQUANTE') et rédiger des définitions conceptuelles rigoureuses de la monnaie électronique et du mobile money face au compte bancaire classique. ; 1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière : Opérationnaliser explicitement les trois dimensions de l'inclusion financière (accès, usage, qualité) en les adaptant aux réalités des petits commerçants. ; 1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière : Recentrer l'analyse des SFD et de la monnaie électronique sur les besoins réels des commerçants urbains et périurbains (rotation des stocks, encaissement, fonds de roulement) au lieu de la microfinance rurale. ; 1.1 Cadre conceptuel : paiement mobile, microfinance et inclusion financière : Corriger le formatage des citations en adoptant strictement les normes APA (parenthèses simples à la place des crochets). ; 1.2 Revue critique de la littérature sur la digitalisation des services financiers : Restructurer la revue de littérature par thématiques ou débats contradictoires pour éliminer la répétition descriptive et mot pour mot des études déjà citées en S1 (Adjovi et Houngbo 2021, Diallo 2017, Johnson et Okafor 2022, UEMOA 2020). ; 1.2 Revue critique de la littérature sur la digitalisation des services financiers : Formuler des propositions ou hypothèses de recherche empiriques testables déduites des lacunes théoriques et empiriques identifiées.).",
+      "2 Cadre théorique et démarche méthodologique : accepté avec réserves (Note finale 10,9/20 inférieure au seuil de 14 (nombre maximal de rondes atteint). ; 2.2 Population et échantillonnage : Supprimer les balises éditoriales brutes de texte manquant, définir précisément les critères d'identification des petits commerçants informels et expliciter le raisonnement analogique justifiant la transférabilité des données relatives aux ménages ruraux/agricoles (fusion R1, R4, R7). ; 2.2 Population et échantillonnage : Insérer une phrase de transition logique expliquant l'apport du mécanisme d'engagement collectif de Sow (2019) dans la caractérisation de la population étudiée (R10). ; 2.1 Type d'étude : Cibler l'apport épistémologique spécifique des références mobilisées (Diallo 2017, Adjovi & Houngbo 2021, Johnson & Okafor 2022) pour rompre avec la répétition mécanique du même bloc textuel (R8). ; 2.1 Type d'étude : Démontrer explicitement pourquoi l'approche exploratoire qualitative sur données secondaires est la plus adaptée à l'analyse de la transformation des pratiques marchandes (R6). ; 2.1 Type d'étude : Harmoniser les citations selon les normes académiques (ex. style APA) en remplaçant les formats composites par des parenthèses standard (R9).).",
+      "3 Présentation du milieu d'étude et des résultats : accepté avec réserves (Note finale 9,5/20 inférieure au seuil de 14 (nombre maximal de rondes atteint). ; 3.2 Pratiques et dynamiques d'adoption du paiement mobile chez les petits commerçants : Présenter les données empiriques issues de l'enquête menée par l'étudiant (statistiques descriptives, fréquences d'usage, montants moyens encaissés, motifs d'adoption déclarés) au lieu d'affirmer que les pratiques sont non documentées (R1, R5, R10). ; 3.2 Pratiques et dynamiques d'adoption du paiement mobile chez les petits commerçants : Distinguer clairement les apports théoriques de la littérature (notamment Sow, 2019) des constats empiriques propres aux pratiques d'épargne et de crédit de l'échantillon enquêté (R7). ; 3.2 Pratiques et dynamiques d'adoption du paiement mobile chez les petits commerçants : Supprimer les redondances dans les citations dans le texte en adoptant une syntaxe fluide telle que 'Johnson et Okafor (2022) étudient...' (R9). ; 3.1 L'écosystème financier ouest-africain et la pénétration de la monnaie électronique : Intégrer les données macroéconomiques et institutionnelles de cadrage sur le milieu d'étude ouest-africain, notamment le cadre réglementaire de la BCEAO sur la monnaie électronique, le taux de bancarisation et le volume des transactions dans l'UEMOA (R3, R4). ; 3.1 L'écosystème financier ouest-africain et la pénétration de la monnaie électronique : Recentrer l'analyse sur les pays de l'Afrique de l'Ouest (UEMOA/CEDEAO) en supprimant l'incursion non justifiée sur les entrepreneurs camerounais ou en explicitant rigoureusement la démarche comparative (R2, R6, R11). ; 3.1 L'écosystème financier ouest-africain et la pénétration de la monnaie électronique : Harmoniser les appels de citations selon les normes académiques APA en remplaçant les crochets et parenthèses imbriquées par des parenthèses simples standards (R8).).",
+      "4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : accepté avec réserves (Note finale 7,8/20 inférieure au seuil de 14 (nombre maximal de rondes atteint). ; 4.2 Vérification des hypothèses et recommandations managériales : Purger impérativement toutes les balises de travail textuelles de type '[INFORMATION MANQUANTE : ...]' dans l'ensemble de la section. ; 4.2 Vérification des hypothèses et recommandations managériales : Énoncer explicitement le libellé de départ de chaque hypothèse (H1, H2, H3) et statuer rigoureusement sur leur validation, infirmation ou nuance à partir des données empiriques collectées. ; 4.2 Vérification des hypothèses et recommandations managériales : Remplacer les renvois bibliographiques passifs et abstraits par des recommandations managériales concrètes, opérationnelles et ciblées pour les petits commerçants, les banques et les opérateurs de téléphonie (tarification adaptée, interopérabilité, éducation financière). ; 4.1 Discussion des résultats et confrontation aux modèles théoriques : Recentrer l'analyse et la discussion sur la problématique centrale en traitant spécifiquement de l'impact de la digitalisation des services financiers (mobile money, wallets, tontines numériques) sur les petits commerçants urbains et périurbains, en éliminant les digressions sur les ménages ruraux et les institutions de microfinance agricole. ; 4.1 Discussion des résultats et confrontation aux modèles théoriques : Supprimer la digression contextuelle abrupte relative à l'endettement des jeunes au Cameroun (Tchoumi, 2023) ou expliciter rigoureusement son analogie avec le contexte ouest-africain. ; 4.1 Discussion des résultats et confrontation aux modèles théoriques : Harmoniser le formatage des appels de citations selon les normes académiques APA en supprimant l'usage non standard des crochets.).",
+      "Ensemble du travail : accepté avec réserves (Note finale 9,1/20 inférieure au seuil de 14 (nombre maximal de rondes atteint). ; Introduction générale : Rédiger explicitement un objectif général, des objectifs spécifiques et trois hypothèses testables alignées sur la problématique du paiement mobile (R1, R11). ; Introduction générale : Supprimer les balises de texte non rédigé signalant l'absence d'objectifs et d'hypothèses afin d'assurer le cadrage méthodologique dès l'introduction (R11). ; 2.2 Population et échantillonnage : Justifier rigoureusement la transférabilité méthodologique des comportements financiers des ménages agricoles ruraux vers les commerçants informels urbains ou restreindre le champ de l'étude (R2, R7). ; 2.2 Population et échantillonnage : Circonscrire l'analyse documentaire aux études traitant directement des micro-entrepreneurs informels si l'analogie n'est pas soutenable (R7). ; 4.2 Vérification des hypothèses et recommandations managériales : Assurer la cohérence d'ensemble en rappelant les énoncés exacts des hypothèses H1, H2 et H3 préalablement introduites avant de procéder à leur test (R3, R6). ; 4.2 Vérification des hypothèses et recommandations managériales : Développer des recommandations managériales opérationnelles et contextualisées pour l'ensemble des parties prenantes (commerçants, opérateurs de mobile money/fintechs, institutions de microfinance, régulateurs) en supprimant le formatage à puce unique (R5, R8, R13). ; Conclusion générale : Harmoniser la conclusion générale avec la section 4.2 en supprimant la mention prétendant qu'aucune hypothèse n'a été énoncée, et synthétiser clairement le statut de validation ou de non-confirmation des hypothèses H1, H2 et H3 (R4, R6, R12).).",
+      "9 emplacement(s) à compléter par vous (liste dans le contrôle final)."
+    ]
+  },
+  "costs": {
+    "totalUsd": 0.813090395140001,
+    "budgetMaxUsd": 1,
+    "tokensIn": 469177,
+    "tokensOut": 289693,
+    "calls": 381,
+    "byPhase": [
+      {
+        "key": "P6",
+        "label": "P6 — Jury et révisions",
+        "costUsd": 0.32213541268,
+        "tokensIn": 166786,
+        "tokensOut": 96793,
+        "calls": 119
+      },
+      {
+        "key": "P5",
+        "label": "P5 — Rédaction",
+        "costUsd": 0.19702840695999999,
+        "tokensIn": 119534,
+        "tokensOut": 76930,
+        "calls": 84
+      },
+      {
+        "key": "P7",
+        "label": "P7 — Évaluation globale",
+        "costUsd": 0.155955381,
+        "tokensIn": 98725,
+        "tokensOut": 42697,
+        "calls": 47
+      },
+      {
+        "key": "P3",
+        "label": "P3 — Recherche documentaire",
+        "costUsd": 0.1102324445,
+        "tokensIn": 81332,
+        "tokensOut": 66436,
+        "calls": 129
+      },
+      {
+        "key": "autre",
+        "label": "Cadrage, plan et divers",
+        "costUsd": 0.02773875,
+        "tokensIn": 2800,
+        "tokensOut": 6837,
+        "calls": 2
+      }
+    ],
+    "byRole": [
+      {
+        "key": "section_writer",
+        "label": "rédacteur académique",
+        "costUsd": 0.3849225,
+        "tokensIn": 159480,
+        "tokensOut": 70750,
+        "calls": 80
+      },
+      {
+        "key": "document_analyst",
+        "label": "analyste de documents",
+        "costUsd": 0.12242325,
+        "tokensIn": 62741,
+        "tokensOut": 20098,
+        "calls": 81
+      },
+      {
+        "key": "juror_specialist",
+        "label": "juré spécialiste",
+        "costUsd": 0.06097275,
+        "tokensIn": 33567,
+        "tokensOut": 9546,
+        "calls": 10
+      },
+      {
+        "key": "juror_methodologist",
+        "label": "juré méthodologiste",
+        "costUsd": 0.060099,
+        "tokensIn": 33617,
+        "tokensOut": 9303,
+        "calls": 10
+      },
+      {
+        "key": "juror_form",
+        "label": "juré forme",
+        "costUsd": 0.0593565,
+        "tokensIn": 33297,
+        "tokensOut": 9169,
+        "calls": 10
+      },
+      {
+        "key": "jury_president",
+        "label": "président du jury",
+        "costUsd": 0.0510585,
+        "tokensIn": 20753,
+        "tokensOut": 9465,
+        "calls": 17
+      },
+      {
+        "key": "outline_architect",
+        "label": "architecte du plan",
+        "costUsd": 0.023718,
+        "tokensIn": 2254,
+        "tokensOut": 5874,
+        "calls": 1
+      },
+      {
+        "key": "grounding_checker",
+        "label": "vérificateur d'ancrage",
+        "costUsd": 0.01821032456,
+        "tokensIn": 62823,
+        "tokensOut": 65582,
+        "calls": 65
+      },
+      {
+        "key": "researcher",
+        "label": "chercheur documentaire",
+        "costUsd": 0.0137405457,
+        "tokensIn": 35477,
+        "tokensOut": 60824,
+        "calls": 73
+      },
+      {
+        "key": "summarizer",
+        "label": "résumeur",
+        "costUsd": 0.00818502488,
+        "tokensIn": 21701,
+        "tokensOut": 27001,
+        "calls": 32
+      },
+      {
+        "key": "harmonizer",
+        "label": "harmonisateur",
+        "costUsd": 0.00638325,
+        "tokensIn": 2921,
+        "tokensOut": 1118,
+        "calls": 1
+      },
+      {
+        "key": "orchestrator",
+        "label": "directeur de recherche",
+        "costUsd": 0.00402075,
+        "tokensIn": 546,
+        "tokensOut": 963,
+        "calls": 1
+      }
+    ],
+    "byModel": [
+      {
+        "key": "google/gemini-3.8-flash",
+        "label": "google/gemini-3.8-flash",
+        "costUsd": 0.7729545,
+        "tokensIn": 349176,
+        "tokensOut": 136286,
+        "calls": 211
+      },
+      {
+        "key": "deepseek/deepseek-v4-flash",
+        "label": "deepseek/deepseek-v4-flash",
+        "costUsd": 0.04013589514,
+        "tokensIn": 120001,
+        "tokensOut": 153407,
+        "calls": 170
+      }
+    ],
+    "projectedRemainingUsd": null
+  }
+}

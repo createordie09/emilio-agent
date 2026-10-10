@@ -67,6 +67,7 @@ export function normalizeModel(r: RawModel): ModelInfo {
     supportsStructuredOutputs: params.includes('structured_outputs'),
     supportsJsonMode: params.includes('response_format'),
     supportsReasoning: params.includes('reasoning'),
+    supportsTemperature: params.includes('temperature'),
     inputModalities: r.architecture?.input_modalities ?? [],
     outputModalities: r.architecture?.output_modalities ?? [],
   };
@@ -166,6 +167,12 @@ export class OpenRouterClient implements LlmClient {
     return this.requestJson<T>('GET', path, { withAuth });
   }
 
+  /** Certains modèles (ex. famille Claude 5.5) n'acceptent pas `temperature` : avec `require_parameters`, OpenRouter répond alors 404. */
+  private acceptsTemperature(model: string): boolean {
+    const cached = this.settings.get<{ models: ModelInfo[] }>(MODELS_CACHE_KEY);
+    return cached?.models.find((m) => m.id === model)?.supportsTemperature !== false;
+  }
+
   /** Appel de génération (POST /chat/completions) — CdC §14.1. Le coût vient de `usage.cost` (renvoyé par défaut). */
   async complete(req: LlmRequest): Promise<LlmResponse> {
     if (!this.apiKey) throw new AppError('E_KEY_MISSING');
@@ -173,7 +180,9 @@ export class OpenRouterClient implements LlmClient {
     const body: Record<string, unknown> = {
       model: req.model,
       messages: req.messages,
-      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
+      ...(req.temperature !== undefined && this.acceptsTemperature(req.model)
+        ? { temperature: req.temperature }
+        : {}),
       ...(req.maxTokens !== undefined ? { max_tokens: req.maxTokens } : {}),
     };
     if (req.jsonSchema) {

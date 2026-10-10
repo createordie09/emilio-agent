@@ -364,6 +364,21 @@ describe('effort de réflexion (J10)', () => {
     }
   });
 
+  it('la température n’est pas envoyée aux modèles qui la refusent', async () => {
+    for (const [flag, expected] of [
+      [false, undefined],
+      [true, 0.3],
+      [undefined, 0.3],
+    ] as const) {
+      const a = client(async () => ok());
+      const c = cache();
+      (c.models[0] as Record<string, unknown>).supportsTemperature = flag;
+      a.settings.set('openrouter_models_cache', c);
+      await a.c.complete({ ...req, temperature: 0.3 });
+      expect(a.calls[0]!.body.temperature, String(flag)).toEqual(expected);
+    }
+  });
+
   it('le ModelCaller applique : réglage de la mission > réglage du rôle > défaut', async () => {
     const { engine, id } = await runMission({ withExport: false });
     const seen: Record<string, string | undefined> = {};
