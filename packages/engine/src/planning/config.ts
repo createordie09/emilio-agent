@@ -103,7 +103,7 @@ export type EstimationConfig = {
     tokensIn: number;
     tokensOut: number;
   };
-  writing: { inputPerOutputToken: number; minInputTokens: number };
+  writing: { inputPerOutputToken: number; minInputTokens: number; outputFactor: number };
   grounding: { wordsPerClaim: number; claimsPerCall: number; tokensIn: number; tokensOut: number };
   summaries: { tokensInPerSection: number; tokensOut: number };
   jury: {
@@ -111,6 +111,7 @@ export type EstimationConfig = {
     chapterInputRatio: number;
     tokensOut: number;
     presidentTokensOut: number;
+    presidentTokensIn: number;
   };
   revision: {
     shareOfSections: Record<'bas' | 'moyen' | 'haut', number>;
@@ -148,10 +149,16 @@ export const DEFAULT_ESTIMATION: EstimationConfig = {
     tokensOut: 800,
   },
   dataAnalysis: { callsBase: 2, callsPerHypothesis: 1, tokensIn: 5000, tokensOut: 1800 },
-  writing: { inputPerOutputToken: 3.5, minInputTokens: 6000 },
-  grounding: { wordsPerClaim: 30, claimsPerCall: 10, tokensIn: 2600, tokensOut: 500 },
-  summaries: { tokensInPerSection: 1800, tokensOut: 400 },
-  jury: { jurors: 3, chapterInputRatio: 1.15, tokensOut: 1400, presidentTokensOut: 1800 },
+  writing: { inputPerOutputToken: 3.5, minInputTokens: 6000, outputFactor: 2.5 },
+  grounding: { wordsPerClaim: 30, claimsPerCall: 10, tokensIn: 2600, tokensOut: 850 },
+  summaries: { tokensInPerSection: 1000, tokensOut: 1000 },
+  jury: {
+    jurors: 3,
+    chapterInputRatio: 1.15,
+    tokensOut: 4300,
+    presidentTokensIn: 1600,
+    presidentTokensOut: 700,
+  },
   revision: { shareOfSections: { bas: 0.2, moyen: 0.45, haut: 0.8 }, inputPerOutputToken: 4 },
   global: { summaryTokensPerSection: 500, tokensOut: 1600, roundsExpected: { bas: 0, moyen: 1 } },
   finishing: {

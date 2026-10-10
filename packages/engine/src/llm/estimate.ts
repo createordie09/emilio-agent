@@ -126,7 +126,7 @@ export function estimateMission(i: EstimateInput): CostEstimate {
       );
     // P5 : rédaction (M × 1,3 jetons/mot, contexte en plus), ancrage, résumés.
     for (const u of units) {
-      const tOut = u.words * tpw;
+      const tOut = u.words * tpw * cfg.writing.outputFactor;
       add(
         'P5',
         'section_writer',
@@ -159,7 +159,7 @@ export function estimateMission(i: EstimateInput): CostEstimate {
       'P6',
       'jury_president',
       chapters * evals,
-      cfg.jury.jurors * cfg.jury.tokensOut + 1500,
+      cfg.jury.presidentTokensIn,
       cfg.jury.presidentTokensOut,
     );
     const revised = Math.ceil(sections * cfg.revision.shareOfSections[sc] * rounds);
@@ -180,13 +180,7 @@ export function estimateMission(i: EstimateInput): CostEstimate {
         units.filter((u) => u.node.kind !== 'corps').reduce((s, u) => s + u.words * tpw, 0);
       for (const role of jurors.slice(0, cfg.jury.jurors))
         add('P7', role, passes, gIn, cfg.jury.tokensOut);
-      add(
-        'P7',
-        'jury_president',
-        passes,
-        cfg.jury.jurors * cfg.jury.tokensOut + 1500,
-        cfg.jury.presidentTokensOut,
-      );
+      add('P7', 'jury_president', passes, cfg.jury.presidentTokensIn, cfg.jury.presidentTokensOut);
       add('P7', 'harmonizer', passes, gIn, cfg.global.tokensOut);
     }
     // P8 / P9.
