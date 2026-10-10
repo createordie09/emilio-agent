@@ -58,3 +58,59 @@ Format : contexte → décision → conséquences. Référence au cahier des cha
 
 - Route accessible seulement si « Mode développeur » est activé (Paramètres → Apparence) ; sinon redirection vers l'accueil. Montre tokens, typographie, rayons, ombres, tous les composants et leurs états (survol / focus / actif simulés par classes).
 - Captures de validation : `docs/screenshots/` (clair et sombre), régénérées par `pnpm shots` (sous Xvfb en cloud).
+
+---
+
+# Jalon J2 — Moteur et mode simulé
+
+## ADR-010 — Machine à états et file de tâches (J2, §8.1, §8.2)
+
+- Table de transitions explicite (`orchestrator/transitions.ts`), appliquée par `MissionRepo.transition` : toute transition interdite lève une erreur ; chaque transition autorisée est journalisée dans `events` (message français). Un test vérifie les 144 couples (de, vers) contre la table.
+- Ajouts à la table du §8.1, nécessaires au reste du CdC : `paused_budget → running` (budget relevé ; la « finalisation anticipée P8–P9 » du §8.6 est reportée à J9), `failed → running` (« Réessayer à partir de cette étape »), `paused_* → paused`.
+- File = table SQLite `tasks`, derrière l'interface `QueueAdapter` (§4.6). `enqueue` est idempotent par **clé naturelle** (`_key` dans `input_json`). `claim` : priorité décroissante puis ancienneté, dans la limite du parallélisme, bail de 10 min. `complete` ne s'applique que si la tâche est encore `running` (un rejeu tardif ne duplique rien). Effets + événement d'une tâche = une transaction (§8.3).
+- `fail` incrémente `attempts` (3 par défaut) ; `release` (pause, crédit, réseau, arrêt) **n'incrémente pas** `attempts`.
+
+## ADR-011 — Reprise après crash (J2, §8.2, §8.6)
+
+- Au démarrage du moteur, **toutes** les tâches `running` sont libérées (et non seulement celles au bail expiré, comme le suggère littéralement le §8.2) : le moteur vient d'être lancé, aucune tâche ne peut réellement tourner, et attendre 10 min l'expiration des baux bloquerait inutilement la mission. La récupération par bail expiré reste disponible pour la supervision en cours d'exécution.
+- Les missions `running` reprennent automatiquement (option `autoResumeOnStart`, vrai par défaut) ou passent en `paused`.
+- Checkpoint (snapshot : phase, tâches faites, coût) à la fin de chaque phase ; la reprise repart de la table `tasks`, source de vérité, pas du checkpoint. Le contexte d'une tâche est toujours relu depuis la base (§8.3).
+
+## ADR-012 — Client LLM, coûts et sorties structurées (J2, §14.1) — points [À VÉRIFIER] levés
+
+- Vérifié dans la documentation OpenRouter : `POST /api/v1/chat/completions` ; `usage.prompt_tokens`, `usage.completion_tokens`, `usage.cost` (**inclus par défaut**, le paramètre `usage: {include: true}` est obsolète) ; sorties structurées via `response_format: {type: "json_schema", json_schema: {name, strict, schema}}` ; routage `provider: {require_parameters: true}` pour n'atteindre que des fournisseurs qui les gèrent ; codes d'erreur standards (400/401/402/403/408/429/502/503).
+- Coût de la mission = `usage.cost` ; repli sur la grille de prix du cache `GET /models` si absent (`ModelCaller.gridCost`). L'endpoint `/generation?id=` (coût exact a posteriori) n'est pas utilisé en J2.
+- Réessais (backoff exponentiel + aléa, plafonné) sur 429 / 408 / 5xx / réseau ; **aucun** sur 400 / 401 / 402 / 403 / 404. Mapping : 401/403 → `E_KEY_INVALID`, 402 → `E_NO_CREDIT`, 429 → `E_RATE_LIMIT`, 404/503 → `E_MODEL_UNAVAILABLE`, 400 → `E_BAD_REQUEST`.
+- `ModelCaller` (équivalent de `callModel`) : modèle par rôle **lu dans la configuration de la mission** (jamais de défaut codé en dur ; rôle sans modèle = erreur), bascule sur `fallbackModels` si `E_MODEL_UNAVAILABLE`, contrôle de budget avant appel, journal `llm_calls` (succès et erreurs), alertes 50 / 80 / 95 % une seule fois chacune.
+- Sortie d'agent : JSON validé par zod (`z.toJSONSchema` pour le schéma transmis), **un** réessai avec le message de validation renvoyé au modèle (§8.3), puis `E_SCHEMA`.
+
+## ADR-013 — Mode simulé (J2, §21.2)
+
+- `MockLlmClient` : déterministe, sans réseau, coût fixe, latence réglable, pannes injectables (`failNext`, crédit épuisé, hors ligne). Le mode est **par mission** (`config.llmMode`) : une mission factice ne peut jamais dépenser de crédit réel.
+- `MOCK_MODEL_ID` est une étiquette (`simule/…`), pas un identifiant OpenRouter.
+- Outils réservés au mode développeur (vérifié côté main, pas seulement dans l'interface) : mission factice de bout en bout (P0 → P9, 16 tâches, 15 appels simulés) et boutons de panne simulée.
+- Agents de J2 : un agent générique par rôle (`demoRegistry`, sortie `{resume, manques}`) avec le bloc commun « Règles d'intégrité » ; les vrais prompts et schémas arrivent avec leurs jalons.
+
+## ADR-014 — Comportement face aux interruptions (J2, §8.6, §20)
+
+| Cas                             | Comportement                                                                                                                                               |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Crédit épuisé (402)             | tâche libérée sans pénalité, `paused_no_credit`, reprise auto dès que la sonde crédit répond OK (toutes les 15 min ; immédiate au « rechargement » simulé) |
+| Budget atteint                  | `paused_budget` ; reprise manuelle après relèvement                                                                                                        |
+| Réseau                          | retries avec backoff 2 s → 5 min ; au bout de 10 min : `paused_network`, sonde toutes les 30 s                                                             |
+| Clé invalide (401)              | `paused` + message vers les Paramètres                                                                                                                     |
+| 429 répétés                     | parallélisme ramené à 1, remonté d'un cran après 5 succès consécutifs                                                                                      |
+| Échec de tâche × `max_attempts` | mission `failed` + bouton « Réessayer » (tâches échouées relancées, bloquées réactivées)                                                                   |
+| Pause utilisateur               | plus de nouvelle tâche ; tâches en cours terminées, interrompues après 60 s (libérées sans pénalité)                                                       |
+
+- Les délais d'attente de backoff par tâche sont en mémoire (sans conséquence en cas de perte : une tâche libérée est simplement reprise au tick suivant).
+
+## ADR-015 — Dashboard de J2 provisoire
+
+- Écrans `Mes missions` et `Mission` volontairement minimaux : composants existants du design system, frise des phases, indicateurs, tâches, flux d'événements en direct (poussés du moteur vers le renderer, regroupés sur 150 ms). À reprendre selon la DA validée et selon §6.6 (onglets, panneau d'indicateurs) en J3+.
+- Version du moteur : 0.2.0.
+
+## ADR-016 — Validation de la DA (point d'arrêt §22)
+
+- Direction artistique (design system §6.1, page `/design`, captures clair et sombre de `docs/screenshots/`) **validée par le porteur du projet** le 3 octobre 2026. Les écrans des jalons suivants peuvent être construits dessus.
+- Le dashboard de mission de J2 reste provisoire et sera repris selon la §6.6.

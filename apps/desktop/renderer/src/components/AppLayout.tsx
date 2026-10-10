@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { BookMarked, Home, Palette, Settings, FolderKanban } from 'lucide-react';
 import { AppShell, CreditCard, Sidebar, type NavItem } from '@/components/ui';
 import { fr, fmtUsd } from '@/lib/fr';
-import { useKeyInfo, useKeyStatus } from '@/lib/queries';
+import { useKeyInfo, useKeyStatus, useMissions } from '@/lib/queries';
 import { useUi } from '@/stores/ui';
 
 export function AppLayout() {
@@ -10,6 +10,7 @@ export function AppLayout() {
   const devMode = useUi((s) => s.devMode);
   const status = useKeyStatus();
   const info = useKeyInfo(Boolean(status.data?.configured));
+  const missions = useMissions();
 
   const items: NavItem[] = [
     { to: '/', label: fr.nav.home, icon: Home, end: true },
@@ -31,6 +32,9 @@ export function AppLayout() {
         <Sidebar
           nav={items}
           footerNav={footer}
+          recent={missions.data
+            ?.slice(0, 5)
+            .map((m) => ({ id: m.id, title: m.title, to: `/missions/${m.id}` }))}
           collapsed={collapsed}
           onToggle={toggle}
           onNewMission={() => nav('/missions')}

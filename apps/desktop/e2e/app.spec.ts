@@ -12,14 +12,14 @@ test('isolation du renderer, moteur, clé, modèles, thème', async () => {
     }));
     expect(iso.require).toBe('undefined');
     expect(iso.process).toBe('undefined');
-    expect(iso.api).toEqual(['app', 'engine', 'key', 'models', 'ui']);
+    expect(iso.api).toEqual(['app', 'engine', 'key', 'missions', 'models', 'onEvent', 'ui']);
 
     await expect(page.getByRole('heading', { name: 'Bonjour !' })).toBeVisible();
 
     // Paramètres → À propos : le moteur répond (utilityProcess / IPC / SQLite migré).
     await page.evaluate(() => (location.hash = '#/parametres'));
     await page.getByRole('tab', { name: 'À propos' }).click();
-    await expect(page.getByText(/En marche · v0\.1\.0 · base v1/)).toBeVisible();
+    await expect(page.getByText(/En marche · v0\.2\.0 · base v1/)).toBeVisible();
 
     // Clé : enregistrement (chiffré), jamais renvoyée en clair.
     await page.getByRole('tab', { name: 'Clé et modèles' }).click();

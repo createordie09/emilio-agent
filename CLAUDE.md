@@ -92,6 +92,11 @@ pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 - E2E : `pnpm build` puis `cd apps/desktop && xvfb-run -a npx playwright test` (root ⇒ `--no-sandbox`, déjà passé par les helpers).
 - Le preload sandboxé n'importe que `@emilio/shared/ipc` (pas de zod).
 
+## Moteur (J2)
+
+- Missions : `MissionRepo.transition` (table §8.1) → file `SqliteQueue` → `MissionRunner` (planificateur) → `ModelCaller` (seul point d'appel LLM). Mode simulé par mission (`config.llmMode`), jamais d'appel payant en test.
+- Mission factice : mode développeur → « Mes missions » → bouton « Lancer une mission factice » ; boutons de panne simulée sur la page de la mission.
+
 ## Qualité
 
 TypeScript `strict`, ESLint + Prettier, aucune sortie d'agent non validée par zod. Mode LLM simulé (mock) obligatoire dès J2 (§21.2) : aucun test ne doit faire d'appel payant.

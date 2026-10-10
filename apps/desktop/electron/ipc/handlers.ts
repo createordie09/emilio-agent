@@ -11,6 +11,9 @@ import {
   THEMES,
   type UiSettings,
   type EnginePing,
+  type MissionDetail,
+  type MissionEvent,
+  type MissionSummary,
 } from '@emilio/shared';
 import type { EngineClient } from '../engine-host';
 
@@ -58,7 +61,37 @@ export function createHandlers(d: HandlerDeps) {
     return { configured: Boolean(masked), masked: masked ?? null };
   }
 
+  /** Outils réservés au mode développeur (missions factices, pannes simulées). */
+  async function requireDev(): Promise<void> {
+    const ui = await get<Partial<UiSettings>>(UI_KEY);
+    if (!ui?.devMode) throw new AppError('E_BAD_REQUEST', 'Mode développeur requis');
+  }
+  const guard = <T>(f: () => Promise<Result<T>>): Promise<Result<T>> => f().catch((e) => fail(e));
+  const mission = (method: Parameters<EngineClient['request']>[0]) => (id: string) =>
+    d.engine.request<MissionSummary>(method, { id });
+
   const handlers = {
+    [IPC.missionsList]: async () => d.engine.request<MissionSummary[]>('listMissions'),
+    [IPC.missionsGet]: async (id: string) => d.engine.request<MissionDetail>('getMission', { id }),
+    [IPC.missionsCreateDemo]: async (opts?: { budgetUsd?: number }) =>
+      guard(async () => {
+        await requireDev();
+        return d.engine.request<MissionSummary>('createDemoMission', {
+          budgetUsd: opts?.budgetUsd,
+        });
+      }),
+    [IPC.missionsStart]: async (id: string) => mission('startMission')(id),
+    [IPC.missionsPause]: async (id: string) => mission('pauseMission')(id),
+    [IPC.missionsResume]: async (id: string) => mission('resumeMission')(id),
+    [IPC.missionsCancel]: async (id: string) => mission('cancelMission')(id),
+    [IPC.missionsRetry]: async (id: string) => mission('retryMission')(id),
+    [IPC.missionsSimulate]: async (kind: string) =>
+      guard(async () => {
+        await requireDev();
+        return d.engine.request<null>('simulate', { kind });
+      }),
+    [IPC.missionsEvents]: async (id: string | null, opts?: { limit?: number }) =>
+      d.engine.request<MissionEvent[]>('listEvents', { id, limit: opts?.limit }),
     [IPC.appInfo]: async () => d.appInfo(),
     [IPC.enginePing]: async () => d.engine.request<EnginePing>('ping'),
     [IPC.keyStatus]: async (): Promise<Result<KeyStatus>> => {

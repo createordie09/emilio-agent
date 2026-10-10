@@ -38,3 +38,27 @@ export const useModels = () =>
       return r.value;
     },
   });
+
+const unwrap = async <T>(
+  p: Promise<{ ok: true; value: T } | { ok: false; error: unknown }>,
+): Promise<T> => {
+  const r = await p;
+  if (!r.ok) throw r.error;
+  return r.value;
+};
+
+export const useMissions = () =>
+  useQuery({ queryKey: ['missions'], queryFn: () => unwrap(api.missions.list()) });
+
+export const useMission = (id: string | undefined) =>
+  useQuery({
+    queryKey: ['mission', id],
+    enabled: Boolean(id),
+    queryFn: () => unwrap(api.missions.get(id!)),
+  });
+
+export const useMissionEvents = (id: string | null) =>
+  useQuery({
+    queryKey: ['events', id],
+    queryFn: () => unwrap(api.missions.events(id, { limit: 100 })),
+  });
