@@ -41,7 +41,7 @@ export type SectionSources = {
  */
 export async function loadSectionSources(
   d: { db: Db; store: KbStore; embedder: EmbeddingAdapter; cfg: WritingConfig },
-  p: { missionId: string; node: OutlineNodeView; maxTokens: number },
+  p: { missionId: string; node: OutlineNodeView; maxTokens: number; mustInclude?: string[] },
 ): Promise<SectionSources> {
   const rows = d.db
     .prepare(
@@ -51,6 +51,17 @@ export async function loadSectionSources(
        ORDER BY ss.rank LIMIT ?`,
     )
     .all(p.missionId, p.node.id, d.cfg.maxSourcesPerSection) as SrcRow[];
+  // Révision : les sources déjà citées par la version courante restent disponibles, même au-delà de la limite.
+  const have = new Set(rows.map((r) => r.id));
+  const extra = (p.mustInclude ?? []).filter((id) => !have.has(id));
+  if (extra.length)
+    rows.push(
+      ...(d.db
+        .prepare(
+          `SELECT id, title, authors_json, year, abstract, fulltext_status FROM sources WHERE mission_id=? AND id IN (${extra.map(() => '?').join(',')}) AND verification_status IN ('verified','partially_verified') AND type != 'document_interne'`,
+        )
+        .all(p.missionId, ...extra) as SrcRow[]),
+    );
   const sources = new Map<string, SourceInfo>();
   let extracts: Extract[] = [];
   const query = `${p.node.title}. ${p.node.objective} ${p.node.keyQuestions.join(' ')}`.trim();

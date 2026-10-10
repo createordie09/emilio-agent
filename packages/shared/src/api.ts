@@ -8,6 +8,7 @@ import type {
   SourcesConfigInfo,
 } from './sources';
 import type { ThemePreference } from './constants';
+import type { JuryScopeView, SectionVersionSummary } from './jury';
 import type { MissionDetail, MissionEvent, MissionSummary } from './mission';
 import type { BriefDraft, WorkType } from './brief';
 import type {
@@ -80,6 +81,11 @@ export interface EmilioApi {
     section(nodeId: string): Promise<Result<SectionDraftDetail>>;
     analysis(missionId: string): Promise<Result<FieldAnalysisView | null>>;
     frontMatter(missionId: string): Promise<Result<FrontMatterView[]>>;
+    /** Jury (CdC §6.7) : évaluations par chapitre et globale, avec les révisions menées. */
+    jury(missionId: string): Promise<Result<JuryScopeView[]>>;
+    /** Historique des versions d'une section (onglet « Brouillons »). */
+    versions(nodeId: string): Promise<Result<SectionVersionSummary[]>>;
+    version(draftId: string): Promise<Result<SectionDraftDetail>>;
   };
   /** Cadrage, plan et validation (CdC §9 P1–P2, §6.5, §14.5). */
   plan: {
@@ -206,7 +212,10 @@ export type EngineMethod =
   | 'listSectionDrafts'
   | 'getSectionDraft'
   | 'getFieldAnalysis'
-  | 'getFrontMatter';
+  | 'getFrontMatter'
+  | 'getJury'
+  | 'listSectionVersions'
+  | 'getSectionVersion';
 export type EngineRequest = { id: number; method: EngineMethod; params?: unknown };
 export type EngineResponse = { id: number; result: Result<unknown> };
 export type EngineEvent = { event: 'ready' | 'log' | 'live'; payload?: unknown };

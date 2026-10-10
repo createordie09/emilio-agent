@@ -29,6 +29,10 @@ import {
   StatusBadge,
   Stepper,
   Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
   type ActivityItem,
 } from '@/components/ui';
 import { api } from '@/lib/api';
@@ -40,6 +44,8 @@ import { useUi } from '@/stores/ui';
 import { SourcesPanel } from '@/components/SourcesPanel';
 import { AnalysisPanel } from '@/components/AnalysisPanel';
 import { WritingPanel } from '@/components/WritingPanel';
+import { JuryPanel } from '@/components/JuryPanel';
+import { DraftsPanel } from '@/components/DraftsPanel';
 
 const TASK_ICON: Record<TaskSummary['status'], { icon: typeof CheckCircle2; cls: string }> = {
   done: { icon: CheckCircle2, cls: 'text-success' },
@@ -99,6 +105,7 @@ export function MissionPage() {
           description: r.error ? errorText(r.error) : undefined,
         });
     };
+  const planned = m.planVersion > 0 && m.status !== 'awaiting_plan_validation';
   const st = STATUS_FR[m.status];
   const canPause = m.status === 'running';
   const canResume = m.status.startsWith('paused');
@@ -293,13 +300,34 @@ export function MissionPage() {
           </div>
         </div>
 
-        <SourcesPanel missionId={m.id} simulated={m.simulated} />
-        {m.planVersion > 0 && m.status !== 'awaiting_plan_validation' && (
-          <AnalysisPanel missionId={m.id} />
-        )}
-        {m.planVersion > 0 && m.status !== 'awaiting_plan_validation' && (
-          <WritingPanel missionId={m.id} />
-        )}
+        <Tabs defaultValue="sources" className="space-y-4">
+          <TabsList aria-label="Détails de la mission">
+            <TabsTrigger value="sources">Sources</TabsTrigger>
+            {planned && <TabsTrigger value="analysis">Analyse</TabsTrigger>}
+            {planned && <TabsTrigger value="writing">Rédaction</TabsTrigger>}
+            {planned && <TabsTrigger value="jury">Jury</TabsTrigger>}
+            {planned && <TabsTrigger value="drafts">Brouillons</TabsTrigger>}
+          </TabsList>
+          <TabsContent value="sources">
+            <SourcesPanel missionId={m.id} simulated={m.simulated} />
+          </TabsContent>
+          {planned && (
+            <>
+              <TabsContent value="analysis">
+                <AnalysisPanel missionId={m.id} />
+              </TabsContent>
+              <TabsContent value="writing">
+                <WritingPanel missionId={m.id} />
+              </TabsContent>
+              <TabsContent value="jury">
+                <JuryPanel missionId={m.id} />
+              </TabsContent>
+              <TabsContent value="drafts">
+                <DraftsPanel missionId={m.id} />
+              </TabsContent>
+            </>
+          )}
+        </Tabs>
 
         {devMode && (
           <section className="space-y-3 rounded-lg border border-dashed border-border p-5">

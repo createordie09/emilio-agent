@@ -2,7 +2,7 @@ import { AppError, type AgentRole } from '@emilio/shared';
 import { newId, nowIso, type Db } from '../storage/db';
 import type { EventJournal } from '../events/journal';
 import type { MissionRepo } from '../storage/missions';
-import type { MissionExecConfig } from './exec-config';
+import { clampParallelism, type MissionExecConfig } from './exec-config';
 import type { ChatMessage, LlmClient, LlmResponse } from './types';
 
 export type PriceGrid = (model: string) => { prompt: number; completion: number } | null;
@@ -43,7 +43,33 @@ export class ModelCaller {
     private readonly prices: PriceGrid = () => null,
   ) {}
 
+  /** Appels simultanés par mission : jamais plus que le parallélisme configuré (§7.6), même quand une tâche lance plusieurs agents (jurés). */
+  private slots = new Map<string, { active: number; waiting: (() => void)[] }>();
+
+  private async acquire(missionId: string): Promise<() => void> {
+    const limit = clampParallelism(this.missions.config<MissionExecConfig>(missionId).parallelism);
+    const s = this.slots.get(missionId) ?? { active: 0, waiting: [] };
+    this.slots.set(missionId, s);
+    if (s.active >= limit) await new Promise<void>((resolve) => s.waiting.push(resolve));
+    else s.active++;
+    return () => {
+      const next = s.waiting.shift();
+      if (next)
+        next(); // le créneau passe directement à l'appel suivant
+      else s.active--;
+    };
+  }
+
   async call(p: CallParams): Promise<CallResult> {
+    const release = await this.acquire(p.missionId);
+    try {
+      return await this.callInner(p);
+    } finally {
+      release();
+    }
+  }
+
+  private async callInner(p: CallParams): Promise<CallResult> {
     const cfg = this.missions.config<MissionExecConfig>(p.missionId);
     const primary = cfg.models[p.role as AgentRole];
     if (!primary) {

@@ -35,7 +35,14 @@ import {
   type StructureTemplate,
 } from './config';
 import { compactBrief, dataProfileText, outlineText } from './brief-text';
-import { allocateWords, leaves, mergeProposal, OutlineRepo } from './outline';
+import {
+  allocateWords,
+  chapterGroups,
+  chapterOf,
+  leaves,
+  mergeProposal,
+  OutlineRepo,
+} from './outline';
 import type { WritingConfig } from '../writing/config';
 import { CadrageSchema, PlanSchema, type Cadrage } from './schemas';
 
@@ -838,15 +845,6 @@ export class PlanningService {
     // Une section dépend de sa recherche, de l'analyse si elle présente des résultats, et de la section précédente du même chapitre
     // (pour en recevoir le résumé) : les chapitres, eux, avancent en parallèle.
     const byId = new Map(ov.nodes.map((n) => [n.id, n]));
-    const chapterOf = (n: OutlineNodeView): string => {
-      let cur = n;
-      while (cur.parentId && byId.get(cur.parentId)) {
-        const p = byId.get(cur.parentId)!;
-        if (cur.level === 'chapitre' || p.level === 'partie') break;
-        cur = p;
-      }
-      return cur.id;
-    };
     const lastInChapter = new Map<string, string>();
     const bodyKeys: string[] = [];
     const bodyUnits = units.filter((u) => u.node.kind === 'corps');
@@ -857,7 +855,7 @@ export class PlanningService {
         ...(targets.some((t) => t.id === n.id) ? [`p3.recherche.${n.id}`] : []),
         ...(hasData && wantsResults.test(`${n.title} ${n.objective}`) ? ['p4.analyse'] : []),
       ];
-      const ch = chapterOf(n);
+      const ch = chapterOf(n, byId);
       if (lastInChapter.has(ch)) deps.push(lastInChapter.get(ch)!);
       lastInChapter.set(ch, key);
       bodyKeys.push(key);
@@ -891,6 +889,40 @@ export class PlanningService {
       input: { handler: 'p5.front' },
       dependsOnKeys: generalKeys.length ? generalKeys : bodyKeys,
     });
+    // P6 : un jury par chapitre, dès que toutes ses sections sont rédigées (chapitres en parallèle, §9 P6).
+    const reviewKeys: string[] = [];
+    for (const g of chapterGroups(
+      ov.nodes,
+      bodyUnits.map((u) => u.node),
+    )) {
+      const key = `p6.chapitre.${g.id}`;
+      reviewKeys.push(key);
+      tasks.push({
+        key,
+        phase: 'P6',
+        agentRole: 'local',
+        label: `Jury — ${g.node.numbering ? g.node.numbering + ' ' : ''}${g.node.title}`,
+        input: { handler: 'p6.review', chapterId: g.id },
+        dependsOnKeys: g.units.map((u) => `p5.redaction.${u.id}`),
+      });
+    }
+    // P7 : harmonisation et évaluation globale (après les chapitres, l'introduction, la conclusion et les liminaires), puis mise à jour finale.
+    tasks.push({
+      key: 'p7.global',
+      phase: 'P7',
+      agentRole: 'local',
+      label: 'Harmonisation et évaluation globale',
+      input: { handler: 'p7.global' },
+      dependsOnKeys: [...reviewKeys, ...generalKeys, 'p5.liminaires'],
+    });
+    tasks.push({
+      key: 'p7.finalize',
+      phase: 'P7',
+      agentRole: 'local',
+      label: 'Mise à jour finale (introduction, conclusion, résumé)',
+      input: { handler: 'p7.finalize' },
+      dependsOnKeys: ['p7.global'],
+    });
     this.d.db.transaction(() => {
       const t = nowIso();
       const nextBrief = {
@@ -918,7 +950,7 @@ export class PlanningService {
           id,
         );
       const cfg = this.cfg(id);
-      this.d.missions.setConfig(id, { ...cfg, stopAfterPhase: 'P5' });
+      this.d.missions.setConfig(id, { ...cfg, stopAfterPhase: 'P7' });
       this.d.queue.enqueue(id, tasks);
       start();
     })();

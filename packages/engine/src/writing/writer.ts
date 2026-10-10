@@ -10,6 +10,7 @@ import {
   type SectionClaimView,
   type SectionDraftDetail,
   type SectionDraftSummary,
+  type SectionVersionSummary,
 } from '@emilio/shared';
 import { newId, nowIso, type Db } from '../storage/db';
 import type { MissionRepo } from '../storage/missions';
@@ -129,9 +130,11 @@ export class SectionWriter {
   private latest(nodeId: string) {
     return this.d.db
       .prepare(
-        'SELECT id, version, word_count, checks_json, summary FROM drafts WHERE outline_node_id=? ORDER BY version DESC LIMIT 1',
+        `SELECT id, version, word_count, checks_json, summary FROM drafts WHERE id = COALESCE(
+           (SELECT current_version_id FROM outline_nodes WHERE id=?),
+           (SELECT id FROM drafts WHERE outline_node_id=? ORDER BY version DESC LIMIT 1))`,
       )
-      .get(nodeId) as
+      .get(nodeId, nodeId) as
       | {
           id: string;
           version: number;
@@ -165,8 +168,9 @@ export class SectionWriter {
   ): string {
     const rows = this.d.db
       .prepare(
-        `SELECT n.id, n.numbering, n.title, n.ordinal, n.parent_id, d.summary FROM outline_nodes n JOIN drafts d ON d.outline_node_id=n.id
-         WHERE n.mission_id=? AND d.summary IS NOT NULL AND d.version=(SELECT MAX(version) FROM drafts WHERE outline_node_id=n.id) ORDER BY n.ordinal`,
+        `SELECT n.id, n.numbering, n.title, n.ordinal, n.parent_id, d.summary FROM outline_nodes n
+         JOIN drafts d ON d.id = COALESCE(n.current_version_id, (SELECT id FROM drafts WHERE outline_node_id=n.id ORDER BY version DESC LIMIT 1))
+         WHERE n.mission_id=? AND d.summary IS NOT NULL ORDER BY n.ordinal`,
       )
       .all(missionId) as {
       id: string;
@@ -489,9 +493,17 @@ export class SectionWriter {
     claims: { claim: Claim; extracts: Extract[]; verdict: Verdict }[],
     chk: CheckCtx,
     author: string,
+    meta: { round?: number; changeSummary?: string } = {},
   ): { version: number; draftId: string } {
     const prev = this.latest(node.id);
-    const version = (prev?.version ?? 0) + 1;
+    const maxV = (
+      this.d.db
+        .prepare('SELECT MAX(version) AS v FROM drafts WHERE outline_node_id=?')
+        .get(node.id) as {
+        v: number | null;
+      }
+    ).v;
+    const version = (maxV ?? 0) + 1;
     const id = newId();
     const t = nowIso();
     // Les alias de la section deviennent des identifiants réels de sources (conversion P8 en citations, J8).
@@ -515,9 +527,9 @@ export class SectionWriter {
           real,
           checks.wordsActual,
           author,
-          0,
+          meta.round ?? 0,
           prev?.id ?? null,
-          'Version initiale',
+          meta.changeSummary ?? 'Version initiale',
           summary,
           JSON.stringify(checks),
           t,
@@ -541,7 +553,7 @@ export class SectionWriter {
           t,
           t,
         );
-        if (src && c.verdict.niveau === 'supported')
+        if (src && c.verdict.niveau === 'supported' && !prev)
           this.d.db
             .prepare('UPDATE sources SET used_in_text = used_in_text + 1 WHERE id=?')
             .run(src.id);
@@ -556,6 +568,65 @@ export class SectionWriter {
   }
 
   // ------------------------------------------------------------------ section du corps
+
+  /** Matériau d'une section : sources et extraits (§8.4), nombres autorisés, variables du prompt. */
+  private async prepare(
+    missionId: string,
+    node: OutlineNodeView,
+    nodes: OutlineNodeView[],
+    o: { mustInclude?: string[] },
+  ) {
+    const brief = this.brief(missionId);
+    const analysis = this.d.analysis.get(missionId);
+    const wantsResults = new RegExp(this.d.cfg.resultsPattern, 'i').test(
+      `${node.title} ${node.objective}`,
+    );
+    const unitWords =
+      writingUnits(nodes).find((u) => u.node.id === node.id)?.words ?? node.targetWords;
+    const src = await loadSectionSources(
+      { db: this.d.db, store: this.d.store, embedder: this.d.embedder(), cfg: this.d.cfg },
+      { missionId, node, maxTokens: this.maxExtractTokens(missionId), mustInclude: o.mustInclude },
+    );
+    const useResults = Boolean(analysis) && wantsResults;
+    const tables = new Map((analysis?.results ?? []).map((r) => [r.id, r]));
+    const allowed = new Set<string>([
+      ...briefNumbers(brief, node),
+      ...(analysis ? this.d.analysis.allowedNumbers(analysis) : []),
+    ]);
+    const chk: CheckCtx = {
+      sources: src.sources,
+      extracts: src.extracts,
+      allowedNumbers: allowed,
+      smallIntMax: this.d.cfg.smallIntMax,
+      ngram: this.d.cfg.ngram,
+      maxQuoteWords: this.d.cfg.maxQuoteWords,
+    };
+    const next = nodes[nodes.indexOf(node) + 1];
+    const vars = {
+      discipline: brief.discipline,
+      numerotation: node.numbering ?? '',
+      titre_section: node.title,
+      type_travail: WORK_TYPE_LABEL_FR[brief.workType].toLowerCase(),
+      titre: brief.titre,
+      contexte_mission: missionContext(brief, nodes, this.d.cfg.missionContextMaxChars),
+      objectif: node.objective || node.title,
+      questions_cles: node.keyQuestions.map((q) => `- ${q}`).join('\n') || '- (non précisées)',
+      mots_cibles: unitWords,
+      resume_contexte_precedent: this.summaries(missionId, node, nodes),
+      titre_section_suivante: next
+        ? `${next.numbering ?? ''} ${next.title}`.trim()
+        : '(fin du travail)',
+      sources_disponibles:
+        [...src.sources.values()].map((s) => `${s.alias} : ${s.label}`).join('\n') ||
+        '(aucune source disponible : n’affirme rien de factuel ; signale ce qui manque)',
+      fiches: src.notes || '(aucune)',
+      extraits: this.extractsText(src.extracts) || '(aucun extrait)',
+      resultats: useResults && analysis ? this.resultsBlock(analysis) : '',
+      registre: this.d.cfg.register,
+      personne: this.d.cfg.person,
+    };
+    return { brief, analysis, unitWords, src, chk, allowed, vars, tables };
+  }
 
   async writeSection(
     missionId: string,
@@ -639,48 +710,8 @@ export class SectionWriter {
       };
     }
 
-    const src = await loadSectionSources(
-      { db: this.d.db, store: this.d.store, embedder: this.d.embedder(), cfg: this.d.cfg },
-      { missionId, node, maxTokens: this.maxExtractTokens(missionId) },
-    );
-    const useResults = Boolean(analysis) && wantsResults;
-    const tables = new Map((analysis?.results ?? []).map((r) => [r.id, r]));
-    const allowed = new Set<string>([
-      ...briefNumbers(brief, node),
-      ...(analysis ? this.d.analysis.allowedNumbers(analysis) : []),
-    ]);
-    const chk: CheckCtx = {
-      sources: src.sources,
-      extracts: src.extracts,
-      allowedNumbers: allowed,
-      smallIntMax: this.d.cfg.smallIntMax,
-      ngram: this.d.cfg.ngram,
-      maxQuoteWords: this.d.cfg.maxQuoteWords,
-    };
-    const next = nodes[nodes.indexOf(node) + 1];
-    const vars = {
-      discipline: brief.discipline,
-      numerotation: node.numbering ?? '',
-      titre_section: node.title,
-      type_travail: WORK_TYPE_LABEL_FR[brief.workType].toLowerCase(),
-      titre: brief.titre,
-      contexte_mission: missionContext(brief, nodes, this.d.cfg.missionContextMaxChars),
-      objectif: node.objective || node.title,
-      questions_cles: node.keyQuestions.map((q) => `- ${q}`).join('\n') || '- (non précisées)',
-      mots_cibles: unitWords,
-      resume_contexte_precedent: this.summaries(missionId, node, nodes),
-      titre_section_suivante: next
-        ? `${next.numbering ?? ''} ${next.title}`.trim()
-        : '(fin du travail)',
-      sources_disponibles:
-        [...src.sources.values()].map((s) => `${s.alias} : ${s.label}`).join('\n') ||
-        '(aucune source disponible : n’affirme rien de factuel ; signale ce qui manque)',
-      fiches: src.notes || '(aucune)',
-      extraits: this.extractsText(src.extracts) || '(aucun extrait)',
-      resultats: useResults && analysis ? this.resultsBlock(analysis) : '',
-      registre: this.d.cfg.register,
-      personne: this.d.cfg.person,
-    };
+    const prep = await this.prepare(missionId, node, nodes, {});
+    const { chk, allowed, vars, tables } = prep;
     const first = await this.callWriter(
       missionId,
       'redaction:section',
@@ -730,6 +761,263 @@ export class SectionWriter {
       skipped: false,
       placeholder: false,
     };
+  }
+
+  /**
+   * Révision ciblée d'une section (CdC §13.4) : le rédacteur ne modifie que ce que visent les remarques ; la nouvelle version passe par
+   * les mêmes contrôles d'intégrité (§12) et est enregistrée sans écraser l'ancienne (toutes les versions sont conservées, §5.9).
+   */
+  async reviseSection(
+    missionId: string,
+    nodeId: string,
+    remarks: { severity: string; problem: string; expected: string }[],
+    round: number,
+    signal?: AbortSignal,
+    rewrite = false,
+  ): Promise<{ draftId: string; version: number; words: number; checks: SectionChecks }> {
+    const nodes = this.d.outline.list(missionId);
+    const node = nodes.find((n) => n.id === nodeId);
+    const cur = this.latest(nodeId);
+    if (!node || !cur) throw new AppError('E_INTERNAL', 'Section à réviser introuvable.');
+    const curMd = (
+      this.d.db.prepare('SELECT markdown FROM drafts WHERE id=?').get(cur.id) as {
+        markdown: string;
+      }
+    ).markdown;
+    // Les sources déjà citées restent disponibles, même si la recherche en a retenu d'autres depuis.
+    const cited = [...curMd.matchAll(/\[@([0-9a-f-]{36})/g)].map((m) => m[1]!);
+    const prep = await this.prepare(missionId, node, nodes, { mustInclude: [...new Set(cited)] });
+    const { chk, allowed, vars, unitWords, tables, brief } = prep;
+    const idToAlias = new Map([...chk.sources.values()].map((s) => [s.id, s.alias]));
+    const aliased = curMd.replace(/\[@([0-9a-f-]{36})/g, (m, id: string) =>
+      idToAlias.has(id) ? `[@${idToAlias.get(id)}` : m,
+    );
+    const problemes = remarks
+      .map(
+        (r, i) => `${i + 1}. [${r.severity}] ${r.problem}\n   Correction attendue : ${r.expected}`,
+      )
+      .join('\n');
+    const first = await this.callWriter(
+      missionId,
+      'redaction:revision',
+      renderPrompt('section_writer/revise', {
+        discipline: brief.discipline,
+        numerotation: node.numbering ?? '',
+        titre_section: node.title,
+        markdown: aliased,
+        remarques: problemes,
+        portee: rewrite
+          ? 'Réécris la section en profondeur en suivant les remarques (le verdict du jury est « à réécrire »).'
+          : 'Ne modifie que ce que visent les remarques.',
+        sources_disponibles: vars.sources_disponibles,
+        extraits: vars.extraits,
+        resultats: vars.resultats,
+        mots_cibles: unitWords,
+      }),
+      signal,
+    );
+    const done = await this.refine(missionId, first, chk, {
+      target: unitWords,
+      withGrounding: true,
+      tableIds: new Set(tables.keys()),
+      signal,
+      correct: (md, issues) =>
+        this.callWriter(
+          missionId,
+          'redaction:correction',
+          renderPrompt('section_writer/correct', {
+            discipline: brief.discipline,
+            numerotation: node.numbering ?? '',
+            titre_section: node.title,
+            markdown: md,
+            problemes: this.issuesText(issues),
+            sources_disponibles: vars.sources_disponibles,
+            extraits: vars.extraits,
+            resultats: vars.resultats,
+            mots_cibles: unitWords,
+          }),
+          signal,
+        ),
+    });
+    const summary = await this.summarize(missionId, node, done.md, allowed, signal);
+    const saved = this.persist(
+      missionId,
+      node,
+      done.md,
+      done.checks,
+      summary,
+      done.finalClaims,
+      chk,
+      'section_writer',
+      {
+        round,
+        changeSummary: `Révision (ronde ${round}) : ${remarks.length} remarque(s) traitée(s).`,
+      },
+    );
+    this.say(
+      missionId,
+      done.checks.removed.length ? 'warning' : 'success',
+      'section_writer',
+      `Rédacteur : section ${`${node.numbering ?? ''} ${node.title}`.trim()} révisée (ronde ${round}, ${done.checks.wordsActual.toLocaleString('fr-FR')} mots).`,
+    );
+    return {
+      draftId: saved.draftId,
+      version: saved.version,
+      words: done.checks.wordsActual,
+      checks: done.checks,
+    };
+  }
+
+  /**
+   * Enregistre une version éditée par le code (harmonisation, P7) sans appel au modèle : résumé et bilan d'intégrité sont repris,
+   * les affirmations sourcées dont la phrase est conservée sont copiées.
+   */
+  saveEditedVersion(
+    nodeId: string,
+    markdown: string,
+    changeSummary: string,
+    author: string,
+  ): { draftId: string; version: number } | null {
+    const cur = this.latest(nodeId);
+    if (!cur) return null;
+    const maxV = (
+      this.d.db
+        .prepare('SELECT MAX(version) AS v FROM drafts WHERE outline_node_id=?')
+        .get(nodeId) as {
+        v: number | null;
+      }
+    ).v;
+    const id = newId();
+    const t = nowIso();
+    const words = wordCount(markdown);
+    const checks = cur.checks_json ? (JSON.parse(cur.checks_json) as SectionChecks) : null;
+    this.d.db.transaction(() => {
+      this.d.db
+        .prepare(
+          `INSERT INTO drafts(id,outline_node_id,version,markdown,word_count,author_agent,round,parent_version_id,change_summary,summary,checks_json,created_at,updated_at)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        )
+        .run(
+          id,
+          nodeId,
+          (maxV ?? 0) + 1,
+          markdown,
+          words,
+          author,
+          0,
+          cur.id,
+          changeSummary,
+          cur.summary,
+          checks ? JSON.stringify({ ...checks, wordsActual: words }) : null,
+          t,
+          t,
+        );
+      const plain = stripMarkers(markdown);
+      const claims = this.d.db.prepare('SELECT * FROM claims WHERE draft_id=?').all(cur.id) as {
+        sentence_index: number | null;
+        claim_text: string;
+        chunk_id: string | null;
+        source_id: string | null;
+        support_level: string | null;
+        checked_by: string | null;
+        checked_at: string | null;
+      }[];
+      const ins = this.d.db.prepare(
+        `INSERT INTO claims(id,draft_id,sentence_index,claim_text,chunk_id,source_id,support_level,checked_by,checked_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+      );
+      for (const c of claims)
+        if (plain.includes(c.claim_text.replace(/\s+/g, ' ').trim()))
+          ins.run(
+            newId(),
+            id,
+            c.sentence_index,
+            c.claim_text,
+            c.chunk_id,
+            c.source_id,
+            c.support_level,
+            c.checked_by,
+            c.checked_at,
+            t,
+            t,
+          );
+      this.d.db
+        .prepare('UPDATE outline_nodes SET current_version_id=?, updated_at=? WHERE id=?')
+        .run(id, t, nodeId);
+    })();
+    return { draftId: id, version: (maxV ?? 0) + 1 };
+  }
+
+  /** Remet une version précédente comme version courante (une révision ne doit jamais dégrader, §13.4). */
+  setCurrent(nodeId: string, draftId: string): void {
+    this.d.db
+      .prepare('UPDATE outline_nodes SET current_version_id=?, updated_at=? WHERE id=?')
+      .run(draftId, nowIso(), nodeId);
+  }
+
+  /** Texte courant d'une section avec les marqueurs rendus lisibles (« Adjovi et al. (2021), p. 3 »), pour les jurés et l'harmonisateur. */
+  readableText(nodeId: string): { markdown: string; draftId: string; version: number } | null {
+    const d = this.latest(nodeId);
+    if (!d) return null;
+    const row = this.d.db.prepare('SELECT markdown, version FROM drafts WHERE id=?').get(d.id) as {
+      markdown: string;
+      version: number;
+    };
+    const src = this.d.db
+      .prepare(
+        'SELECT s.id, s.title, s.authors_json, s.year FROM sources s JOIN outline_nodes n ON n.mission_id=s.mission_id WHERE n.id=?',
+      )
+      .all(nodeId) as {
+      id: string;
+      title: string;
+      authors_json: string | null;
+      year: number | null;
+    }[];
+    const labels = new Map(
+      src.map((s) => [
+        s.id,
+        sourceLabel(JSON.parse(s.authors_json ?? '[]') as string[], s.year, s.title),
+      ]),
+    );
+    const md = row.markdown.replace(
+      /\[@([0-9a-f-]{36})(?:\s*,\s*(?:pp?\.\s*)?([^\]]+))?\]/g,
+      (_m, id: string, p?: string) => `[${labels.get(id) ?? 'source'}${p ? `, p. ${p}` : ''}]`,
+    );
+    return { markdown: md, draftId: d.id, version: row.version };
+  }
+
+  /** Versions d'une section (onglet « Brouillons », §6.7). */
+  versions(nodeId: string): SectionVersionSummary[] {
+    const cur = this.d.db
+      .prepare('SELECT current_version_id AS c FROM outline_nodes WHERE id=?')
+      .get(nodeId) as { c: string | null } | undefined;
+    const rows = this.d.db
+      .prepare(
+        'SELECT id, version, round, author_agent, change_summary, word_count, checks_json, created_at FROM drafts WHERE outline_node_id=? ORDER BY version',
+      )
+      .all(nodeId) as {
+      id: string;
+      version: number;
+      round: number;
+      author_agent: string | null;
+      change_summary: string | null;
+      word_count: number;
+      checks_json: string | null;
+      created_at: string;
+    }[];
+    const lastId = rows.at(-1)?.id;
+    return rows.map((r) => ({
+      id: r.id,
+      version: r.version,
+      round: r.round,
+      author: r.author_agent,
+      changeSummary: r.change_summary,
+      words: r.word_count,
+      groundingRate: r.checks_json
+        ? ((JSON.parse(r.checks_json) as SectionChecks).groundingRate ?? null)
+        : null,
+      current: (cur?.c ?? lastId) === r.id,
+      createdAt: r.created_at,
+    }));
   }
 
   private reportSection(missionId: string, label: string, c: SectionChecks): void {
@@ -794,12 +1082,13 @@ export class SectionWriter {
     missionId: string,
     nodeId: string,
     signal?: AbortSignal,
+    force = false,
   ): Promise<WrittenSection> {
     const nodes = this.d.outline.list(missionId);
     const node = nodes.find((n) => n.id === nodeId);
     if (!node) throw new AppError('E_INTERNAL', 'Section du plan introuvable.');
     const prior = this.latest(nodeId);
-    if (prior)
+    if (prior && !force)
       return {
         nodeId,
         version: prior.version,
@@ -894,6 +1183,7 @@ export class SectionWriter {
       [],
       chk,
       'section_writer',
+      force ? { round: 1, changeSummary: 'Mise à jour après harmonisation et révisions.' } : {},
     );
     this.reportSection(missionId, `${node.title}`, done.checks);
     return {
@@ -909,7 +1199,11 @@ export class SectionWriter {
   // ------------------------------------------------------------------ pages liminaires
 
   /** Résumé et abstract rédigés à partir du travail ; dédicace, remerciements et avertissement : modèles à compléter, jamais inventés (§7.2). */
-  async writeFrontMatter(missionId: string, signal?: AbortSignal): Promise<FrontMatterView[]> {
+  async writeFrontMatter(
+    missionId: string,
+    signal?: AbortSignal,
+    force = false,
+  ): Promise<FrontMatterView[]> {
     const brief = this.brief(missionId);
     const nodes = this.d.outline.list(missionId);
     const have = new Set(
@@ -917,7 +1211,10 @@ export class SectionWriter {
         this.d.db.prepare('SELECT key FROM front_matter WHERE mission_id=?').all(missionId) as {
           key: string;
         }[]
-      ).map((r) => r.key),
+      )
+        // Mise à jour finale (P7) : seuls le résumé et l'abstract sont réécrits ; les pages à compléter ne sont jamais touchées.
+        .map((r) => r.key)
+        .filter((k) => !force || (k !== 'resume' && k !== 'abstract')),
     );
     const save = (key: string, md: string, kind: 'genere' | 'a_completer', checks?: unknown) => {
       const t = nowIso();
@@ -1083,12 +1380,18 @@ export class SectionWriter {
     });
   }
 
-  detail(nodeId: string): SectionDraftDetail | null {
+  detail(nodeId: string, draftId?: string): SectionDraftDetail | null {
     const node = this.d.db
       .prepare('SELECT id, mission_id, numbering, title FROM outline_nodes WHERE id=?')
       .get(nodeId) as
       { id: string; mission_id: string; numbering: string | null; title: string } | undefined;
-    const d = node ? this.latest(nodeId) : undefined;
+    const d = node
+      ? draftId
+        ? (this.d.db
+            .prepare('SELECT id, checks_json FROM drafts WHERE id=? AND outline_node_id=?')
+            .get(draftId, nodeId) as { id: string; checks_json: string | null } | undefined)
+        : this.latest(nodeId)
+      : undefined;
     if (!node || !d) return null;
     const row = this.d.db
       .prepare('SELECT markdown, summary, word_count, version FROM drafts WHERE id=?')

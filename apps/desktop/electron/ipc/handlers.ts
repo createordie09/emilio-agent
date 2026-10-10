@@ -33,7 +33,9 @@ import {
   type PlanNodeInput,
   type PlanNodePatch,
   type PlanOverview,
+  type JuryScopeView,
   type SectionDraftDetail,
+  type SectionVersionSummary,
   type SectionDraftSummary,
   type SourceSummary,
   type SourcesConfigInfo,
@@ -226,6 +228,12 @@ export function createHandlers(d: HandlerDeps) {
       d.engine.request<SectionDraftDetail>('getSectionDraft', { nodeId }),
     [IPC.writingAnalysis]: async (missionId: string) =>
       d.engine.request<FieldAnalysisView | null>('getFieldAnalysis', { id: missionId }),
+    [IPC.writingJury]: async (missionId: string) =>
+      d.engine.request<JuryScopeView[]>('getJury', { id: missionId }),
+    [IPC.writingVersions]: async (nodeId: string) =>
+      d.engine.request<SectionVersionSummary[]>('listSectionVersions', { nodeId }),
+    [IPC.writingVersion]: async (draftId: string) =>
+      d.engine.request<SectionDraftDetail>('getSectionVersion', { draftId }),
     [IPC.writingFrontMatter]: async (missionId: string) =>
       d.engine.request<FrontMatterView[]>('getFrontMatter', { id: missionId }),
     [IPC.planGenerate]: async (id: string) => mission('generatePlan')(id),

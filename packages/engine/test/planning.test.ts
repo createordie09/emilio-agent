@@ -18,6 +18,7 @@ import {
   researchMockRespond,
   planningMockRespond,
   writingMockRespond,
+  juryMockRespond,
   computeNumbering,
   allocateWords,
   mergeProposal,
@@ -38,7 +39,11 @@ function mk(over: { brief?: BriefDraft } = {}) {
   const mock = new MockLlmClient({
     delayMs: 0,
     costPerCallUsd: 0.002,
-    respond: (r) => researchMockRespond(r) ?? planningMockRespond(r) ?? writingMockRespond(r),
+    respond: (r) =>
+      researchMockRespond(r) ??
+      planningMockRespond(r) ??
+      writingMockRespond(r) ??
+      juryMockRespond(r),
   });
   const engine = new EngineService({
     dbPath: join(dir, 'e.db'),
@@ -704,7 +709,7 @@ describe('validation du plan et lancement de la recherche (P3) puis de la rédac
     const done = await engine.runner.runUntilSettled(id, 3000);
     expect(done.status).toBe('completed');
     const events = engine.journal.list(id, 400).map((e) => e.messageFr);
-    expect(events.some((m) => m.includes("Étapes disponibles terminées (jusqu'à P5)"))).toBe(true);
+    expect(events.some((m) => m.includes("Étapes disponibles terminées (jusqu'à P7)"))).toBe(true);
     // La matrice section ↔ sources est alimentée avec les identifiants du plan
     const rows = engine.db
       .prepare('SELECT DISTINCT section_key FROM section_sources WHERE mission_id=?')

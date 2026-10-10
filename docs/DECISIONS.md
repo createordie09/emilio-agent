@@ -256,3 +256,22 @@ Format : contexte → décision → conséquences. Référence au cahier des cha
 ## ADR-034 — Course entre recherches de sections (J6)
 
 - Deux sections qui retenaient la même source la téléchargeaient et l'indexaient **en même temps** (`UNIQUE constraint failed: chunks`), erreur intermittente rattrapée par le réessai de la tâche, révélée par le parallélisme réel (J5 → J6). Correction à la racine : l'acquisition du texte d'une source est **séquentielle par source** et ne refait rien si le texte est déjà indexé (`ResearchService.once`).
+
+## ADR-035 — Jury simulé et boucle de révision P6 (J7, §13.1–13.4)
+
+- **Grille C1–C9** dans `resources/jury-config.json` (critères, points, juré responsable, seuils par exigence, marge de verdict, gain minimal, écart maximal, plafonds). Trois jurés par chapitre (méthodologue, rapporteur de fond, relecteur de forme), chacun ne note **que ses critères** ; `null` = non applicable. **Le code recalcule** totaux et moyennes (critères notés × 20/total), jamais le modèle.
+- **Verdict** : ≥ seuil = validé ; ≥ seuil − 3 = à réviser ; sinon à réécrire (arrondi à 2 décimales). Seuil du brief appliqué s'il est fourni. Un juré inexploitable (zod) est écarté avec avertissement ; tous inexploitables = échec explicite.
+- **Écart > 4 points** entre jurés : justification croisée du président avant de trancher.
+- **Boucle par chapitre** : évaluation → plan du président (remarques majeures puis mineures) → recherche complémentaire éventuelle (clé de section distincte `<nœud>:suppl:<ronde>`, fusionnée aux sources/fiches de la section) → révision des sections → réévaluation. Arrêt : seuil atteint, **plateau** (gain < 0,5), rondes maximales. **Dégradation** : retour aux versions précédentes (issue « annulée »), chapitre « accepté avec réserves » avec raisons.
+- **Reprise** : l'état est lu en base (évaluations du président, `revision_log`, `review_outcomes`) ; une boucle interrompue ne refait pas l'évaluation déjà payée. Migration 0006.
+- **Versions** : toutes conservées (`drafts.version` = max + 1, `current_version_id`) ; `used_in_text` n'est incrémenté qu'à la rédaction initiale. Les révisions repassent par **tous les contrôles de P5** (sources, citations littérales, nombres, similarité, ancrage).
+- **Parallélisme** : trois jurés × chapitres dépassaient le parallélisme de la mission → **limiteur par mission dans `ModelCaller`**.
+
+## ADR-036 — Harmonisation, évaluation globale et mise à jour finale P7 (J7, §13.5)
+
+- **Harmonisation** : l'agent propose des modifications ciblées ; le code n'applique que celles dont la phrase d'origine existe **à l'identique** (sans marqueur), dont le remplacement fait ≤ 60 mots et ne contient ni marqueur, ni citation, ni nouveau nombre. Chaque modification appliquée devient une **nouvelle version** ; les autres sont écartées avec leur raison.
+- **Évaluation globale** : sur un échantillon (3 sections les moins bien notées + 2 choisies par hachage déterministe) et les résumés ; seuil selon l'exigence (14/15/16). `rondesMaxGlobales = 0` désactive l'évaluation (l'harmonisation reste).
+- **Mise à jour finale** : introduction, conclusion et résumé sont régénérés si le corps a changé.
+- **Fin de mission** : `stopAfterPhase = P7`. Version du moteur 0.7.0, schéma 6.
+- **Onglets Jury et Brouillons** (§6.7) : grille par juré, remarques avec gravité, plan du président, révisions avant/après (conservée / annulée), évolution des notes ; versions de chaque section avec **comparaison phrase par phrase** (plus longue sous-suite commune, côté interface).
+- **Limites connues** : jamais testé avec un vrai modèle (pas de clé dans le cloud) ; nombre de jurés fixé à 3 ; remplacement de la grille par celle de l'établissement non implémenté ; une affirmation factuelle sans marqueur n'est toujours pas détectée.

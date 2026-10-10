@@ -486,3 +486,28 @@ function orderDepthFirst(nodes: OutlineNodeView[]): OutlineNodeView[] {
   walk(null);
   return out;
 }
+
+/** Chapitre auquel appartient un nœud : son ancêtre « chapitre », sinon son ancêtre de premier niveau (partie sans chapitre, article). */
+export function chapterOf(n: OutlineNodeView, byId: Map<string, OutlineNodeView>): string {
+  let cur = n;
+  while (cur.parentId && byId.get(cur.parentId)) {
+    const p = byId.get(cur.parentId)!;
+    if (cur.level === 'chapitre' || p.level === 'partie') break;
+    cur = p;
+  }
+  return cur.id;
+}
+
+/** Groupes de rédaction du corps du texte (un par chapitre), dans l'ordre de lecture : sections à rédiger et à évaluer ensemble (P6). */
+export function chapterGroups(
+  nodes: OutlineNodeView[],
+  units: OutlineNodeView[],
+): { id: string; node: OutlineNodeView; units: OutlineNodeView[] }[] {
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const groups = new Map<string, OutlineNodeView[]>();
+  for (const u of units.filter((x) => x.kind === 'corps')) {
+    const id = chapterOf(u, byId);
+    groups.set(id, [...(groups.get(id) ?? []), u]);
+  }
+  return [...groups].map(([id, us]) => ({ id, node: byId.get(id)!, units: us }));
+}

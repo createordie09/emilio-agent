@@ -10,3 +10,4 @@ export * from './wizard';
 export * from './sources';
 export * from './plan';
 export * from './writing';
+export * from './jury';

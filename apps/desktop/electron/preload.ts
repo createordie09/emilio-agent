@@ -61,6 +61,9 @@ const api: EmilioApi = {
     section: (nodeId) => ipcRenderer.invoke(IPC.writingSection, nodeId),
     analysis: (missionId) => ipcRenderer.invoke(IPC.writingAnalysis, missionId),
     frontMatter: (missionId) => ipcRenderer.invoke(IPC.writingFrontMatter, missionId),
+    jury: (missionId) => ipcRenderer.invoke(IPC.writingJury, missionId),
+    versions: (nodeId) => ipcRenderer.invoke(IPC.writingVersions, nodeId),
+    version: (draftId) => ipcRenderer.invoke(IPC.writingVersion, draftId),
   },
   plan: {
     generate: (id) => ipcRenderer.invoke(IPC.planGenerate, id),

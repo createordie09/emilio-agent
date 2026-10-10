@@ -147,6 +147,9 @@ function browserMock(): EmilioApi {
       section: nope,
       analysis: () => ok(null),
       frontMatter: () => ok([]),
+      jury: () => ok([]),
+      versions: () => ok([]),
+      version: nope,
     },
     plan: {
       generate: nope,

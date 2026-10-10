@@ -12,7 +12,7 @@ const mem = () => {
 describe('migrations', () => {
   it('applique 0001 et crée toutes les tables du CdC §5', () => {
     const db = mem();
-    expect(runMigrations(db)).toBe(5);
+    expect(runMigrations(db)).toBe(6);
     const tables = (
       db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as { name: string }[]
     ).map((t) => t.name);
@@ -41,7 +41,7 @@ describe('migrations', () => {
     const db = mem();
     runMigrations(db);
     runMigrations(db);
-    expect(schemaVersion(db)).toBe(5);
+    expect(schemaVersion(db)).toBe(6);
   });
 
   it('ordonne les migrations par numéro', () => {
