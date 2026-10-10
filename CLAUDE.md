@@ -138,6 +138,14 @@ pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 - Écran : onglet Livrables (`DeliverablesPanel`). Dépendances natives (`@resvg/resvg-js`…) à déclarer aussi dans `apps/desktop/package.json` (sinon elles sont embarquées dans le bundle et ne se chargent pas).
 - Tests : `test/export.test.ts` ; `runMission({ withExport: true })` (sans cette option P8/P9 sont ignorées).
 
+## Robustesse et finition (J9)
+
+- `packages/engine/src/ops/` : `OpsService` (préférences `AppPrefs`, coûts, journal technique, budget atteint → `raiseBudget` / `finalizeNow`, zip des journaux), `archive.ts` (export / import de mission `.emilio`), `logger.ts` (journal fichier rotatif), `costs.ts`. Les appels de modèle portent `agent_role` et `mission_id` (migration 0008).
+- Processus principal (`apps/desktop/electron/`) : `notifier.ts` (notifications), `power.ts` (anti-veille), `updater.ts` (`electron-updater`, version installée seulement) — logique pure, testée dans `apps/desktop/test/ops.test.ts`. Dialogues « Enregistrer sous » / « Ouvrir » injectés dans les handlers.
+- Interface : `Onboarding` (portail plein écran, charte obligatoire), `BudgetActions`, onglets `CostsPanel` / `TechLogPanel`, réglages « Missions et confidentialité ». E2E : `EMILIO_SKIP_ONBOARDING=1` par défaut (helpers), `launchApp({ onboarding: true })` pour le tester.
+- Packaging : `pnpm --filter @emilio/desktop dist` (dossier, vérification) ; `dist:win` sous Windows ; `electron-builder.yml`, `.github/workflows/release.yml`. Dans le cloud, ajouter `-c.npmRebuild=false` (pas d'en-têtes Electron, ADR-006). Dépendances du renderer et paquets du dépôt en `devDependencies` du desktop.
+- La mission n'a plus de `stopAfterPhase` : elle va de P0 à P9.
+
 ## Qualité
 
 TypeScript `strict`, ESLint + Prettier, aucune sortie d'agent non validée par zod. Mode LLM simulé (mock) obligatoire dès J2 (§21.2) : aucun test ne doit faire d'appel payant.

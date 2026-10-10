@@ -1,0 +1,39 @@
+name: Release
+# Installateur Windows (NSIS) publié sur les releases GitHub, puis récupéré par la mise à jour automatique (electron-updater).
+# Déclenchement : push d'une étiquette `v*` (ex. v1.0.0) ou lancement manuel. La version de l'application est celle de l'étiquette.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+jobs:
+  windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Modèle d'embeddings (multilingual-e5-small)
+        run: pnpm models:fetch
+      - name: Reconstruction des modules natifs pour Electron
+        run: pnpm --filter @emilio/desktop exec electron-builder install-app-deps
+      - name: Version = étiquette
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          cd apps/desktop
+          npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --allow-same-version
+      - run: pnpm --filter @emilio/desktop build
+      - name: Installateur NSIS + publication
+        working-directory: apps/desktop
+        run: pnpm exec electron-builder --win nsis --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Signature (facultative) : CSC_LINK / CSC_KEY_PASSWORD ; sans certificat l'installateur n'est pas signé (SmartScreen avertit).
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}

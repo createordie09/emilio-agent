@@ -10,14 +10,18 @@ import { join } from 'node:path';
  * - EMILIO_ENGINE_NODE : moteur sous Node système (ABI de better-sqlite3 compilé pour Node, ADR-006).
  * - EMILIO_INSECURE_TEST_CIPHER : pas de trousseau système en CI ; ignoré dans un build packagé.
  */
-export async function launchApp(): Promise<{ app: ElectronApplication; page: Page }> {
-  const userData = mkdtempSync(join(tmpdir(), 'emilio-e2e-'));
+export async function launchApp(
+  opts: { onboarding?: boolean; userData?: string } = {},
+): Promise<{ app: ElectronApplication; page: Page }> {
+  const userData = opts.userData ?? mkdtempSync(join(tmpdir(), 'emilio-e2e-'));
   const app = await electron.launch({
     args: ['--no-sandbox', `--user-data-dir=${userData}`, join(__dirname, '../out/main/index.js')],
     env: {
       ...process.env,
       EMILIO_ENGINE_NODE: process.execPath,
       EMILIO_INSECURE_TEST_CIPHER: '1',
+      // Premier lancement : l'onboarding est passé d'office, sauf test dédié.
+      EMILIO_SKIP_ONBOARDING: opts.onboarding ? '0' : '1',
       NODE_USE_ENV_PROXY: '1',
       EMILIO_RESOURCES_DIR: join(__dirname, '../../../resources'),
     } as Record<string, string>,
@@ -47,6 +51,8 @@ export async function createBriefedMission(
     hypotheses?: string[];
     /** Importe un fichier de données de terrain (dialogue système simulé). */
     data?: { app: ElectronApplication; file: string };
+    /** Budget maximal en dollars (défaut 12). */
+    budget?: string;
   } = {},
 ): Promise<void> {
   const title = opts.title ?? 'Microfinance et inclusion financière au Bénin';
@@ -95,7 +101,7 @@ export async function createBriefedMission(
   }
   await page.getByRole('button', { name: 'Continuer' }).click();
   await page.getByRole('radio', { name: /Équilibré/ }).click();
-  await page.getByLabel('Budget maximal (en dollars)').fill('12');
+  await page.getByLabel('Budget maximal (en dollars)').fill(opts.budget ?? '12');
   await page.getByRole('button', { name: 'Continuer' }).click();
   await page.getByRole('button', { name: 'Créer la mission' }).click();
 }

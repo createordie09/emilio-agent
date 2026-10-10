@@ -146,7 +146,12 @@ export class OpenRouterClient implements LlmClient {
         continue;
       }
       if (res.ok) return (await res.json()) as T;
-      const err = mapHttpError(res.status);
+      let err = mapHttpError(res.status);
+      if (res.status === 400) {
+        // Prompt trop long pour la fenêtre du modèle : erreur dédiée (réduction automatique des extraits par l'appelant).
+        const text = await res.text().catch(() => '');
+        if (CONTEXT_OVERFLOW.test(text)) err = new AppError('E_CONTEXT_OVERFLOW', 'HTTP 400');
+      }
       if (res.status === 429 || res.status === 408 || res.status >= 500) {
         lastErr = err;
         continue;
@@ -178,6 +183,9 @@ export class OpenRouterClient implements LlmClient {
       // Ne router que vers des fournisseurs qui gèrent réellement response_format.
       body.provider = { require_parameters: true };
     }
+    // Confidentialité (CdC §19) : n'utiliser que des fournisseurs qui ne conservent pas les données (`provider.data_collection`).
+    if (this.settings.get<boolean>(PRIVACY_DENY_KEY))
+      body.provider = { ...(body.provider as object | undefined), data_collection: 'deny' };
     const json = await this.requestJson<{
       id?: string;
       model?: string;
@@ -193,6 +201,7 @@ export class OpenRouterClient implements LlmClient {
     });
     if (json.error) {
       const code = Number(json.error.code);
+      if (CONTEXT_OVERFLOW.test(json.error.message ?? '')) throw new AppError('E_CONTEXT_OVERFLOW');
       throw Number.isFinite(code)
         ? mapHttpError(code)
         : new AppError('E_REMOTE', json.error.message);
@@ -274,6 +283,11 @@ export class OpenRouterClient implements LlmClient {
     }
   }
 }
+
+/** Réglage « fournisseurs qui ne conservent pas mes données » (CdC §19, `provider.data_collection: "deny"`). */
+export const PRIVACY_DENY_KEY = 'privacy_deny_data_collection';
+const CONTEXT_OVERFLOW =
+  /context[ _-]?(length|window)|maximum context|too many tokens|prompt is too long|input is too long/i;
 
 export function mapHttpError(status: number): AppError {
   if (status === 400) return new AppError('E_BAD_REQUEST', `HTTP ${status}`);

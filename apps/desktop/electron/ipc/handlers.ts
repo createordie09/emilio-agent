@@ -33,7 +33,12 @@ import {
   type PlanNodeInput,
   type PlanNodePatch,
   type PlanOverview,
+  type AppPrefs,
+  type CostsView,
   type ExportOverview,
+  type MissionArchiveInfo,
+  type TechCallView,
+  type UpdateState,
   type JuryScopeView,
   type SectionDraftDetail,
   type SectionVersionSummary,
@@ -59,6 +64,18 @@ export type HandlerDeps = {
   /** Affiche un fichier dans l'explorateur ; « Enregistrer sous… » (renvoie faux si l'utilisateur annule). */
   revealFile?: (path: string) => void;
   saveFileAs?: (path: string, filename: string) => Promise<boolean>;
+  /** Boîtes de dialogue : chemin de destination (« Enregistrer sous ») ou fichier à ouvrir ; null si l'utilisateur annule. */
+  choosePath?: {
+    save(defaultName: string): Promise<string | null>;
+    open(filterName: string, extensions: string[]): Promise<string | null>;
+  };
+  /** Préférences modifiées : le processus principal ajuste notifications et anti-veille. */
+  onPrefs?: (p: AppPrefs) => void;
+  update?: {
+    state(): UpdateState;
+    check(): Promise<UpdateState>;
+    install(): boolean;
+  };
 };
 
 const KEY_ENC = 'openrouter_key_encrypted';
@@ -238,6 +255,54 @@ export function createHandlers(d: HandlerDeps) {
       d.engine.request<SectionVersionSummary[]>('listSectionVersions', { nodeId }),
     [IPC.writingVersion]: async (draftId: string) =>
       d.engine.request<SectionDraftDetail>('getSectionVersion', { draftId }),
+    [IPC.opsPrefs]: async () => d.engine.request<AppPrefs>('getPrefs'),
+    [IPC.opsSetPrefs]: async (patch: Partial<AppPrefs>) =>
+      guard(async () => {
+        const r = await d.engine.request<AppPrefs>('setPrefs', { patch });
+        if (r.ok) d.onPrefs?.(r.value);
+        return r;
+      }),
+    [IPC.opsCosts]: async (missionId: string) =>
+      d.engine.request<CostsView>('getCosts', { id: missionId }),
+    [IPC.opsTechLog]: async (missionId: string) =>
+      d.engine.request<TechCallView[]>('getTechLog', { id: missionId }),
+    [IPC.opsRaiseBudget]: async (missionId: string, budgetUsd: number) =>
+      d.engine.request<MissionSummary>('raiseBudget', {
+        id: missionId,
+        budgetUsd: Number(budgetUsd),
+      }),
+    [IPC.opsFinalizeNow]: async (missionId: string) =>
+      d.engine.request<MissionSummary>('finalizeNow', { id: missionId }),
+    [IPC.opsExportLogs]: async () =>
+      guard(async () => {
+        const dest = await d.choosePath?.save('emilio-journaux.zip');
+        if (!dest) return ok({ saved: false });
+        const r = await d.engine.request<null>('exportLogsData', { destPath: dest });
+        return r.ok ? ok({ saved: true }) : r;
+      }),
+    [IPC.opsExportMission]: async (missionId: string) =>
+      guard(async () => {
+        const dest = await d.choosePath?.save(`mission-${String(missionId).slice(0, 8)}.emilio`);
+        if (!dest) return ok({ saved: false });
+        const r = await d.engine.request<MissionArchiveInfo>('exportMissionData', {
+          id: missionId,
+          destPath: dest,
+        });
+        return r.ok ? ok({ saved: true }) : r;
+      }),
+    [IPC.opsImportMission]: async () =>
+      guard(async () => {
+        const src = await d.choosePath?.open('Archive de mission', ['emilio', 'zip']);
+        if (!src) return ok(null);
+        return d.engine.request<MissionArchiveInfo>('importMissionData', { srcPath: src });
+      }),
+    [IPC.opsUpdate]: async () => ok(d.update?.state() ?? ({ status: 'inactive' } as UpdateState)),
+    [IPC.opsCheckUpdate]: async () =>
+      guard(async () => ok((await d.update?.check()) ?? ({ status: 'inactive' } as UpdateState))),
+    [IPC.opsInstallUpdate]: async () => {
+      d.update?.install();
+      return ok(null);
+    },
     [IPC.exportsOverview]: async (missionId: string) =>
       d.engine.request<ExportOverview>('getExports', { id: missionId }),
     [IPC.exportsReveal]: async (deliverableId: string) =>

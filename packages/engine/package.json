@@ -18,6 +18,7 @@
     "docx": "^9.8.1",
     "exceljs": "^4.4.0",
     "fast-xml-parser": "^5.11.2",
+    "fflate": "^0.8.3",
     "mammoth": "^1.13.0",
     "papaparse": "^5.7.0",
     "pdfjs-dist": "^6.3.289",

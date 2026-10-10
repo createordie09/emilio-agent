@@ -1,5 +1,6 @@
 import {
   AppError,
+  ERROR_MESSAGES_FR,
   serializeError,
   type EngineLiveEvent,
   type EngineMethod,
@@ -9,7 +10,7 @@ import {
   type MissionSummary,
   type Result,
 } from '@emilio/shared';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { openDatabase, schemaVersion, type Db } from './storage/db';
 import { SettingsRepo } from './storage/settings';
 import { MissionRepo } from './storage/missions';
@@ -46,6 +47,8 @@ import { loadWritingConfig } from './writing/config';
 import { writingMockRespond } from './writing/mock-responder';
 import { juryMockRespond } from './jury/mock-responder';
 import { ExportService } from './export/service';
+import { OpsService } from './ops/service';
+import { FileLogger } from './ops/logger';
 import { exportMockRespond } from './export/mock-responder';
 import type { PdfAdapter } from './export/pdf';
 import { OutlineRepo } from './planning/outline';
@@ -64,7 +67,7 @@ import {
   type OpenRouterConfig,
 } from './llm/openrouter';
 
-export const ENGINE_VERSION = '0.8.0';
+export const ENGINE_VERSION = '0.9.0';
 
 export type EngineOptions = {
   dbPath: string;
@@ -116,6 +119,8 @@ export class EngineService {
   readonly writer: SectionWriter;
   readonly jury: JuryService;
   readonly exporter: ExportService;
+  readonly ops: OpsService;
+  readonly logger: FileLogger;
   private pdfAdapter: PdfAdapter | undefined;
   readonly mockSources: MockSourceConnector[] = mockConnectors();
   private sourceKeys = new Map<string, string>();
@@ -147,12 +152,14 @@ export class EngineService {
     this.missions = new MissionRepo(this.db, this.journal);
     this.queue = new SqliteQueue(this.db);
     this.checkpoints = new CheckpointRepo(this.db);
+    this.logger = new FileLogger(join(opts.dataDir ?? dirname(opts.dbPath), 'logs'));
     const caller = new ModelCaller(
       this.db,
       this.missions,
       this.journal,
       (mode) => (mode === 'mock' ? this.mock : this.llm),
       (model) => this.priceOf(model),
+      (line) => this.logger.line('info', line),
     );
     this.runner = new MissionRunner({
       db: this.db,
@@ -226,6 +233,7 @@ export class EngineService {
               ),
       },
       config: opts.runner,
+      autoResume: () => this.settings.get<boolean>('auto_resume_missions'),
       onMissionUpdated: (m) => this.emit({ kind: 'mission.updated', mission: m }),
     });
     const dataDir = opts.dataDir ?? dirname(opts.dbPath);
@@ -326,6 +334,18 @@ export class EngineService {
       dataDir,
       pdf: () => this.pdfAdapter,
     });
+    this.ops = new OpsService({
+      db: this.db,
+      settings: this.settings,
+      missions: this.missions,
+      runner: this.runner,
+      journal: this.journal,
+      exporter: this.exporter,
+      embedder: () => this.embedder,
+      logger: this.logger,
+      dataDir,
+      version: ENGINE_VERSION,
+    });
     this.planning = new PlanningService({
       db: this.db,
       missions: this.missions,
@@ -342,7 +362,10 @@ export class EngineService {
       price: (model) => this.priceOf(model),
       onUpdated: (id) => this.emit({ kind: 'mission.updated', mission: this.missions.summary(id) }),
     });
-    this.journal.subscribe((event) => this.emit({ kind: 'mission.event', event }));
+    this.journal.subscribe((event) => {
+      this.logger.line(event.level, `${event.missionId ?? '-'} ${event.messageFr}`);
+      this.emit({ kind: 'mission.event', event });
+    });
   }
 
   /** Rendu PDF (fourni après la construction par le processus qui héberge le moteur). */
@@ -352,7 +375,15 @@ export class EngineService {
 
   /** Démarre la boucle d'orchestration et reprend les missions interrompues (§8.6). */
   start(): void {
-    this.runner.recoverOnStart();
+    const r = this.runner.recoverOnStart();
+    // Redémarrage après un plantage du moteur (§8.6, E_ENGINE_CRASH) : le dire aux missions reprises.
+    if (process.env.EMILIO_ENGINE_RESTARTED === '1')
+      for (const id of r.resumed)
+        this.journal.record({
+          missionId: id,
+          level: 'warning',
+          messageFr: ERROR_MESSAGES_FR.E_ENGINE_CRASH,
+        });
     this.ingest.recover();
     this.planning.recover();
     this.runner.startLoop();
@@ -647,6 +678,28 @@ export class EngineService {
         return this.writer.frontMatter(id());
       case 'getJury':
         return this.jury.view(id());
+      case 'getPrefs':
+        return this.ops.prefs();
+      case 'setPrefs':
+        return this.ops.setPrefs(p.patch as never);
+      case 'getCosts':
+        return this.ops.costs(id());
+      case 'getTechLog':
+        return this.ops.techLog(id());
+      case 'raiseBudget':
+        return this.ops.raiseBudget(id(), Number(p.budgetUsd));
+      case 'finalizeNow':
+        return this.ops.finalizeNow(id());
+      case 'exportLogsData':
+        this.ops.exportLogs(String(p.destPath));
+        return null;
+      case 'exportMissionData':
+        return this.ops.exportMission(id(), String(p.destPath));
+      case 'importMissionData': {
+        const info = await this.ops.importMission(String(p.srcPath));
+        this.emit({ kind: 'mission.updated', mission: this.missions.summary(info.missionId) });
+        return info;
+      }
       case 'getExports':
         return this.exporter.overview(id());
       case 'getDeliverable':

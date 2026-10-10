@@ -11,6 +11,19 @@ export type PriceGrid = (model: string) => { prompt: number; completion: number 
 /** Tâche en cours d'exécution : les appels des tâches locales y sont rattachés (coût par phase du rapport de mission). */
 export const taskContext = new AsyncLocalStorage<string>();
 
+/** Raccourcit le plus long message (garde le début et la fin, retire le milieu) pour passer sous la fenêtre du modèle. */
+export function shrinkLongest(messages: CallParams['messages']): CallParams['messages'] {
+  let at = 0;
+  messages.forEach((m, i) => {
+    if (m.content.length > messages[at]!.content.length) at = i;
+  });
+  const t = messages[at]!.content;
+  const keep = Math.floor(t.length * 0.6);
+  const head = Math.floor(keep * 0.85);
+  const cut = `${t.slice(0, head)}\n[…]\n${t.slice(t.length - (keep - head))}`;
+  return messages.map((m, i) => (i === at ? { ...m, content: cut } : m));
+}
+
 export type CallParams = {
   missionId: string;
   taskId: string | null;
@@ -45,6 +58,8 @@ export class ModelCaller {
     /** Fournit le client selon le mode de la mission (simulé ou réel). */
     private readonly clientFor: (mode: MissionExecConfig['llmMode']) => LlmClient,
     private readonly prices: PriceGrid = () => null,
+    /** Journal technique (fichier) : une ligne par appel, sans contenu. */
+    private readonly tech?: (line: string) => void,
   ) {}
 
   /** Appels simultanés par mission : jamais plus que le parallélisme configuré (§7.6), même quand une tâche lance plusieurs agents (jurés). */
@@ -88,6 +103,7 @@ export class ModelCaller {
 
     const client = this.clientFor(cfg.llmMode);
     let lastErr: unknown;
+    let shrunk = false;
     for (let i = 0; i < chain.length; i++) {
       const model = chain[i]!;
       const t0 = Date.now();
@@ -113,6 +129,13 @@ export class ModelCaller {
       } catch (e) {
         lastErr = e;
         if (e instanceof AppError) this.logError(p, model, e, Date.now() - t0);
+        // Prompt trop long : un seul nouvel essai, avec le plus long message raccourci (silencieux, CdC §20).
+        if (e instanceof AppError && e.code === 'E_CONTEXT_OVERFLOW' && !shrunk) {
+          shrunk = true;
+          p = { ...p, messages: shrinkLongest(p.messages) };
+          i--;
+          continue;
+        }
         if (e instanceof AppError && e.code === 'E_MODEL_UNAVAILABLE' && i < chain.length - 1) {
           this.journal.record({
             missionId: p.missionId,
@@ -146,8 +169,8 @@ export class ModelCaller {
     const t = nowIso();
     this.db
       .prepare(
-        `INSERT INTO llm_calls(id,task_id,model,prompt_version,prompt_tokens,completion_tokens,cost_usd,latency_ms,status_code,error,openrouter_generation_id,created_at,updated_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        `INSERT INTO llm_calls(id,task_id,model,prompt_version,prompt_tokens,completion_tokens,cost_usd,latency_ms,status_code,error,openrouter_generation_id,created_at,updated_at,agent_role,mission_id)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       )
       .run(
         newId(),
@@ -163,14 +186,19 @@ export class ModelCaller {
         res.generationId,
         t,
         t,
+        p.role,
+        p.missionId,
       );
+    this.tech?.(
+      `llm ${p.role} ${model} in=${res.promptTokens} out=${res.completionTokens} cost=${cost} ms=${res.latencyMs || ms} status=${status}${error ? ` error=${error}` : ''}`,
+    );
   }
 
   private logError(p: CallParams, model: string, e: AppError, ms: number): void {
     const t = nowIso();
     this.db
       .prepare(
-        `INSERT INTO llm_calls(id,task_id,model,prompt_version,latency_ms,status_code,error,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)`,
+        `INSERT INTO llm_calls(id,task_id,model,prompt_version,latency_ms,status_code,error,created_at,updated_at,agent_role,mission_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
       )
       .run(
         newId(),
@@ -182,7 +210,10 @@ export class ModelCaller {
         e.code,
         t,
         t,
+        p.role,
+        p.missionId,
       );
+    this.tech?.(`llm ${p.role} ${model} ERREUR ${e.code} ms=${ms}`);
   }
 
   /** Cumule le coût sur la mission et notifie les seuils de budget franchis (une seule fois chacun). */

@@ -129,3 +129,20 @@ export const useExports = (missionId: string | undefined, enabled = true) =>
     enabled: Boolean(missionId) && enabled,
     queryFn: () => unwrap(api.exports.overview(missionId!)),
   });
+
+export const usePrefs = () =>
+  useQuery({ queryKey: ['prefs'], queryFn: () => unwrap(api.ops.prefs()) });
+
+export const useCosts = (missionId: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: ['costs', missionId],
+    enabled: Boolean(missionId) && enabled,
+    queryFn: () => unwrap(api.ops.costs(missionId!)),
+  });
+
+export const useTechLog = (missionId: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: ['techlog', missionId],
+    enabled: Boolean(missionId) && enabled,
+    queryFn: () => unwrap(api.ops.techLog(missionId!)),
+  });

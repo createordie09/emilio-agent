@@ -18,6 +18,8 @@ export function useLiveSync(): void {
       void qc.invalidateQueries({ queryKey: ['plan'] });
       void qc.invalidateQueries({ queryKey: ['writing'] });
       void qc.invalidateQueries({ queryKey: ['exports'] });
+      void qc.invalidateQueries({ queryKey: ['costs'] });
+      void qc.invalidateQueries({ queryKey: ['techlog'] });
     };
     const off = api.onEvent((e) => {
       // Les fichiers en cours de traitement (assistant, étape 5) rafraîchissent directement le brouillon.

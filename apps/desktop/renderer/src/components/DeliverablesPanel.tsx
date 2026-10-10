@@ -1,7 +1,7 @@
 import { DELIVERABLE_LABEL_FR, type FinalCheckItem } from '@emilio/shared';
 import { Button, Skeleton, StatusBadge } from '@/components/ui';
 import { api } from '@/lib/api';
-import { errorText } from '@/lib/fr';
+import { errorText, fmtInt, fmtUsd } from '@/lib/fr';
 import { useExports } from '@/lib/queries';
 import { useToasts } from '@/stores/toasts';
 
@@ -43,6 +43,42 @@ export function DeliverablesPanel({ missionId }: { missionId: string }) {
         <p className="t-small rounded-lg border border-dashed border-border p-5 text-text-muted">
           Les fichiers (Word, PDF, diaporama, rapport) sont produits à la fin de la mission.
         </p>
+      )}
+      {data?.summary && data.deliverables.length > 0 && (
+        <div className="space-y-3" aria-label="Résumé de la mission">
+          <dl className="grid grid-cols-2 gap-3 md:grid-cols-5">
+            {[
+              [
+                'Note finale du jury',
+                data.summary.finalScore === null
+                  ? '—'
+                  : `${data.summary.finalScore.toFixed(1).replace('.', ',')} / 20`,
+              ],
+              ['Longueur', `≈ ${fmtInt(data.summary.pages)} pages`],
+              ['Sources citées', String(data.summary.sources)],
+              [
+                'Durée',
+                data.summary.durationMin === null ? '—' : `${data.summary.durationMin} min`,
+              ],
+              ['Coût', fmtUsd(data.summary.costUsd, 2)],
+            ].map(([k, v]) => (
+              <div key={k} className="rounded-lg border border-border p-3">
+                <dt className="t-caption text-text-subtle">{k}</dt>
+                <dd className="t-h3 tabular">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          {data.summary.attention.length > 0 && (
+            <div className="rounded-lg border border-border p-4">
+              <h3 className="t-small font-medium">Points d’attention</h3>
+              <ul className="t-small mt-1 list-disc space-y-0.5 pl-5 text-text-muted">
+                {data.summary.attention.map((a) => (
+                  <li key={a}>{a}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       )}
       {data && data.deliverables.length > 0 && (
         <ul

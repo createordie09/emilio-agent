@@ -4,6 +4,7 @@ import { AppShell, CreditCard, Sidebar, type NavItem } from '@/components/ui';
 import { fr, fmtUsd } from '@/lib/fr';
 import { useKeyInfo, useKeyStatus, useMissions } from '@/lib/queries';
 import { useUi } from '@/stores/ui';
+import { Onboarding } from '@/components/Onboarding';
 
 export function AppLayout() {
   const nav = useNavigate();
@@ -59,6 +60,7 @@ export function AppLayout() {
       )}
     >
       <Outlet />
+      <Onboarding />
     </AppShell>
   );
 }

@@ -12,3 +12,4 @@ export * from './plan';
 export * from './writing';
 export * from './jury';
 export * from './export';
+export * from './ops';

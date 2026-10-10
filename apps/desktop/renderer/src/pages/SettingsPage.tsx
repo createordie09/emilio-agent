@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, ExternalLink, KeyRound, Search, ShieldCheck, Trash2 } from 'lucide-react';
-import type { ModelInfo, SerializedError } from '@emilio/shared';
+import type { AppPrefs, ModelInfo, SerializedError, UpdateState } from '@emilio/shared';
 import {
   Button,
   Input,
@@ -18,8 +18,8 @@ import {
 } from '@/components/ui';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
-import { fmtInt, fmtPerMillion, fmtUsd } from '@/lib/fr';
-import { useKeyInfo, useKeyStatus, useModels } from '@/lib/queries';
+import { errorText, fmtInt, fmtPerMillion, fmtUsd } from '@/lib/fr';
+import { useKeyInfo, useKeyStatus, useModels, usePrefs } from '@/lib/queries';
 import { useToasts } from '@/stores/toasts';
 import { useUi } from '@/stores/ui';
 import { SourcesSettings } from '@/pages/SourcesSettings';
@@ -454,6 +454,150 @@ function AppearanceSection() {
   );
 }
 
+function UpdateBlock() {
+  const [state, setState] = React.useState<UpdateState>({ status: 'inactive' });
+  React.useEffect(() => {
+    void api.ops.update().then((r) => r.ok && setState(r.value));
+    return api.ops.onUpdate(setState);
+  }, []);
+  const label: Record<UpdateState['status'], string> = {
+    inactive: 'Les mises à jour automatiques ne sont actives que dans la version installée.',
+    idle: 'Votre application est à jour.',
+    checking: 'Recherche en cours…',
+    available: 'Une mise à jour est disponible.',
+    downloading: 'Téléchargement de la mise à jour…',
+    ready: 'La mise à jour est prête : redémarrez pour l’installer.',
+    error: state.message ?? 'La recherche de mise à jour a échoué.',
+  };
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+      <span className="t-small flex-1 text-text-muted" role="status">
+        {label[state.status]}
+        {state.version ? ` (version ${state.version})` : ''}
+      </span>
+      {state.status === 'ready' ? (
+        <Button size="sm" onClick={() => void api.ops.installUpdate()}>
+          Redémarrer et installer
+        </Button>
+      ) : (
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={
+            state.status === 'inactive' ||
+            state.status === 'checking' ||
+            state.status === 'downloading'
+          }
+          onClick={() => void api.ops.checkUpdate().then((r) => r.ok && setState(r.value))}
+        >
+          Rechercher une mise à jour
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function OperationsSection() {
+  const { data: prefs } = usePrefs();
+  const qc = useQueryClient();
+  const push = useToasts((s) => s.push);
+  const set = async (patch: Partial<AppPrefs>) => {
+    const r = await api.ops.setPrefs(patch);
+    if (!r.ok)
+      push({ tone: 'danger', title: 'Réglage impossible', description: r.error.messageFr });
+    await qc.invalidateQueries({ queryKey: ['prefs'] });
+  };
+  const rows: { key: keyof AppPrefs; title: string; text: string }[] = [
+    {
+      key: 'autoResumeMissions',
+      title: 'Reprendre les missions automatiquement',
+      text: 'Au démarrage de l’application, quand le crédit est rechargé ou quand Internet revient.',
+    },
+    {
+      key: 'notifications',
+      title: 'Notifications du système',
+      text: 'Plan prêt, mission terminée, mission en pause (crédit, réseau, budget), erreur.',
+    },
+    {
+      key: 'preventSleep',
+      title: 'Empêcher la mise en veille pendant une mission',
+      text: 'L’ordinateur reste éveillé tant qu’une mission s’exécute.',
+    },
+    {
+      key: 'denyDataCollection',
+      title: 'Refuser les fournisseurs qui conservent mes données',
+      text: 'Seuls des fournisseurs d’IA qui s’engagent à ne pas conserver vos extraits sont utilisés. Certains modèles peuvent devenir indisponibles.',
+    },
+    {
+      key: 'checkUpdates',
+      title: 'Rechercher les mises à jour au démarrage',
+      text: 'Version installée uniquement. Aucune autre donnée n’est envoyée.',
+    },
+  ];
+  const importMission = async () => {
+    const r = await api.ops.importMission();
+    if (!r.ok)
+      return push({ tone: 'danger', title: 'Import impossible', description: errorText(r.error) });
+    if (r.value) {
+      push({ tone: 'success', title: 'Mission importée', description: r.value.title });
+      void qc.invalidateQueries({ queryKey: ['missions'] });
+    }
+  };
+  return (
+    <div className="space-y-5">
+      <Card
+        title="Missions et confidentialité"
+        description="Comportement des missions et protection de vos données (CdC §8.6, §19)."
+      >
+        {!prefs ? (
+          <Skeleton className="h-24" />
+        ) : (
+          <ul className="divide-y divide-border">
+            {rows.map((r) => (
+              <li key={r.key} className="flex items-center justify-between gap-4 py-3">
+                <div>
+                  <p className="t-small font-medium">{r.title}</p>
+                  <p className="t-caption text-text-muted">{r.text}</p>
+                </div>
+                <Switch
+                  checked={prefs[r.key]}
+                  onCheckedChange={(c) => void set({ [r.key]: c })}
+                  label={r.title}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+      <Card
+        title="Données et assistance"
+        description="Sauvegardez une mission, ou transmettez vos journaux à l’assistance : ils ne contiennent ni clé ni contenu de documents."
+      >
+        <div className="flex flex-wrap gap-3">
+          <Button variant="secondary" onClick={() => void importMission()}>
+            Importer une mission…
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={async () => {
+              const r = await api.ops.exportLogs();
+              if (!r.ok)
+                push({
+                  tone: 'danger',
+                  title: 'Export impossible',
+                  description: errorText(r.error),
+                });
+              else if (r.value.saved) push({ tone: 'success', title: 'Journaux exportés' });
+            }}
+          >
+            Exporter les journaux (zip)
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 function AboutSection() {
   const about = useQuery({
     queryKey: ['about'],
@@ -486,6 +630,7 @@ function AboutSection() {
           </dd>
         </dl>
       )}
+      <UpdateBlock />
     </Card>
   );
 }
@@ -502,6 +647,7 @@ export function SettingsPage() {
           {[
             ['cle', 'Clé et modèles'],
             ['sources', 'Sources documentaires'],
+            ['missions', 'Missions et confidentialité'],
             ['apparence', 'Apparence'],
             ['apropos', 'À propos'],
           ].map(([v, l]) => (
@@ -517,6 +663,9 @@ export function SettingsPage() {
           </TabsContent>
           <TabsContent value="sources">
             <SourcesSettings />
+          </TabsContent>
+          <TabsContent value="missions">
+            <OperationsSection />
           </TabsContent>
           <TabsContent value="apparence">
             <AppearanceSection />
