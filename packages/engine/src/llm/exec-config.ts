@@ -9,7 +9,13 @@ export type MissionExecConfig = {
   llmMode: 'mock' | 'real';
   models: Partial<Record<AgentRole, string>>;
   fallbackModels?: Partial<Record<AgentRole, string[]>>;
+  /** Sources documentaires : `mock` = sources simulées même avec le vrai modèle (calibration sans accès aux API de sources) ; défaut = `llmMode`. */
+  sourcesMode?: 'mock' | 'real';
   budgetMaxUsd: number;
+  /** Plafond de jetons de sortie par appel (défaut `DEFAULT_MAX_OUTPUT_TOKENS`) : OpenRouter réserve le coût maximal possible de la réponse, sans plafond un petit solde est refusé (402). */
+  maxOutputTokens?: number;
+  /** Effort de réflexion par rôle (remplace `resources/llm-config.json`). */
+  reasoningEffort?: Partial<Record<AgentRole, string>>;
   /** Nombre d'agents simultanés (défaut 3, min 1, max 8 — §7.6). */
   parallelism: number;
   /** Coût estimé d'un appel pour le contrôle de budget avant appel (§14.4). */
@@ -20,4 +26,17 @@ export type MissionExecConfig = {
   budgetAlertsSent?: number[];
 };
 
+/** Un mémoire court tient largement ; les modèles à raisonnement y consomment aussi leurs jetons de réflexion. */
+export const DEFAULT_MAX_OUTPUT_TOKENS = 16_000;
+
 export const clampParallelism = (n: number): number => Math.max(1, Math.min(8, Math.floor(n || 3)));
+
+/** Réglages généraux des appels (`resources/llm-config.json`). */
+export type LlmConfig = {
+  maxOutputTokens: number;
+  reasoning: { default: string | null; roles: Partial<Record<string, string>> };
+};
+export const DEFAULT_LLM_CONFIG: LlmConfig = {
+  maxOutputTokens: DEFAULT_MAX_OUTPUT_TOKENS,
+  reasoning: { default: null, roles: {} },
+};

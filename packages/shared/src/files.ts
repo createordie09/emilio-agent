@@ -24,6 +24,8 @@ export type ColumnProfile = {
   nonMissing: number;
   missing: number;
   distinct: number;
+  /** Colonne d'identification (nom, téléphone, e-mail…) : exclue de l'analyse, jamais envoyée au modèle (CdC §19). */
+  identifying?: boolean;
   /** Modalités et effectifs pour une variable catégorielle (20 max). */
   modalities?: { value: string; count: number }[];
   /** Statistiques calculées par du code (jamais par un modèle, CdC §17). */

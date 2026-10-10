@@ -1,0 +1,837 @@
+{
+  "scenario": "B",
+  "label": "quantitative avec données CSV, préréglage économique",
+  "preset": "economique",
+  "budgetUsd": 1.1,
+  "status": "completed",
+  "costUsd": 1.0531707140250002,
+  "wallSeconds": 2141,
+  "planSeconds": 40,
+  "estimate": {
+    "scenarios": {
+      "bas": {
+        "costUsd": 0.5047,
+        "durationSec": 1369
+      },
+      "moyen": {
+        "costUsd": 0.5542,
+        "durationSec": 1563
+      },
+      "haut": {
+        "costUsd": 0.564,
+        "durationSec": 1577
+      }
+    },
+    "phases": [
+      {
+        "phase": "P3",
+        "labelFr": "Recherche approfondie et fiches de lecture",
+        "tokensIn": 150600,
+        "tokensOut": 34800,
+        "costUsd": {
+          "bas": 0.1615,
+          "moyen": 0.1615,
+          "haut": 0.1615
+        },
+        "durationSec": {
+          "bas": 330,
+          "moyen": 330,
+          "haut": 330
+        }
+      },
+      {
+        "phase": "P4",
+        "labelFr": "Analyse des données de terrain",
+        "tokensIn": 20000,
+        "tokensOut": 7200,
+        "costUsd": {
+          "bas": 0.042,
+          "moyen": 0.042,
+          "haut": 0.042
+        },
+        "durationSec": {
+          "bas": 176,
+          "moyen": 176,
+          "haut": 176
+        }
+      },
+      {
+        "phase": "P5",
+        "labelFr": "Rédaction, ancrage et résumés",
+        "tokensIn": 105800,
+        "tokensOut": 13274,
+        "costUsd": {
+          "bas": 0.0724,
+          "moyen": 0.0724,
+          "haut": 0.0724
+        },
+        "durationSec": {
+          "bas": 224,
+          "moyen": 224,
+          "haut": 224
+        }
+      },
+      {
+        "phase": "P6",
+        "labelFr": "Jury par chapitre et révisions",
+        "tokensIn": 80079,
+        "tokensOut": 49937,
+        "costUsd": {
+          "bas": 0.1838,
+          "moyen": 0.1903,
+          "haut": 0.2002
+        },
+        "durationSec": {
+          "bas": 413,
+          "moyen": 418,
+          "haut": 433
+        }
+      },
+      {
+        "phase": "P7",
+        "labelFr": "Évaluation globale et harmonisation",
+        "tokensIn": 51400,
+        "tokensOut": 15200,
+        "costUsd": {
+          "bas": 0.043,
+          "moyen": 0.0859,
+          "haut": 0.0859
+        },
+        "durationSec": {
+          "bas": 189,
+          "moyen": 378,
+          "haut": 378
+        }
+      },
+      {
+        "phase": "P8",
+        "labelFr": "Bibliographie",
+        "tokensIn": 6000,
+        "tokensOut": 1500,
+        "costUsd": {
+          "bas": 0.002,
+          "moyen": 0.002,
+          "haut": 0.002
+        },
+        "durationSec": {
+          "bas": 37,
+          "moyen": 37,
+          "haut": 37
+        }
+      }
+    ],
+    "spentUsd": 0.0249,
+    "budgetMaxUsd": 1.1,
+    "exceedsBudget": {
+      "bas": false,
+      "moyen": false,
+      "haut": false
+    },
+    "partial": false,
+    "missingPrice": [],
+    "simulated": false,
+    "sectionCount": 8,
+    "targetWords": 2980,
+    "assumptions": [
+      "8 section(s) à rédiger, 2 980 mots visés.",
+      "Scénario bas : 1 ronde de jury par chapitre ; moyen : 1 ; haut : 1 (maximum permis).",
+      "Recherche « rapide », 3 agent(s) en parallèle.",
+      "Coefficients à calibrer après les premières missions réelles ; la durée dépend de la vitesse des modèles."
+    ],
+    "computedAt": "2026-10-10T11:40:48.370Z"
+  },
+  "phases": [
+    {
+      "phase": "P3",
+      "n": 20,
+      "cost": 0.0974869016,
+      "tin": 72307,
+      "tout": 60404,
+      "start": "2026-10-10T11:40:48.471Z",
+      "end": "2026-10-10T11:46:39.297Z",
+      "seconds": 351
+    },
+    {
+      "phase": "P4",
+      "n": 1,
+      "cost": 0.00707025,
+      "tin": 1992,
+      "tout": 1487,
+      "start": "2026-10-10T11:45:27.264Z",
+      "end": "2026-10-10T11:45:41.794Z",
+      "seconds": 15
+    },
+    {
+      "phase": "P5",
+      "n": 11,
+      "cost": 0.1311547342,
+      "tin": 84447,
+      "tout": 43376,
+      "start": "2026-10-10T11:45:42.271Z",
+      "end": "2026-10-10T11:52:51.236Z",
+      "seconds": 429
+    },
+    {
+      "phase": "P6",
+      "n": 4,
+      "cost": 0.531144440875,
+      "tin": 177316,
+      "tout": 153397,
+      "start": "2026-10-10T11:47:52.378Z",
+      "end": "2026-10-10T12:06:17.246Z",
+      "seconds": 1105
+    },
+    {
+      "phase": "P7",
+      "n": 2,
+      "cost": 0.26142338735,
+      "tin": 114789,
+      "tout": 57727,
+      "start": "2026-10-10T12:06:17.279Z",
+      "end": "2026-10-10T12:16:25.256Z",
+      "seconds": 608
+    },
+    {
+      "phase": "P8",
+      "n": 1,
+      "cost": 0,
+      "tin": 0,
+      "tout": 0,
+      "start": "2026-10-10T12:16:25.270Z",
+      "end": "2026-10-10T12:16:25.575Z",
+      "seconds": 0
+    },
+    {
+      "phase": "P9",
+      "n": 3,
+      "cost": 0,
+      "tin": 0,
+      "tout": 0,
+      "start": "2026-10-10T12:16:25.773Z",
+      "end": "2026-10-10T12:16:26.797Z",
+      "seconds": 1
+    }
+  ],
+  "outsideTasks": {
+    "cost": 0.024891,
+    "tin": 2998,
+    "tout": 6038,
+    "n": 2
+  },
+  "byRole": [
+    {
+      "role": "section_writer",
+      "model": "google/gemini-3.8-flash",
+      "calls": 46,
+      "cost": 0.33714525,
+      "tin": 159482,
+      "tout": 58009,
+      "avgMs": 8602,
+      "tps": 146.60139704618743
+    },
+    {
+      "role": "juror_form",
+      "model": "deepseek/deepseek-v4-pro",
+      "calls": 10,
+      "cost": 0.17624135,
+      "tin": 41499,
+      "tout": 41995,
+      "avgMs": 64923.8,
+      "tps": 64.68352129727465
+    },
+    {
+      "role": "juror_methodologist",
+      "model": "deepseek/deepseek-v4-pro",
+      "calls": 11,
+      "cost": 0.175516322575,
+      "tin": 52910,
+      "tout": 45197,
+      "avgMs": 76308.36363636363,
+      "tps": 53.84492585109222
+    },
+    {
+      "role": "juror_specialist",
+      "model": "deepseek/deepseek-v4-pro",
+      "calls": 8,
+      "cost": 0.1386287028,
+      "tin": 29300,
+      "tout": 37352,
+      "avgMs": 79562.125,
+      "tps": 58.68370157282752
+    },
+    {
+      "role": "document_analyst",
+      "model": "google/gemini-3.8-flash",
+      "calls": 70,
+      "cost": 0.10341,
+      "tin": 52910,
+      "tout": 16994,
+      "avgMs": 3195.0285714285715,
+      "tps": 75.98411818360667
+    },
+    {
+      "role": "jury_president",
+      "model": "google/gemini-3.8-flash",
+      "calls": 14,
+      "cost": 0.05107875,
+      "tin": 21865,
+      "tout": 9248,
+      "avgMs": 5664.357142857143,
+      "tps": 116.61895814680773
+    },
+    {
+      "role": "outline_architect",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.01987875,
+      "tin": 2375,
+      "tout": 4826,
+      "avgMs": 30034,
+      "tps": 160.6845575014983
+    },
+    {
+      "role": "researcher",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 69,
+      "cost": 0.0155183495,
+      "tin": 32751,
+      "tout": 53324,
+      "avgMs": 12302,
+      "tps": 62.81999627726374
+    },
+    {
+      "role": "summarizer",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 24,
+      "cost": 0.01003086515,
+      "tin": 24510,
+      "tout": 24233,
+      "avgMs": 17315.583333333332,
+      "tps": 58.31211769744979
+    },
+    {
+      "role": "grounding_checker",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 33,
+      "cost": 0.007450124,
+      "tin": 30429,
+      "tout": 27542,
+      "avgMs": 12875.60606060606,
+      "tps": 64.82072041327858
+    },
+    {
+      "role": "data_analyst",
+      "model": "google/gemini-3.8-flash",
+      "calls": 2,
+      "cost": 0.00707025,
+      "tin": 1992,
+      "tout": 1487,
+      "avgMs": 7246,
+      "tps": 102.60833563345294
+    },
+    {
+      "role": "harmonizer",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.00618975,
+      "tin": 3203,
+      "tout": 1010,
+      "avgMs": 7160,
+      "tps": 141.0614525139665
+    },
+    {
+      "role": "orchestrator",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.00501225,
+      "tin": 623,
+      "tout": 1212,
+      "avgMs": 9381,
+      "tps": 129.1973137192197
+    }
+  ],
+  "errors": [
+    {
+      "error": "E_REMOTE",
+      "n": 1
+    }
+  ],
+  "warnings": [
+    "[warning] Peu de sources trouvées pour la section « Hypothèses » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Hypothèses) : 2 source(s) retenue(s), 2 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Peu de sources trouvées pour la section « Vérification des hypothèses » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Vérification des hypothèses) : 2 source(s) retenue(s), 1 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Rédacteur : section 1 Clarification conceptuelle et revue de littérature rédigée (836 mots, ancrage 100 %, 2 correction(s)).",
+    "[warning] Rédacteur : section 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations rédigée (787 mots, ancrage 100 %, 2 correction(s), 1 phrase(s) supprimée(s)).",
+    "[warning] Un juré n’a pas rendu d’évaluation exploitable pour le chapitre « 1 Clarification conceptuelle et revue de littérature » : son avis est écarté.",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » noté 12,9/20 — à réviser (7 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 3 Présentation du milieu d'étude et des résultats » noté 9,7/20 — à réécrire (8 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » noté 10,8/20 — à réécrire (12 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » noté 7,0/20 — à réécrire (7 remarque(s) majeure(s)).",
+    "[warning] Jury : la révision de le chapitre « 1 Clarification conceptuelle et revue de littérature » a fait baisser la note (12,9 → 7,0) : versions précédentes conservées.",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » accepté avec réserves (12,9/20, seuil 14) — la révision dégradait le texte, versions précédentes conservées.",
+    "[warning] Rédacteur : la révision de 2.1 Type d'étude n’a pas abouti (erreur) ; la version actuelle est conservée.",
+    "[warning] Jury : le chapitre « 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations » noté 9,8/20 — à réécrire (8 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » noté 6,7/20 — à réécrire (13 remarque(s) majeure(s)).",
+    "[warning] Jury : la révision de le chapitre « 2 Cadre théorique et démarche méthodologique » a fait baisser la note (10,8 → 6,7) : versions précédentes conservées.",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » accepté avec réserves (10,8/20, seuil 14) — la révision dégradait le texte, versions précédentes conservées.",
+    "[warning] Jury : le chapitre « 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations » noté 10,8/20 — à réécrire (9 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations » accepté avec réserves (10,8/20, seuil 14) — nombre maximal de rondes atteint.",
+    "[warning] Un juré n’a pas rendu d’évaluation exploitable pour l’ensemble du travail : son avis est écarté.",
+    "[warning] Jury : l’ensemble du travail noté 12,3/20 — à réviser (6 remarque(s) majeure(s)).",
+    "[warning] Budget utilisé à 80 % (0.88 $ sur 1.10 $).",
+    "[warning] Rédacteur : section 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations révisée (ronde 1, 809 mots).",
+    "[warning] Jury : l’ensemble du travail noté 10,0/20 — à réécrire (5 remarque(s) majeure(s)).",
+    "[warning] Jury : la révision de l’ensemble du travail a fait baisser la note (12,3 → 10,0) : versions précédentes conservées.",
+    "[warning] Jury : l’ensemble du travail accepté avec réserves (12,3/20, seuil 14) — la révision dégradait le texte, versions précédentes conservées.",
+    "[warning] Budget utilisé à 95 % (1.05 $ sur 1.10 $)."
+  ],
+  "sections": [
+    {
+      "section": "Introduction générale",
+      "words": 499,
+      "target": 0,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "1 Clarification conceptuelle et revue de littérature",
+      "words": 832,
+      "target": 750,
+      "grounding": 1,
+      "groundingInitial": 0.6666666666666666,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": [
+        "Le texte compte 836 mots pour une cible de 750 (±10 %) : condense."
+      ]
+    },
+    {
+      "section": "2.1 Type d'étude",
+      "words": 141,
+      "target": 130,
+      "grounding": 1,
+      "groundingInitial": 0,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "2.2 Population et échantillonnage",
+      "words": 140,
+      "target": 140,
+      "grounding": 1,
+      "groundingInitial": 0.5,
+      "removed": 0,
+      "rounds": 1,
+      "warnings": []
+    },
+    {
+      "section": "2.3 Outils de collecte",
+      "words": 145,
+      "target": 130,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "2.4 Méthodes d'analyse",
+      "words": 157,
+      "target": 160,
+      "grounding": 1,
+      "groundingInitial": 0.3333333333333333,
+      "removed": 0,
+      "rounds": 1,
+      "warnings": []
+    },
+    {
+      "section": "2.5 Difficultés et limites",
+      "words": 133,
+      "target": 140,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "3 Présentation du milieu d'étude et des résultats",
+      "words": 763,
+      "target": 770,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "4 Analyse, discussion des résultats, vérification des hypothèses et recommandations",
+      "words": 760,
+      "target": 760,
+      "grounding": 1,
+      "groundingInitial": 0.6666666666666666,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "Conclusion générale",
+      "words": 585,
+      "target": 0,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    }
+  ],
+  "jury": [
+    {
+      "scope": "chapter",
+      "target": "01a1259d-9ac3-722d-9eeb-edf386d1b7f0",
+      "status": "accepte_avec_reserves",
+      "score": 12.857142857142858,
+      "rounds": 0,
+      "reasons": "[\"Note finale 12,9/20 inférieure au seuil de 14 (la révision dégradait le texte, versions précédentes conservées).\",\"1 Clarification conceptuelle et revue de littérature : Fournir une définition conceptuelle précise de l'inclusion financière en Afrique de l'Ouest, appuyée par la littérature (indicateurs BCEAO, approches multidimensionnelles).\",\"1 Clarification conceptuelle et revue de littérature : Intégrer des références théoriques et empiriques comparatives étayant le lien entre genre, capital social et taux de remboursement, ou reformuler l'affirmation en questionnement de recherche.\",\"1 Clarification conceptuelle et revue de littérature : Remplacer les balises textuelles [INFORMATION MANQUANTE : ...] par des développements rédigés ou supprimer les phrases non indispensables.\",\"1 Clarification conceptuelle et revue de littérature : Articuler explicitement la revue de littérature avec les hypothèses H1 et H2 en fin de sous-sections pour guider la collecte de données.\",\"1 Clarification conceptuelle et revue de littérature : Alléger le style en éliminant les tournures pompeuses et redondantes, et restreindre la longueur des phrases à moins de 35 mots.\",\"1 Clarification conceptuelle et revue de littérature : Uniformiser le format des citations dans le corps du texte et fournir une bibliographie complète.\",\"1 Clarification conceptuelle et revue de littérature : Insérer une transition fluide reliant le contexte général de la microfinance aux spécificités du crédit solidaire.\"]"
+    },
+    {
+      "scope": "chapter",
+      "target": "01a1259d-9ac3-722d-9eeb-f3ccb8806060",
+      "status": "accepte_avec_reserves",
+      "score": 10.833333333333332,
+      "rounds": 0,
+      "reasons": "[\"Note finale 10,8/20 inférieure au seuil de 14 (la révision dégradait le texte, versions précédentes conservées).\",\"2.1 Type d'étude : Intégrer une section théorique explicitant les concepts clés (crédit solidaire, genre, remboursement) et les théories mobilisées pour justifier le cadre d'analyse.\",\"2.1 Type d'étude : Préciser le design de l'enquête quantitative (transversal, comparatif) et la période d'observation en remplacement des balises manquantes.\",\"2.1 Type d'étude : Harmoniser les citations bibliographiques au format auteur-date-page et insérer la liste complète des références.\",\"2.2 Population et échantillonnage : Délimiter géographiquement la zone d'étude, estimer la taille de la population mère et expliciter les critères d'inclusion et d'exclusion des ménages.\",\"2.2 Population et échantillonnage : Définir et justifier précisément la technique d'échantillonnage (probabiliste ou non probabiliste) retenue pour sélectionner les 60 répondants.\",\"2.3 Outils de collecte : Opérationnaliser la variable de remboursement en explicitant l'échelle de 0 à 5, ses ancrages, sa source et son statut de variable continue ou ordinale.\",\"2.3 Outils de collecte : Documenter le mode d'administration du questionnaire (face-à-face, téléphone, auto-administré), les lieux, la période, la langue et le processus de validation par prétest.\",\"2.4 Méthodes d'analyse : Nommer explicitement le test d'inférence bivarié utilisé pour comparer les scores de remboursement selon le genre (ex. t de Student ou Mann-Whitney U) et fixer le seuil de significativité.\"]"
+    },
+    {
+      "scope": "chapter",
+      "target": "01a1259d-9ac4-708b-899c-bef55d57cd7d",
+      "status": "valide",
+      "score": 15.4,
+      "rounds": 1,
+      "reasons": "[]"
+    },
+    {
+      "scope": "chapter",
+      "target": "01a1259d-9ac4-708b-899c-c2660e3ad253",
+      "status": "accepte_avec_reserves",
+      "score": 10.8,
+      "rounds": 1,
+      "reasons": "[\"Note finale 10,8/20 inférieure au seuil de 14 (nombre maximal de rondes atteint).\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Réaliser un test inférentiel (test t de Student ou test de Mann-Whitney) pour tester H2, rapporter la p-valeur associée et croiser le score de remboursement avec les variables de contrôle sociodémographiques (revenu, âge) via des analyses bi- ou multivariées.\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Définir précisément le score de remboursement en détaillant son échelle, son mode de calcul, sa source et sa fiabilité métrique.\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Articuler explicitement les cadres théoriques cités (asymétrie d'information, caution solidaire) avec les données de terrain pour interpréter l'absence de différenciation genrée au lieu de se limiter à des citations décoratives.\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Harmoniser le format des citations bibliographiques selon une norme académique unique (ex. APA) en supprimant la double notation entre parenthèses et crochets.\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Insérer un paragraphe introductif rappelant la problématique, les objectifs et les hypothèses pour rendre le chapitre autoportant.\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Décrire dans le corps du texte les tableaux appelés pour expliciter les variables présentées et les constats majeurs sans dépendre des annexes.\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Éliminer les répétitions et phrases redondantes, notamment sur l'implication des structures financières ou les citations réitérées (Adjovi et Houngbo, 2021).\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Formuler des recommandations contextualisées et fondées sur les résultats empiriques, en intégrant les disparités géographiques d'accès (Natitingou vs Cotonou) et en justifiant le lien entre la collecte de l'épargne locale (Diallo 2017) et le remboursement.\"]"
+    },
+    {
+      "scope": "global",
+      "target": "",
+      "status": "accepte_avec_reserves",
+      "score": 12.307692307692308,
+      "rounds": 0,
+      "reasons": "[\"Note finale 12,3/20 inférieure au seuil de 14 (la révision dégradait le texte, versions précédentes conservées).\",\"Introduction générale : Rédiger la sous-section dédiée aux objectifs généraux et spécifiques (par exemple évaluer l'impact du crédit solidaire sur l'accès et le remboursement selon le genre) en parfait alignement avec la problématique et les hypothèses énoncées.\",\"2.2 Population et échantillonnage : Préciser la population mère (délimitation géographique, taille), expliciter les critères d'inclusion et d'exclusion des ménages, et détailler la méthode d'échantillonnage (probabiliste ou non) avec sa justification méthodologique.\",\"2.4 Méthodes d'analyse : Préciser la nature exacte du test statistique bivarié utilisé (test t de Student pour échantillons indépendants ou test U de Mann-Whitney) et rapporter la statistique de test, les degrés de liberté ainsi que la valeur p pour comparer les scores de remboursement selon le genre.\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Reformuler H1 de manière opérationnelle et testable ou reconnaître explicitement l'incapacité de la tester en l'absence de groupe témoin, évitant ainsi tout glissement conceptuel.\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Ajouter une limite explicite concernant la nature non causale et descriptive des résultats en raison de la taille réduite de l'échantillon et de l'absence de contrefactuel, en évitant le vocabulaire d'impact dans les recommandations.\",\"4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Discuter les biais induits par l'absence de groupe témoin et suggérer un design quasi-expérimental pour les recherches futures.\"]"
+    }
+  ],
+  "deliverables": [
+    {
+      "kind": "docx",
+      "size_bytes": 74079
+    },
+    {
+      "kind": "rapport",
+      "size_bytes": 26160
+    }
+  ],
+  "finalCheck": {
+    "at": "2026-10-10T12:16:26.638Z",
+    "ok": true,
+    "items": [
+      {
+        "id": "marqueurs",
+        "label": "Aucun marqueur de citation non résolu",
+        "status": "ok",
+        "detail": null
+      },
+      {
+        "id": "bibliographie",
+        "label": "Sources citées = bibliographie",
+        "status": "ok",
+        "detail": "7 source(s) citée(s), toutes dans la bibliographie."
+      },
+      {
+        "id": "ancrage",
+        "label": "Taux d’ancrage global ≥ 90 %",
+        "status": "ok",
+        "detail": "Taux d’ancrage moyen : 100 %."
+      },
+      {
+        "id": "longueur",
+        "label": "Longueur totale dans la tolérance (± 15 %)",
+        "status": "avertissement",
+        "detail": "4 155 mots rédigés pour 2 980 visés (139 %)."
+      },
+      {
+        "id": "numerotation",
+        "label": "Numérotation des tableaux et des figures continue",
+        "status": "ok",
+        "detail": "8 tableau(x), 5 figure(s)."
+      },
+      {
+        "id": "emplacements",
+        "label": "Emplacements à compléter",
+        "status": "avertissement",
+        "detail": "9 emplacement(s) à compléter par vous (listés ci-dessous)."
+      },
+      {
+        "id": "docx",
+        "label": "Le fichier Word s’ouvre sans erreur",
+        "status": "ok",
+        "detail": "Le fichier s’ouvre sans erreur (37 k caractères de texte)."
+      }
+    ],
+    "placeholders": [
+      {
+        "section": "Dédicace",
+        "text": "[À COMPLÉTER : dédicace — page personnelle, jamais rédigée par l’agent]"
+      },
+      {
+        "section": "Remerciements",
+        "text": "[À COMPLÉTER : remerciements au directeur ou à la directrice de mémoire]"
+      },
+      {
+        "section": "Remerciements",
+        "text": "[À COMPLÉTER : remerciements à la structure d’accueil ou aux enquêtés]"
+      },
+      {
+        "section": "Remerciements",
+        "text": "[À COMPLÉTER : remerciements à la famille et aux proches]"
+      },
+      {
+        "section": "Sigles et abréviations",
+        "text": "[À COMPLÉTER : définition de FCFA]"
+      },
+      {
+        "section": "Sigles et abréviations",
+        "text": "[À COMPLÉTER : définition de UEMOA]"
+      },
+      {
+        "section": "Page de garde",
+        "text": "[À COMPLÉTER : établissement]"
+      },
+      {
+        "section": "Page de garde",
+        "text": "[À COMPLÉTER : nom de l’auteur]"
+      },
+      {
+        "section": "Page de garde",
+        "text": "[À COMPLÉTER : année académique]"
+      }
+    ]
+  },
+  "summary": {
+    "finalScore": 12.307692307692308,
+    "words": 4155,
+    "pages": 12,
+    "sources": 7,
+    "durationMin": 36,
+    "costUsd": 1.0531707140250002,
+    "attention": [
+      "1 Clarification conceptuelle et revue de littérature : accepté avec réserves (Note finale 12,9/20 inférieure au seuil de 14 (la révision dégradait le texte, versions précédentes conservées). ; 1 Clarification conceptuelle et revue de littérature : Fournir une définition conceptuelle précise de l'inclusion financière en Afrique de l'Ouest, appuyée par la littérature (indicateurs BCEAO, approches multidimensionnelles). ; 1 Clarification conceptuelle et revue de littérature : Intégrer des références théoriques et empiriques comparatives étayant le lien entre genre, capital social et taux de remboursement, ou reformuler l'affirmation en questionnement de recherche. ; 1 Clarification conceptuelle et revue de littérature : Remplacer les balises textuelles [INFORMATION MANQUANTE : ...] par des développements rédigés ou supprimer les phrases non indispensables. ; 1 Clarification conceptuelle et revue de littérature : Articuler explicitement la revue de littérature avec les hypothèses H1 et H2 en fin de sous-sections pour guider la collecte de données. ; 1 Clarification conceptuelle et revue de littérature : Alléger le style en éliminant les tournures pompeuses et redondantes, et restreindre la longueur des phrases à moins de 35 mots. ; 1 Clarification conceptuelle et revue de littérature : Uniformiser le format des citations dans le corps du texte et fournir une bibliographie complète. ; 1 Clarification conceptuelle et revue de littérature : Insérer une transition fluide reliant le contexte général de la microfinance aux spécificités du crédit solidaire.).",
+      "2 Cadre théorique et démarche méthodologique : accepté avec réserves (Note finale 10,8/20 inférieure au seuil de 14 (la révision dégradait le texte, versions précédentes conservées). ; 2.1 Type d'étude : Intégrer une section théorique explicitant les concepts clés (crédit solidaire, genre, remboursement) et les théories mobilisées pour justifier le cadre d'analyse. ; 2.1 Type d'étude : Préciser le design de l'enquête quantitative (transversal, comparatif) et la période d'observation en remplacement des balises manquantes. ; 2.1 Type d'étude : Harmoniser les citations bibliographiques au format auteur-date-page et insérer la liste complète des références. ; 2.2 Population et échantillonnage : Délimiter géographiquement la zone d'étude, estimer la taille de la population mère et expliciter les critères d'inclusion et d'exclusion des ménages. ; 2.2 Population et échantillonnage : Définir et justifier précisément la technique d'échantillonnage (probabiliste ou non probabiliste) retenue pour sélectionner les 60 répondants. ; 2.3 Outils de collecte : Opérationnaliser la variable de remboursement en explicitant l'échelle de 0 à 5, ses ancrages, sa source et son statut de variable continue ou ordinale. ; 2.3 Outils de collecte : Documenter le mode d'administration du questionnaire (face-à-face, téléphone, auto-administré), les lieux, la période, la langue et le processus de validation par prétest. ; 2.4 Méthodes d'analyse : Nommer explicitement le test d'inférence bivarié utilisé pour comparer les scores de remboursement selon le genre (ex. t de Student ou Mann-Whitney U) et fixer le seuil de significativité.).",
+      "4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : accepté avec réserves (Note finale 10,8/20 inférieure au seuil de 14 (nombre maximal de rondes atteint). ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Réaliser un test inférentiel (test t de Student ou test de Mann-Whitney) pour tester H2, rapporter la p-valeur associée et croiser le score de remboursement avec les variables de contrôle sociodémographiques (revenu, âge) via des analyses bi- ou multivariées. ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Définir précisément le score de remboursement en détaillant son échelle, son mode de calcul, sa source et sa fiabilité métrique. ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Articuler explicitement les cadres théoriques cités (asymétrie d'information, caution solidaire) avec les données de terrain pour interpréter l'absence de différenciation genrée au lieu de se limiter à des citations décoratives. ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Harmoniser le format des citations bibliographiques selon une norme académique unique (ex. APA) en supprimant la double notation entre parenthèses et crochets. ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Insérer un paragraphe introductif rappelant la problématique, les objectifs et les hypothèses pour rendre le chapitre autoportant. ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Décrire dans le corps du texte les tableaux appelés pour expliciter les variables présentées et les constats majeurs sans dépendre des annexes. ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Éliminer les répétitions et phrases redondantes, notamment sur l'implication des structures financières ou les citations réitérées (Adjovi et Houngbo, 2021). ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Formuler des recommandations contextualisées et fondées sur les résultats empiriques, en intégrant les disparités géographiques d'accès (Natitingou vs Cotonou) et en justifiant le lien entre la collecte de l'épargne locale (Diallo 2017) et le remboursement.).",
+      "Ensemble du travail : accepté avec réserves (Note finale 12,3/20 inférieure au seuil de 14 (la révision dégradait le texte, versions précédentes conservées). ; Introduction générale : Rédiger la sous-section dédiée aux objectifs généraux et spécifiques (par exemple évaluer l'impact du crédit solidaire sur l'accès et le remboursement selon le genre) en parfait alignement avec la problématique et les hypothèses énoncées. ; 2.2 Population et échantillonnage : Préciser la population mère (délimitation géographique, taille), expliciter les critères d'inclusion et d'exclusion des ménages, et détailler la méthode d'échantillonnage (probabiliste ou non) avec sa justification méthodologique. ; 2.4 Méthodes d'analyse : Préciser la nature exacte du test statistique bivarié utilisé (test t de Student pour échantillons indépendants ou test U de Mann-Whitney) et rapporter la statistique de test, les degrés de liberté ainsi que la valeur p pour comparer les scores de remboursement selon le genre. ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Reformuler H1 de manière opérationnelle et testable ou reconnaître explicitement l'incapacité de la tester en l'absence de groupe témoin, évitant ainsi tout glissement conceptuel. ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Ajouter une limite explicite concernant la nature non causale et descriptive des résultats en raison de la taille réduite de l'échantillon et de l'absence de contrefactuel, en évitant le vocabulaire d'impact dans les recommandations. ; 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : Discuter les biais induits par l'absence de groupe témoin et suggérer un design quasi-expérimental pour les recherches futures.).",
+      "Longueur totale dans la tolérance (± 15 %) : 4 155 mots rédigés pour 2 980 visés (139 %).",
+      "9 emplacement(s) à compléter par vous (liste dans le contrôle final)."
+    ]
+  },
+  "costs": {
+    "totalUsd": 1.0531707140250002,
+    "budgetMaxUsd": 1.1,
+    "tokensIn": 453849,
+    "tokensOut": 322429,
+    "calls": 290,
+    "byPhase": [
+      {
+        "key": "P6",
+        "label": "P6 — Jury et révisions",
+        "costUsd": 0.531144440875,
+        "tokensIn": 177316,
+        "tokensOut": 153397,
+        "calls": 91
+      },
+      {
+        "key": "P7",
+        "label": "P7 — Évaluation globale",
+        "costUsd": 0.26142338735,
+        "tokensIn": 114789,
+        "tokensOut": 57727,
+        "calls": 31
+      },
+      {
+        "key": "P5",
+        "label": "P5 — Rédaction",
+        "costUsd": 0.1311547342,
+        "tokensIn": 84447,
+        "tokensOut": 43376,
+        "calls": 44
+      },
+      {
+        "key": "P3",
+        "label": "P3 — Recherche documentaire",
+        "costUsd": 0.0974869016,
+        "tokensIn": 72307,
+        "tokensOut": 60404,
+        "calls": 120
+      },
+      {
+        "key": "autre",
+        "label": "Cadrage, plan et divers",
+        "costUsd": 0.024891,
+        "tokensIn": 2998,
+        "tokensOut": 6038,
+        "calls": 2
+      },
+      {
+        "key": "P4",
+        "label": "P4 — Analyse des données",
+        "costUsd": 0.00707025,
+        "tokensIn": 1992,
+        "tokensOut": 1487,
+        "calls": 2
+      }
+    ],
+    "byRole": [
+      {
+        "key": "section_writer",
+        "label": "rédacteur académique",
+        "costUsd": 0.33714525,
+        "tokensIn": 159482,
+        "tokensOut": 58009,
+        "calls": 46
+      },
+      {
+        "key": "juror_form",
+        "label": "juré forme",
+        "costUsd": 0.17624135,
+        "tokensIn": 41499,
+        "tokensOut": 41995,
+        "calls": 10
+      },
+      {
+        "key": "juror_methodologist",
+        "label": "juré méthodologiste",
+        "costUsd": 0.175516322575,
+        "tokensIn": 52910,
+        "tokensOut": 45197,
+        "calls": 11
+      },
+      {
+        "key": "juror_specialist",
+        "label": "juré spécialiste",
+        "costUsd": 0.1386287028,
+        "tokensIn": 29300,
+        "tokensOut": 37352,
+        "calls": 8
+      },
+      {
+        "key": "document_analyst",
+        "label": "analyste de documents",
+        "costUsd": 0.10341,
+        "tokensIn": 52910,
+        "tokensOut": 16994,
+        "calls": 70
+      },
+      {
+        "key": "jury_president",
+        "label": "président du jury",
+        "costUsd": 0.05107875,
+        "tokensIn": 21865,
+        "tokensOut": 9248,
+        "calls": 14
+      },
+      {
+        "key": "outline_architect",
+        "label": "architecte du plan",
+        "costUsd": 0.01987875,
+        "tokensIn": 2375,
+        "tokensOut": 4826,
+        "calls": 1
+      },
+      {
+        "key": "researcher",
+        "label": "chercheur documentaire",
+        "costUsd": 0.0155183495,
+        "tokensIn": 32751,
+        "tokensOut": 53324,
+        "calls": 69
+      },
+      {
+        "key": "summarizer",
+        "label": "résumeur",
+        "costUsd": 0.01003086515,
+        "tokensIn": 24510,
+        "tokensOut": 24233,
+        "calls": 24
+      },
+      {
+        "key": "grounding_checker",
+        "label": "vérificateur d'ancrage",
+        "costUsd": 0.007450124,
+        "tokensIn": 30429,
+        "tokensOut": 27542,
+        "calls": 33
+      },
+      {
+        "key": "data_analyst",
+        "label": "analyste de données",
+        "costUsd": 0.00707025,
+        "tokensIn": 1992,
+        "tokensOut": 1487,
+        "calls": 2
+      },
+      {
+        "key": "harmonizer",
+        "label": "harmonisateur",
+        "costUsd": 0.00618975,
+        "tokensIn": 3203,
+        "tokensOut": 1010,
+        "calls": 1
+      },
+      {
+        "key": "orchestrator",
+        "label": "directeur de recherche",
+        "costUsd": 0.00501225,
+        "tokensIn": 623,
+        "tokensOut": 1212,
+        "calls": 1
+      }
+    ],
+    "byModel": [
+      {
+        "key": "google/gemini-3.8-flash",
+        "label": "google/gemini-3.8-flash",
+        "costUsd": 0.529785,
+        "tokensIn": 242450,
+        "tokensOut": 92786,
+        "calls": 135
+      },
+      {
+        "key": "deepseek/deepseek-v4-pro",
+        "label": "deepseek/deepseek-v4-pro",
+        "costUsd": 0.490386375375,
+        "tokensIn": 123709,
+        "tokensOut": 124544,
+        "calls": 29
+      },
+      {
+        "key": "deepseek/deepseek-v4-flash",
+        "label": "deepseek/deepseek-v4-flash",
+        "costUsd": 0.03299933865,
+        "tokensIn": 87690,
+        "tokensOut": 105099,
+        "calls": 126
+      }
+    ],
+    "projectedRemainingUsd": null
+  }
+}

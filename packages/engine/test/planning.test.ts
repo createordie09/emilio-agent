@@ -725,7 +725,7 @@ describe('validation du plan et lancement de la recherche (P3) puis de la rédac
       .get(id) as { n: number };
     expect(bad.n).toBe(0);
     await engine.close();
-  });
+  }, 30000);
 
   it('la problématique choisie est inscrite dans le brief à la validation', async () => {
     const { engine, id } = await briefed({

@@ -1,0 +1,708 @@
+{
+  "scenario": "A",
+  "label": "documentaire, préréglage économique",
+  "preset": "economique",
+  "budgetUsd": 1,
+  "status": "paused_budget",
+  "costUsd": 1.0403531460500006,
+  "wallSeconds": 1860,
+  "planSeconds": 37,
+  "estimate": {
+    "scenarios": {
+      "bas": {
+        "costUsd": 0.3938,
+        "durationSec": 1075
+      },
+      "moyen": {
+        "costUsd": 0.545,
+        "durationSec": 1488
+      },
+      "haut": {
+        "costUsd": 0.5614,
+        "durationSec": 1513
+      }
+    },
+    "phases": [
+      {
+        "phase": "P3",
+        "labelFr": "Recherche approfondie et fiches de lecture",
+        "tokensIn": 150600,
+        "tokensOut": 34800,
+        "costUsd": {
+          "bas": 0.1614,
+          "moyen": 0.1614,
+          "haut": 0.1614
+        },
+        "durationSec": {
+          "bas": 330,
+          "moyen": 330,
+          "haut": 330
+        }
+      },
+      {
+        "phase": "P5",
+        "labelFr": "Rédaction, ancrage et résumés",
+        "tokensIn": 105800,
+        "tokensOut": 13274,
+        "costUsd": {
+          "bas": 0.0724,
+          "moyen": 0.0724,
+          "haut": 0.0724
+        },
+        "durationSec": {
+          "bas": 224,
+          "moyen": 224,
+          "haut": 224
+        }
+      },
+      {
+        "phase": "P6",
+        "labelFr": "Jury par chapitre et révisions",
+        "tokensIn": 87827,
+        "tokensOut": 51874,
+        "costUsd": {
+          "bas": 0.0952,
+          "moyen": 0.2034,
+          "haut": 0.2198
+        },
+        "durationSec": {
+          "bas": 214,
+          "moyen": 438,
+          "haut": 462
+        }
+      },
+      {
+        "phase": "P7",
+        "labelFr": "Évaluation globale et harmonisation",
+        "tokensIn": 51400,
+        "tokensOut": 15200,
+        "costUsd": {
+          "bas": 0.043,
+          "moyen": 0.0859,
+          "haut": 0.0859
+        },
+        "durationSec": {
+          "bas": 189,
+          "moyen": 378,
+          "haut": 378
+        }
+      },
+      {
+        "phase": "P8",
+        "labelFr": "Bibliographie",
+        "tokensIn": 6000,
+        "tokensOut": 1500,
+        "costUsd": {
+          "bas": 0.002,
+          "moyen": 0.002,
+          "haut": 0.002
+        },
+        "durationSec": {
+          "bas": 37,
+          "moyen": 37,
+          "haut": 37
+        }
+      },
+      {
+        "phase": "P9",
+        "labelFr": "Soutenance",
+        "tokensIn": 9000,
+        "tokensOut": 3500,
+        "costUsd": {
+          "bas": 0.0199,
+          "moyen": 0.0199,
+          "haut": 0.0199
+        },
+        "durationSec": {
+          "bas": 82,
+          "moyen": 82,
+          "haut": 82
+        }
+      }
+    ],
+    "spentUsd": 0.0225,
+    "budgetMaxUsd": 1,
+    "exceedsBudget": {
+      "bas": false,
+      "moyen": false,
+      "haut": false
+    },
+    "partial": false,
+    "missingPrice": [],
+    "simulated": false,
+    "sectionCount": 8,
+    "targetWords": 2980,
+    "assumptions": [
+      "8 section(s) à rédiger, 2 980 mots visés.",
+      "Scénario bas : 1 ronde de jury par chapitre ; moyen : 2 ; haut : 2 (maximum permis).",
+      "Recherche « rapide », 3 agent(s) en parallèle.",
+      "Coefficients à calibrer après les premières missions réelles ; la durée dépend de la vitesse des modèles."
+    ],
+    "computedAt": "2026-10-10T11:06:31.522Z"
+  },
+  "phases": [
+    {
+      "phase": "P3",
+      "n": 20,
+      "cost": 0.099070203,
+      "tin": 75308,
+      "tout": 59478,
+      "start": "2026-10-10T11:06:31.734Z",
+      "end": "2026-10-10T11:12:19.144Z",
+      "seconds": 347
+    },
+    {
+      "phase": "P5",
+      "n": 11,
+      "cost": 0.1506684095,
+      "tin": 90589,
+      "tout": 64152,
+      "start": "2026-10-10T11:11:48.702Z",
+      "end": "2026-10-10T11:20:43.711Z",
+      "seconds": 535
+    },
+    {
+      "phase": "P6",
+      "n": 4,
+      "cost": 0.69597652155,
+      "tin": 247687,
+      "tout": 230787,
+      "start": "2026-10-10T11:14:33.283Z",
+      "end": "2026-10-10T11:34:23.815Z",
+      "seconds": 1191
+    },
+    {
+      "phase": "P7",
+      "n": 2,
+      "cost": 0.072124512,
+      "tin": 23824,
+      "tout": 12839,
+      "start": "2026-10-10T11:34:24.154Z",
+      "end": null,
+      "seconds": null
+    },
+    {
+      "phase": "P8",
+      "n": 1,
+      "cost": 0,
+      "tin": 0,
+      "tout": 0,
+      "start": null,
+      "end": null,
+      "seconds": null
+    },
+    {
+      "phase": "P9",
+      "n": 5,
+      "cost": 0,
+      "tin": 0,
+      "tout": 0,
+      "start": null,
+      "end": null,
+      "seconds": null
+    }
+  ],
+  "outsideTasks": {
+    "cost": 0.0225135,
+    "tin": 2733,
+    "tout": 5457,
+    "n": 2
+  },
+  "byRole": [
+    {
+      "role": "section_writer",
+      "model": "google/gemini-3.8-flash",
+      "calls": 57,
+      "cost": 0.343587,
+      "tin": 130941,
+      "tout": 65435,
+      "avgMs": 8229.666666666666,
+      "tps": 139.49319002069961
+    },
+    {
+      "role": "juror_specialist",
+      "model": "deepseek/deepseek-v4-pro",
+      "calls": 10,
+      "cost": 0.176860816,
+      "tin": 33131,
+      "tout": 45221,
+      "avgMs": 63037.5,
+      "tps": 71.73666468372001
+    },
+    {
+      "role": "juror_methodologist",
+      "model": "deepseek/deepseek-v4-pro",
+      "calls": 10,
+      "cost": 0.151318862025,
+      "tin": 33146,
+      "tout": 45130,
+      "avgMs": 71104.7,
+      "tps": 63.46978469777666
+    },
+    {
+      "role": "document_analyst",
+      "model": "google/gemini-3.8-flash",
+      "calls": 81,
+      "cost": 0.12443025,
+      "tin": 66887,
+      "tout": 19804,
+      "avgMs": 3299.543209876543,
+      "tps": 74.09929545054871
+    },
+    {
+      "role": "juror_form",
+      "model": "deepseek/deepseek-v4-pro",
+      "calls": 9,
+      "cost": 0.121739975525,
+      "tin": 23453,
+      "tout": 38069,
+      "avgMs": 72982.33333333333,
+      "tps": 57.95770970447947
+    },
+    {
+      "role": "jury_president",
+      "model": "google/gemini-3.8-flash",
+      "calls": 15,
+      "cost": 0.056499,
+      "tin": 29492,
+      "tout": 9168,
+      "avgMs": 5763.066666666667,
+      "tps": 106.05464683154801
+    },
+    {
+      "role": "outline_architect",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.0193965,
+      "tin": 2192,
+      "tout": 4734,
+      "avgMs": 31114,
+      "tps": 152.15015748537635
+    },
+    {
+      "role": "grounding_checker",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 51,
+      "cost": 0.0166532178,
+      "tin": 60078,
+      "tout": 61392,
+      "avgMs": 15355.21568627451,
+      "tps": 78.39451626578949
+    },
+    {
+      "role": "researcher",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 77,
+      "cost": 0.0155921888,
+      "tin": 36727,
+      "tout": 62926,
+      "avgMs": 12962.675324675325,
+      "tps": 63.04414472721881
+    },
+    {
+      "role": "harmonizer",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.005952,
+      "tin": 3326,
+      "tout": 922,
+      "avgMs": 6905,
+      "tps": 133.5264301230992
+    },
+    {
+      "role": "summarizer",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 24,
+      "cost": 0.0052063359,
+      "tin": 20227,
+      "tout": 19189,
+      "avgMs": 10940.875,
+      "tps": 73.0784024739033
+    },
+    {
+      "role": "orchestrator",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.003117,
+      "tin": 541,
+      "tout": 723,
+      "avgMs": 6027,
+      "tps": 119.96017919362868
+    }
+  ],
+  "errors": [],
+  "warnings": [
+    "[warning] Peu de sources trouvées pour la section « Annonce du plan » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Annonce du plan) : 2 source(s) retenue(s), 0 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Peu de sources trouvées pour la section « Outils de collecte » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Outils de collecte) : 2 source(s) retenue(s), 0 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Peu de sources trouvées pour la section « Type d'étude » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Type d'étude) : 2 source(s) retenue(s), 0 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Rédacteur : section 2.1 Type d'étude rédigée (124 mots, ancrage 100 %, 2 correction(s)).",
+    "[warning] Rédacteur : section 1.1 Cadre conceptuel et fondements théoriques rédigée (661 mots, ancrage 90 %, 2 correction(s), 3 phrase(s) supprimée(s)).",
+    "[warning] Rédacteur : section 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin rédigée (651 mots, ancrage 90 %, 2 correction(s), 3 phrase(s) supprimée(s)).",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » noté 9,5/20 — à réécrire (7 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » noté 6,4/20 — à réécrire (18 remarque(s) majeure(s)).",
+    "[warning] Rédacteur : section 4.1 Discussion des résultats, validation des hypothèses et pistes managériales rédigée (827 mots, ancrage 80 %, 2 correction(s)).",
+    "[warning] Rédacteur : section 1.1 Cadre conceptuel et fondements théoriques révisée (ronde 1, 759 mots).",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » noté 7,3/20 — à réécrire (6 remarque(s) majeure(s)).",
+    "[warning] Jury : la révision de le chapitre « 1 Clarification conceptuelle et revue de littérature » a fait baisser la note (9,5 → 7,3) : versions précédentes conservées.",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » accepté avec réserves (9,5/20, seuil 14) — la révision dégradait le texte, versions précédentes conservées.",
+    "[warning] Jury : le chapitre « 3 Présentation du milieu d'étude et des résultats » noté 3,8/20 — à réécrire (8 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations » noté 6,3/20 — à réécrire (7 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » noté 8,0/20 — à réécrire (12 remarque(s) majeure(s)).",
+    "[warning] Rédacteur : la révision de 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin n’a pas abouti (erreur) ; la version actuelle est conservée.",
+    "[warning] Jury : le chapitre « 3 Présentation du milieu d'étude et des résultats » accepté avec réserves (3,8/20, seuil 14) — aucune révision possible.",
+    "[warning] Budget utilisé à 80 % (0.81 $ sur 1.00 $).",
+    "[warning] Jury : le chapitre « 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations » noté 8,9/20 — à réécrire (8 remarque(s) majeure(s)).",
+    "[warning] Rédacteur : section 2.4 Méthodes d'analyse révisée (ronde 2, 107 mots).",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » noté 13,0/20 — à réviser (12 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 2 Cadre théorique et démarche méthodologique » accepté avec réserves (13,0/20, seuil 14) — nombre maximal de rondes atteint.",
+    "[warning] Budget utilisé à 95 % (0.96 $ sur 1.00 $).",
+    "[warning] Jury : le chapitre « 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations » noté 11,1/20 — à réviser (10 remarque(s) majeure(s)).",
+    "[warning] Jury : le chapitre « 4 Analyse, discussion des résultats, vérification des hypothèses et recommandations » accepté avec réserves (11,1/20, seuil 14) — nombre maximal de rondes atteint.",
+    "[warning] Un juré n’a pas rendu d’évaluation exploitable pour l’ensemble du travail : son avis est écarté.",
+    "[warning] Le budget de 1 $ est atteint."
+  ],
+  "sections": [
+    {
+      "section": "Introduction générale",
+      "words": 440,
+      "target": 0,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "1.1 Cadre conceptuel et fondements théoriques",
+      "words": 655,
+      "target": 760,
+      "grounding": 0.9,
+      "groundingInitial": 1,
+      "removed": 3,
+      "rounds": 2,
+      "warnings": [
+        "1 affirmation(s) seulement partiellement étayée(s) : à relire.",
+        "Le texte compte 661 mots pour une cible de 760 (±10 %) : développe.",
+        "3 phrase(s) supprimée(s) par le contrôle d'intégrité."
+      ]
+    },
+    {
+      "section": "2.1 Type d'étude",
+      "words": 133,
+      "target": 140,
+      "grounding": 0.6666666666666666,
+      "groundingInitial": 0.6666666666666666,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": [
+        "1 affirmation(s) seulement partiellement étayée(s) : à relire."
+      ]
+    },
+    {
+      "section": "2.2 Population et échantillonnage",
+      "words": 151,
+      "target": 150,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "2.3 Outils de collecte",
+      "words": 151,
+      "target": 140,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 1,
+      "warnings": []
+    },
+    {
+      "section": "2.4 Méthodes d'analyse",
+      "words": 107,
+      "target": 150,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 2,
+      "rounds": 2,
+      "warnings": [
+        "Le texte compte 107 mots pour une cible de 150 (±10 %) : développe.",
+        "2 phrase(s) supprimée(s) par le contrôle d'intégrité."
+      ]
+    },
+    {
+      "section": "2.5 Difficultés et limites",
+      "words": 146,
+      "target": 140,
+      "grounding": 1,
+      "groundingInitial": 0.5,
+      "removed": 0,
+      "rounds": 1,
+      "warnings": []
+    },
+    {
+      "section": "3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin",
+      "words": 639,
+      "target": 750,
+      "grounding": 0.9,
+      "groundingInitial": 1,
+      "removed": 3,
+      "rounds": 2,
+      "warnings": [
+        "1 affirmation(s) seulement partiellement étayée(s) : à relire.",
+        "Le texte compte 651 mots pour une cible de 750 (±10 %) : développe.",
+        "3 phrase(s) supprimée(s) par le contrôle d'intégrité."
+      ]
+    },
+    {
+      "section": "4.1 Discussion des résultats, validation des hypothèses et pistes managériales",
+      "words": 830,
+      "target": 750,
+      "grounding": 1,
+      "groundingInitial": 0.8,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": [
+        "Le texte compte 830 mots pour une cible de 750 (±10 %) : condense."
+      ]
+    },
+    {
+      "section": "Conclusion générale",
+      "words": 530,
+      "target": 0,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    }
+  ],
+  "jury": [
+    {
+      "scope": "chapter",
+      "target": "01a1257e-383e-7608-beab-e41ee8896e01",
+      "status": "accepte_avec_reserves",
+      "score": 9.5,
+      "rounds": 0,
+      "reasons": "[\"Note finale 9,5/20 inférieure au seuil de 14 (la révision dégradait le texte, versions précédentes conservées).\",\"1.1 Cadre conceptuel et fondements théoriques : Définir formellement et opérationnaliser les concepts de microfinance, d'inclusion financière et de Systèmes Financiers Décentralisés (SFD) à partir de sources institutionnelles (BCEAO, CGAP, Banque Mondiale) et académiques, en supprimant les marqueurs « INFORMATION MANQUANTE » (R1, R5, R12).\",\"1.1 Cadre conceptuel et fondements théoriques : Développer le cadre théorique en explicitant les mécanismes d'intermédiation financière et de rationnement du crédit (sélection adverse, aléa moral) issus de Stiglitz et Weiss (1981), et analyser le rôle des groupes de caution solidaire face aux asymétries d'information en éliminant les marqueurs d'incomplétude (R2, R7, R13).\",\"1.1 Cadre conceptuel et fondements théoriques : Restructurer la revue de littérature de manière thématique et critique plutôt qu'énumérative, en comparant les résultats empiriques, leurs convergences, divergences et limites (R6, R9).\",\"1.1 Cadre conceptuel et fondements théoriques : Éliminer les redondances textuelles et les répétitions quasi mot pour mot des phrases citant Adjovi et Houngbo (2021) ainsi que Johnson et Okafor (2022) pour fluidifier l'argumentation (R3, R8, R11).\",\"1.1 Cadre conceptuel et fondements théoriques : Rédiger des transitions fluides entre la mobilisation de l'épargne et les défaillances de marché, ainsi qu'une conclusion de chapitre dressant le bilan critique de la littérature avant d'annoncer la démarche méthodologique (R4, R14).\",\"1.1 Cadre conceptuel et fondements théoriques : Uniformiser le formatage des citations bibliographiques dans l'ensemble du texte et vérifier la cohérence avec la bibliographie finale (R15).\",\"1.1 Cadre conceptuel et fondements théoriques : Enrichir la contextualisation béninoise en mobilisant des données et rapports institutionnels complémentaires (ex. BCEAO, FENU) et varier les connecteurs logiques pour alléger le style rédactionnel (R10, R16).\"]"
+    },
+    {
+      "scope": "chapter",
+      "target": "01a1257e-383e-7608-beab-ec3320885036",
+      "status": "accepte_avec_reserves",
+      "score": 13,
+      "rounds": 2,
+      "reasons": "[\"Note finale 13,0/20 inférieure au seuil de 14 (nombre maximal de rondes atteint).\",\"2.1 Type d'étude : Justifier le choix d'une méthode exclusivement documentaire au regard de la problématique et des objectifs (R1).\",\"2.1 Type d'étude : Clarifier le type d'étude en précisant s'il s'agit d'une revue systématique ou narrative, et détailler les étapes méthodologiques associées (R6).\",\"2.1 Type d'étude : Clarifier que les données comme l'échantillon de 400 ménages (Adjovi et Houngbo, 2021) relèvent du corpus secondaire et non d'une enquête directe (R11).\",\"2.1 Type d'étude : Mettre en conformité les appels de citation selon les normes académiques (parenthèses, pagination précise) et fournir la bibliographie complète (R18).\",\"2.2 Population et échantillonnage : Détailler la stratégie de sélection documentaire, le nombre d'études identifiées, les critères d'inclusion/exclusion et le décompte de l'échantillon final (R2, R7).\",\"2.2 Population et échantillonnage : Démontrer l'application effective du protocole PRISMA en justifiant l'inclusion de chaque référence documentaire retenue (R12).\",\"2.2 Population et échantillonnage : Justifier la présence de la source Tchoumi (2023) ou l'intégrer en amont dans le cadrage théorique pour assurer la continuité (R13).\",\"2.3 Outils de collecte : Nommer explicitement les bases de données et catalogues consultés (ex. Cairn, Google Scholar, JSTOR) (R3, R8, R14).\"]"
+    },
+    {
+      "scope": "chapter",
+      "target": "01a1257e-383f-7242-a0b6-32e266fbb0fe",
+      "status": "accepte_avec_reserves",
+      "score": 3.75,
+      "rounds": 0,
+      "reasons": "[\"Note finale 3,8/20 inférieure au seuil de 14 (aucune révision possible).\",\"3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Supprimer impérativement toutes les mentions [INFORMATION MANQUANTE] et justifier académiquement les éventuelles limites d'accès aux données (R1, R10, R16).\",\"3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Remplacer les généralités par des données statistiques et factuelles récentes sur les SFD au Bénin (nombre d'institutions agréées, implantation géographique, volumes d'épargne/crédit, taux de pénétration en milieu rural) issues de sources officielles (R1, R7, R14).\",\"3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Clarifier sans équivoque la nature des résultats : distinguer la littérature empirique antérieure des résultats originaux de l'étudiant, ou requalifier la section si aucune enquête propre n'a été menée (R3, R9, R14).\",\"3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Préciser le statut de l'échantillon de 400 ménages issu d'Adjovi & Houngbo (2021) en détaillant sa méthodologie et ses résultats chiffrés, ou présenter la méthodologie d'échantillonnage propre à l'étudiant (R4, R8).\",\"3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Développer les références théoriques et empiriques citées (Morvant-Roux, 2015 ; Diallo, 2017) en explicitant leurs apports et concepts clés pour éclairer le contexte béninois (R6).\",\"3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Éliminer les répétitions textuelles et les mentions redondantes des références bibliographiques (Morvant-Roux, 2015) pour densifier le propos (R2, R11, R15, R18).\",\"3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Rappeler brièvement les définitions opératoires des concepts clés (microfinance, inclusion financière, SFD, ménages ruraux) pour clarifier le cadrage (R13).\",\"3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Remplacer les phrases de transition creuses et déconnectées par une véritable conclusion de synthèse récapitulant les faits saillants et introduisant rigoureusement la suite de l'analyse (R5, R12, R17).\"]"
+    },
+    {
+      "scope": "chapter",
+      "target": "01a1257e-383f-7242-a0b6-3aa0366929da",
+      "status": "accepte_avec_reserves",
+      "score": 11.05,
+      "rounds": 2,
+      "reasons": "[\"Note finale 11,1/20 inférieure au seuil de 14 (nombre maximal de rondes atteint).\",\"4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Énoncer pour chaque hypothèse un verdict explicite et nuancé quant à sa validation ou infirmation (R12), en reconnaissant explicitement la validation très partielle de H1 due à l'absence de données quantitatives de terrain (R2).\",\"4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Évaluer de manière critique la qualité méthodologique interne des sources mobilisées (échantillons, méthodes, limites) pour consolider l'analyse documentaire (R7).\",\"4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Ancrer théoriquement les notions d'asymétrie d'information et d'aléa moral en les définissant selon les auteurs fondateurs de l'économie de l'information (R9).\",\"4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Mettre en conformité l'ensemble des citations et références bibliographiques avec les normes académiques (style auteur-date APA 7, suppression des crochets et pagination erratique) (R13).\",\"4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Ajouter un paragraphe introductif rappelant la problématique de recherche et articulant les trois hypothèses avec les propositions (R1).\",\"4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Détailler les données empiriques manquantes (taux d'épargne désagrégée, volumes de crédit, données BCEAO) et les pistes de recherche pour y pallier (R3, R10).\",\"4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Expliciter et répertorier l'ensemble des corpus documentaires retenus et le protocole de sélection (mots-clés, équations, étapes, critères de rejet / flux PRISMA) tout en quantifiant les limites du corpus restreint à cinq sources (R4, R6, R16).\",\"4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Intégrer un tableau synthétique comparatif (Freins / Leviers / Sources) et une synthèse transversale liant les trois propositions aux réalités rurales béninoises (R8).\"]"
+    }
+  ],
+  "deliverables": [],
+  "finalCheck": null,
+  "summary": {
+    "finalScore": null,
+    "words": 3782,
+    "pages": 11,
+    "sources": 0,
+    "durationMin": 31,
+    "costUsd": 1.0403531460500006,
+    "attention": [
+      "1 Clarification conceptuelle et revue de littérature : accepté avec réserves (Note finale 9,5/20 inférieure au seuil de 14 (la révision dégradait le texte, versions précédentes conservées). ; 1.1 Cadre conceptuel et fondements théoriques : Définir formellement et opérationnaliser les concepts de microfinance, d'inclusion financière et de Systèmes Financiers Décentralisés (SFD) à partir de sources institutionnelles (BCEAO, CGAP, Banque Mondiale) et académiques, en supprimant les marqueurs « INFORMATION MANQUANTE » (R1, R5, R12). ; 1.1 Cadre conceptuel et fondements théoriques : Développer le cadre théorique en explicitant les mécanismes d'intermédiation financière et de rationnement du crédit (sélection adverse, aléa moral) issus de Stiglitz et Weiss (1981), et analyser le rôle des groupes de caution solidaire face aux asymétries d'information en éliminant les marqueurs d'incomplétude (R2, R7, R13). ; 1.1 Cadre conceptuel et fondements théoriques : Restructurer la revue de littérature de manière thématique et critique plutôt qu'énumérative, en comparant les résultats empiriques, leurs convergences, divergences et limites (R6, R9). ; 1.1 Cadre conceptuel et fondements théoriques : Éliminer les redondances textuelles et les répétitions quasi mot pour mot des phrases citant Adjovi et Houngbo (2021) ainsi que Johnson et Okafor (2022) pour fluidifier l'argumentation (R3, R8, R11). ; 1.1 Cadre conceptuel et fondements théoriques : Rédiger des transitions fluides entre la mobilisation de l'épargne et les défaillances de marché, ainsi qu'une conclusion de chapitre dressant le bilan critique de la littérature avant d'annoncer la démarche méthodologique (R4, R14). ; 1.1 Cadre conceptuel et fondements théoriques : Uniformiser le formatage des citations bibliographiques dans l'ensemble du texte et vérifier la cohérence avec la bibliographie finale (R15). ; 1.1 Cadre conceptuel et fondements théoriques : Enrichir la contextualisation béninoise en mobilisant des données et rapports institutionnels complémentaires (ex. BCEAO, FENU) et varier les connecteurs logiques pour alléger le style rédactionnel (R10, R16).).",
+      "2 Cadre théorique et démarche méthodologique : accepté avec réserves (Note finale 13,0/20 inférieure au seuil de 14 (nombre maximal de rondes atteint). ; 2.1 Type d'étude : Justifier le choix d'une méthode exclusivement documentaire au regard de la problématique et des objectifs (R1). ; 2.1 Type d'étude : Clarifier le type d'étude en précisant s'il s'agit d'une revue systématique ou narrative, et détailler les étapes méthodologiques associées (R6). ; 2.1 Type d'étude : Clarifier que les données comme l'échantillon de 400 ménages (Adjovi et Houngbo, 2021) relèvent du corpus secondaire et non d'une enquête directe (R11). ; 2.1 Type d'étude : Mettre en conformité les appels de citation selon les normes académiques (parenthèses, pagination précise) et fournir la bibliographie complète (R18). ; 2.2 Population et échantillonnage : Détailler la stratégie de sélection documentaire, le nombre d'études identifiées, les critères d'inclusion/exclusion et le décompte de l'échantillon final (R2, R7). ; 2.2 Population et échantillonnage : Démontrer l'application effective du protocole PRISMA en justifiant l'inclusion de chaque référence documentaire retenue (R12). ; 2.2 Population et échantillonnage : Justifier la présence de la source Tchoumi (2023) ou l'intégrer en amont dans le cadrage théorique pour assurer la continuité (R13). ; 2.3 Outils de collecte : Nommer explicitement les bases de données et catalogues consultés (ex. Cairn, Google Scholar, JSTOR) (R3, R8, R14).).",
+      "3 Présentation du milieu d'étude et des résultats : accepté avec réserves (Note finale 3,8/20 inférieure au seuil de 14 (aucune révision possible). ; 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Supprimer impérativement toutes les mentions [INFORMATION MANQUANTE] et justifier académiquement les éventuelles limites d'accès aux données (R1, R10, R16). ; 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Remplacer les généralités par des données statistiques et factuelles récentes sur les SFD au Bénin (nombre d'institutions agréées, implantation géographique, volumes d'épargne/crédit, taux de pénétration en milieu rural) issues de sources officielles (R1, R7, R14). ; 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Clarifier sans équivoque la nature des résultats : distinguer la littérature empirique antérieure des résultats originaux de l'étudiant, ou requalifier la section si aucune enquête propre n'a été menée (R3, R9, R14). ; 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Préciser le statut de l'échantillon de 400 ménages issu d'Adjovi & Houngbo (2021) en détaillant sa méthodologie et ses résultats chiffrés, ou présenter la méthodologie d'échantillonnage propre à l'étudiant (R4, R8). ; 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Développer les références théoriques et empiriques citées (Morvant-Roux, 2015 ; Diallo, 2017) en explicitant leurs apports et concepts clés pour éclairer le contexte béninois (R6). ; 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Éliminer les répétitions textuelles et les mentions redondantes des références bibliographiques (Morvant-Roux, 2015) pour densifier le propos (R2, R11, R15, R18). ; 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Rappeler brièvement les définitions opératoires des concepts clés (microfinance, inclusion financière, SFD, ménages ruraux) pour clarifier le cadrage (R13). ; 3.1 Panorama du secteur de la microfinance et accès aux services financiers au Bénin : Remplacer les phrases de transition creuses et déconnectées par une véritable conclusion de synthèse récapitulant les faits saillants et introduisant rigoureusement la suite de l'analyse (R5, R12, R17).).",
+      "4 Analyse, discussion des résultats, vérification des hypothèses et recommandations : accepté avec réserves (Note finale 11,1/20 inférieure au seuil de 14 (nombre maximal de rondes atteint). ; 4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Énoncer pour chaque hypothèse un verdict explicite et nuancé quant à sa validation ou infirmation (R12), en reconnaissant explicitement la validation très partielle de H1 due à l'absence de données quantitatives de terrain (R2). ; 4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Évaluer de manière critique la qualité méthodologique interne des sources mobilisées (échantillons, méthodes, limites) pour consolider l'analyse documentaire (R7). ; 4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Ancrer théoriquement les notions d'asymétrie d'information et d'aléa moral en les définissant selon les auteurs fondateurs de l'économie de l'information (R9). ; 4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Mettre en conformité l'ensemble des citations et références bibliographiques avec les normes académiques (style auteur-date APA 7, suppression des crochets et pagination erratique) (R13). ; 4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Ajouter un paragraphe introductif rappelant la problématique de recherche et articulant les trois hypothèses avec les propositions (R1). ; 4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Détailler les données empiriques manquantes (taux d'épargne désagrégée, volumes de crédit, données BCEAO) et les pistes de recherche pour y pallier (R3, R10). ; 4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Expliciter et répertorier l'ensemble des corpus documentaires retenus et le protocole de sélection (mots-clés, équations, étapes, critères de rejet / flux PRISMA) tout en quantifiant les limites du corpus restreint à cinq sources (R4, R6, R16). ; 4.1 Discussion des résultats, validation des hypothèses et pistes managériales : Intégrer un tableau synthétique comparatif (Freins / Leviers / Sources) et une synthèse transversale liant les trois propositions aux réalités rurales béninoises (R8).)."
+    ]
+  },
+  "costs": {
+    "totalUsd": 1.0403531460500006,
+    "budgetMaxUsd": 1,
+    "tokensIn": 440141,
+    "tokensOut": 372713,
+    "calls": 337,
+    "byPhase": [
+      {
+        "key": "P6",
+        "label": "P6 — Jury et révisions",
+        "costUsd": 0.69597652155,
+        "tokensIn": 247687,
+        "tokensOut": 230787,
+        "calls": 158
+      },
+      {
+        "key": "P5",
+        "label": "P5 — Rédaction",
+        "costUsd": 0.1506684095,
+        "tokensIn": 90589,
+        "tokensOut": 64152,
+        "calls": 57
+      },
+      {
+        "key": "P3",
+        "label": "P3 — Recherche documentaire",
+        "costUsd": 0.099070203,
+        "tokensIn": 75308,
+        "tokensOut": 59478,
+        "calls": 117
+      },
+      {
+        "key": "P7",
+        "label": "P7 — Évaluation globale",
+        "costUsd": 0.072124512,
+        "tokensIn": 23824,
+        "tokensOut": 12839,
+        "calls": 3
+      },
+      {
+        "key": "autre",
+        "label": "Cadrage, plan et divers",
+        "costUsd": 0.0225135,
+        "tokensIn": 2733,
+        "tokensOut": 5457,
+        "calls": 2
+      }
+    ],
+    "byRole": [
+      {
+        "key": "section_writer",
+        "label": "rédacteur académique",
+        "costUsd": 0.343587,
+        "tokensIn": 130941,
+        "tokensOut": 65435,
+        "calls": 57
+      },
+      {
+        "key": "juror_specialist",
+        "label": "juré spécialiste",
+        "costUsd": 0.176860816,
+        "tokensIn": 33131,
+        "tokensOut": 45221,
+        "calls": 10
+      },
+      {
+        "key": "juror_methodologist",
+        "label": "juré méthodologiste",
+        "costUsd": 0.151318862025,
+        "tokensIn": 33146,
+        "tokensOut": 45130,
+        "calls": 10
+      },
+      {
+        "key": "document_analyst",
+        "label": "analyste de documents",
+        "costUsd": 0.12443025,
+        "tokensIn": 66887,
+        "tokensOut": 19804,
+        "calls": 81
+      },
+      {
+        "key": "juror_form",
+        "label": "juré forme",
+        "costUsd": 0.121739975525,
+        "tokensIn": 23453,
+        "tokensOut": 38069,
+        "calls": 9
+      },
+      {
+        "key": "jury_president",
+        "label": "président du jury",
+        "costUsd": 0.056499,
+        "tokensIn": 29492,
+        "tokensOut": 9168,
+        "calls": 15
+      },
+      {
+        "key": "outline_architect",
+        "label": "architecte du plan",
+        "costUsd": 0.0193965,
+        "tokensIn": 2192,
+        "tokensOut": 4734,
+        "calls": 1
+      },
+      {
+        "key": "grounding_checker",
+        "label": "vérificateur d'ancrage",
+        "costUsd": 0.0166532178,
+        "tokensIn": 60078,
+        "tokensOut": 61392,
+        "calls": 51
+      },
+      {
+        "key": "researcher",
+        "label": "chercheur documentaire",
+        "costUsd": 0.0155921888,
+        "tokensIn": 36727,
+        "tokensOut": 62926,
+        "calls": 77
+      },
+      {
+        "key": "harmonizer",
+        "label": "harmonisateur",
+        "costUsd": 0.005952,
+        "tokensIn": 3326,
+        "tokensOut": 922,
+        "calls": 1
+      },
+      {
+        "key": "summarizer",
+        "label": "résumeur",
+        "costUsd": 0.0052063359,
+        "tokensIn": 20227,
+        "tokensOut": 19189,
+        "calls": 24
+      },
+      {
+        "key": "orchestrator",
+        "label": "directeur de recherche",
+        "costUsd": 0.003117,
+        "tokensIn": 541,
+        "tokensOut": 723,
+        "calls": 1
+      }
+    ],
+    "byModel": [
+      {
+        "key": "google/gemini-3.8-flash",
+        "label": "google/gemini-3.8-flash",
+        "costUsd": 0.55298175,
+        "tokensIn": 233379,
+        "tokensOut": 100786,
+        "calls": 156
+      },
+      {
+        "key": "deepseek/deepseek-v4-pro",
+        "label": "deepseek/deepseek-v4-pro",
+        "costUsd": 0.44991965355,
+        "tokensIn": 89730,
+        "tokensOut": 128420,
+        "calls": 29
+      },
+      {
+        "key": "deepseek/deepseek-v4-flash",
+        "label": "deepseek/deepseek-v4-flash",
+        "costUsd": 0.0374517425,
+        "tokensIn": 117032,
+        "tokensOut": 143507,
+        "calls": 152
+      }
+    ],
+    "projectedRemainingUsd": 0
+  }
+}

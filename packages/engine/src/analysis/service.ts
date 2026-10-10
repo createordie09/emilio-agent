@@ -160,6 +160,7 @@ export class DataAnalysisService {
     let planned: ReturnType<typeof validateAnalysisPlan> = { specs: [], dropped: [] };
     try {
       const cols = profile.columns
+        .filter((c) => !c.identifying)
         .map(
           (c) =>
             `- ${c.name} (${c.type}${

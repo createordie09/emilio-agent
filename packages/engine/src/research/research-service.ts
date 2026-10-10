@@ -164,7 +164,7 @@ export class ResearchService {
   async researchSection(spec: SectionSpec): Promise<SectionResearchResult> {
     const { missionId } = spec;
     const cfg = this.d.missions.config<MissionExecConfig>(missionId);
-    const mode = cfg.llmMode;
+    const mode = cfg.sourcesMode ?? cfg.llmMode;
     const depth = DEPTH[spec.depth ?? 'normale'];
     const minSources = spec.minSources ?? 3;
     const recentShare = spec.recentShare ?? 0.5;
@@ -330,7 +330,8 @@ export class ResearchService {
     warnings: string[];
   }> {
     const { missionId } = spec;
-    const mode = this.d.missions.config<MissionExecConfig>(missionId).llmMode;
+    const mcfg = this.d.missions.config<MissionExecConfig>(missionId);
+    const mode = mcfg.sourcesMode ?? mcfg.llmMode;
     const connectors = this.d.connectors(mode, extraConnectorsForDiscipline(spec.discipline));
     const warnings: string[] = [];
     const failed = new Set<string>();

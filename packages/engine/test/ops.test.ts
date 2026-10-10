@@ -13,7 +13,17 @@ import {
   PRIVACY_DENY_KEY,
   type FetchLike,
 } from '../src/llm/openrouter';
-import { shrinkLongest, EngineService, HashEmbedder, MockLlmClient, FileLogger } from '../src';
+import {
+  shrinkLongest,
+  EngineService,
+  HashEmbedder,
+  MockLlmClient,
+  FileLogger,
+  ModelCaller,
+  DEFAULT_MAX_OUTPUT_TOKENS,
+  TRUNCATED,
+} from '../src';
+import { AppError } from '@emilio/shared';
 import { runMission, ask, RES } from './pipeline';
 
 const json = (body: unknown, status = 200) =>
@@ -261,5 +271,152 @@ describe('modèles de secours (§8.6)', () => {
       expect(alts).not.toContain(cfg.models[role]);
       expect(new Set(alts).size).toBe(alts.length);
     }
+  }, 60_000);
+});
+
+describe('plafond de jetons de sortie (J10)', () => {
+  it('chaque appel porte max_tokens (16 000 par défaut) ; une réponse tronquée est retentée une fois avec le double', async () => {
+    const { engine, id } = await runMission({ withExport: false });
+    const seen: (number | undefined)[] = [];
+    const stub = {
+      async complete(req: { maxTokens?: number }) {
+        seen.push(req.maxTokens);
+        if (seen.length === 1) throw new AppError('E_REMOTE', TRUNCATED);
+        return {
+          content: '{}',
+          model: 'a/b',
+          promptTokens: 1,
+          completionTokens: 1,
+          costUsd: 0,
+          generationId: null,
+          latencyMs: 1,
+        };
+      },
+    };
+    const caller = new ModelCaller(engine.db, engine.missions, engine.journal, () => stub as never);
+    const r = await caller.call({
+      missionId: id,
+      taskId: null,
+      role: 'orchestrator',
+      messages: [{ role: 'user', content: 'x' }],
+    });
+    expect(r.content).toBe('{}');
+    expect(seen).toEqual([DEFAULT_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS * 2]);
+  }, 60_000);
+
+  it('une réponse vide dont la raison est la limite de jetons est signalée comme tronquée', async () => {
+    const a = client(async () =>
+      json({ choices: [{ finish_reason: 'length', message: { content: null } }], usage: {} }),
+    );
+    await expect(
+      a.c.complete({ model: 'a/b', messages: [{ role: 'user', content: 'x' }], maxTokens: 100 }),
+    ).rejects.toMatchObject({ detail: TRUNCATED });
+    const b = client(async () =>
+      json({ choices: [{ finish_reason: 'stop', message: { content: null } }], usage: {} }),
+    );
+    await expect(
+      b.c.complete({ model: 'a/b', messages: [{ role: 'user', content: 'x' }] }),
+    ).rejects.toMatchObject({ detail: 'Réponse vide du modèle' });
+  });
+});
+
+describe('effort de réflexion (J10)', () => {
+  const ok = () =>
+    json({
+      id: 'g',
+      model: 'a/b',
+      choices: [{ message: { content: '{}' } }],
+      usage: { prompt_tokens: 1, completion_tokens: 1, cost: 0 },
+    });
+  const cache = (supportsReasoning?: boolean) => ({
+    fetchedAt: new Date().toISOString(),
+    models: [
+      {
+        id: 'a/b',
+        name: 'a',
+        contextLength: 1,
+        promptPrice: 0,
+        completionPrice: 0,
+        supportsStructuredOutputs: true,
+        supportsJsonMode: true,
+        inputModalities: [],
+        outputModalities: [],
+        ...(supportsReasoning === undefined ? {} : { supportsReasoning }),
+      },
+    ],
+  });
+  const req = {
+    model: 'a/b',
+    messages: [{ role: 'user' as const, content: 'x' }],
+    reasoning: { effort: 'low' },
+  };
+
+  it('envoyé seulement si le modèle est déclaré compatible', async () => {
+    for (const [flag, expected] of [
+      [true, { effort: 'low' }],
+      [false, undefined],
+      [undefined, undefined],
+    ] as const) {
+      const a = client(async () => ok());
+      a.settings.set('openrouter_models_cache', cache(flag));
+      await a.c.complete(req);
+      expect(a.calls[0]!.body.reasoning, String(flag)).toEqual(expected);
+    }
+  });
+
+  it('la température n’est pas envoyée aux modèles qui la refusent', async () => {
+    for (const [flag, expected] of [
+      [false, undefined],
+      [true, 0.3],
+      [undefined, 0.3],
+    ] as const) {
+      const a = client(async () => ok());
+      const c = cache();
+      (c.models[0] as Record<string, unknown>).supportsTemperature = flag;
+      a.settings.set('openrouter_models_cache', c);
+      await a.c.complete({ ...req, temperature: 0.3 });
+      expect(a.calls[0]!.body.temperature, String(flag)).toEqual(expected);
+    }
+  });
+
+  it('le ModelCaller applique : réglage de la mission > réglage du rôle > défaut', async () => {
+    const { engine, id } = await runMission({ withExport: false });
+    const seen: Record<string, string | undefined> = {};
+    const stub = {
+      async complete(r: { reasoning?: { effort: string }; meta?: { role: string } }) {
+        seen[r.meta!.role] = r.reasoning?.effort;
+        return {
+          content: '{}',
+          model: 'a/b',
+          promptTokens: 1,
+          completionTokens: 1,
+          costUsd: 0,
+          generationId: null,
+          latencyMs: 1,
+        };
+      },
+    };
+    const cfg = engine.missions.config<Record<string, unknown>>(id);
+    engine.missions.setConfig(id, { ...cfg, reasoningEffort: { summarizer: 'high' } });
+    const caller = new ModelCaller(
+      engine.db,
+      engine.missions,
+      engine.journal,
+      () => stub as never,
+      () => null,
+      undefined,
+      {
+        maxOutputTokens: 1000,
+        reasoning: { default: 'low', roles: { juror_form: 'medium' } },
+      },
+    );
+    for (const role of ['orchestrator', 'juror_form', 'summarizer'] as const)
+      await caller.call({
+        missionId: id,
+        taskId: null,
+        role,
+        messages: [{ role: 'user', content: 'x' }],
+      });
+    expect(seen).toEqual({ orchestrator: 'low', juror_form: 'medium', summarizer: 'high' });
   }, 60_000);
 });

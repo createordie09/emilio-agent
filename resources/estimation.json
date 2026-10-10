@@ -36,23 +36,25 @@
   },
   "writing": {
     "inputPerOutputToken": 3.5,
-    "minInputTokens": 6000
+    "minInputTokens": 6000,
+    "outputFactor": 2.5
   },
   "grounding": {
     "wordsPerClaim": 30,
     "claimsPerCall": 10,
     "tokensIn": 2600,
-    "tokensOut": 500
+    "tokensOut": 850
   },
   "summaries": {
-    "tokensInPerSection": 1800,
-    "tokensOut": 400
+    "tokensInPerSection": 1000,
+    "tokensOut": 1000
   },
   "jury": {
     "jurors": 3,
     "chapterInputRatio": 1.15,
-    "tokensOut": 1400,
-    "presidentTokensOut": 1800
+    "tokensOut": 4300,
+    "presidentTokensOut": 700,
+    "presidentTokensIn": 1600
   },
   "revision": {
     "shareOfSections": {

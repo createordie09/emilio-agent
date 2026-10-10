@@ -333,3 +333,30 @@ Format : contexte → décision → conséquences. Référence au cahier des cha
 - **Confidentialité OpenRouter** — [À VÉRIFIER] levé dans la documentation officielle (Provider Routing) : le champ `provider.data_collection` accepte `"allow"` (défaut) ou `"deny"`. Réglage **« Refuser les fournisseurs qui conservent mes données »**, **désactivé par défaut** (l'activer peut rendre certains modèles indisponibles), proposé à l'onboarding et dans les paramètres ; il est ajouté à chaque requête de génération sans écraser `require_parameters`.
 - **Pas de télémétrie.** **Non fait** : l'anonymisation des données de terrain avant envoi (§19, option : remplacement des noms propres par E1, E2…), liée au codage qualitatif encore reporté.
 - Version du moteur 0.9.0, schéma 8.
+
+## ADR-044 — Calibration : banc d'essai et premiers constats (J10, §21.2, §21.4, §23.5)
+
+- **Banc d'essai** `test-live/calibration.live.ts` : mission réelle courte, budget plafonné, métriques complètes écrites dans `docs/calibration/` (voir le README). Réglage développeur `sourcesMode: 'mock'` : vrai modèle, sources simulées (les API de sources sont injoignables depuis le cloud).
+- **[À VÉRIFIER] §23.5 levé** : les six identifiants de modèles de `resources/presets.json` existent chez OpenRouter, avec sorties structurées. La sortie JSON stricte a été essayée sur les trois modèles du préréglage économique.
+- **Plafond de jetons de sortie** : OpenRouter réserve le coût maximal d'une réponse quand `max_tokens` est absent ; un solde modeste est alors refusé (402) à tort. Désormais 16 000 jetons par appel (`maxOutputTokens`, réglable par mission), et une réponse vide coupée par la limite (`finish_reason: length`) est retentée une fois avec le double.
+- **Modèles à raisonnement** : leurs jetons de réflexion sont facturés en sortie (150 à 290 jetons pour une réponse de 20 à 30 jetons). Aucun coefficient n'est modifié sans mesure : à calibrer sur mission réelle.
+- Mesures réelles et ajustements : voir ADR-046.
+
+## ADR-045 — Anonymisation des données de terrain (J10, §19)
+
+Décision déléguée par vous : « à gérer comme un pro ».
+
+- **Colonnes d'identification exclues d'office, sans option** : nom, prénom, téléphone, e-mail, adresse, matricule / identifiants, numéros d'identité, coordonnées GPS, date de naissance (détection par l'intitulé, **et par le contenu** : e-mails, numéros de téléphone, codes uniques — une colonne mal nommée est reconnue). Une telle colonne n'a **aucune utilité statistique** : l'exclure ne coûte rien, la garder n'apporte que du risque ; une case à cocher n'aurait donc eu aucun sens.
+- Pour ces colonnes, le profil ne conserve **ni modalités, ni statistiques, ni valeurs d'échantillon** (« ••• »). Elles n'apparaissent ni dans le cadrage envoyé au modèle, ni dans le choix des analyses (une variable d'identification proposée par le modèle est écartée avec la raison « variable inconnue »), ni dans les analyses de base, ni dans les tableaux. L'assistant les signale (« colonne(s) d'identification protégée(s) ») et l'avertissement figure dans le profil.
+- **Test d'intégration** : sur une mission simulée avec un fichier contenant des noms, téléphones et e-mails, **aucune requête envoyée au modèle** ne contient ces valeurs ni les intitulés d'identification, alors que les variables d'analyse y figurent.
+- **Pseudonymisation** (`Pseudonymizer`) : remplace les noms propres par E1, E2… (variantes d'une même personne comprises, mots entiers uniquement), masque e-mails et numéros de téléphone ; la table de correspondance reste locale. Prête pour les transcriptions d'entretiens ; **pas encore branchée** (aucun chemin d'import de transcriptions : codage qualitatif reporté).
+- **Limites** : la détection des noms propres dans du texte libre n'est pas automatique (le pseudonymiseur remplace les noms qu'on lui donne) ; les quasi-identifiants (ville + âge + profession croisés) ne sont pas traités ; les documents de référence importés par l'utilisateur restent envoyés par extraits (information donnée à l'onboarding).
+
+## ADR-046 — Résultats de calibration et corrections (J10, §14.5, §21.4)
+
+- **Quatre missions réelles** (sources simulées), détail dans `docs/calibration/README.md`. Coût réel 0,81 à 1,2 $ pour un mini-mémoire ; le jury représente la moitié de la dépense.
+- **`reasoning.effort` = « low » par défaut** (réglable par rôle et par mission, envoyé seulement aux modèles qui déclarent `reasoning`) : la réflexion par défaut doublait le coût.
+- **`temperature` omise pour les modèles qui ne la déclarent pas** (Claude 5.5, GPT-6.1) : sinon 404 et bascule silencieuse sur le modèle de secours. L'essai « équilibré » n'a donc pas testé ses modèles prévus.
+- **Estimation recalée** (`resources/estimation.json`, `estimate.ts`) : jurés 4 300 jetons de sortie, rédaction ×2,5, entrée du président fixe, évaluations = rondes + 1. Aucun coefficient de recherche (P3) abaissé.
+- **Jurés plus concis** (justification ≤ 40 mots, ≤ 3 points forts, ≤ 6 remarques).
+- **Non démontré** : critère §21.4 n° 8 ; rien n'a été essayé avec de vraies sources ni avec les modèles Claude / GPT du préréglage en mission complète (crédit épuisé).

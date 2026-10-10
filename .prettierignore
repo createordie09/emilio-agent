@@ -4,3 +4,4 @@ out
 docs/references
 docs/CAHIER_DES_CHARGES.md
 pnpm-lock.yaml
+docs/calibration/*.json

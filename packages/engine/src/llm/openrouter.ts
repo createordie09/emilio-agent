@@ -1,6 +1,6 @@
 import { AppError, APP_NAME, type KeyInfo, type ModelInfo, type ModelList } from '@emilio/shared';
 import type { SettingsRepo } from '../storage/settings';
-import type { LlmClient, LlmRequest, LlmResponse } from './types';
+import { TRUNCATED, type LlmClient, type LlmRequest, type LlmResponse } from './types';
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -66,6 +66,8 @@ export function normalizeModel(r: RawModel): ModelInfo {
     completionPrice: parsePrice(r.pricing?.completion),
     supportsStructuredOutputs: params.includes('structured_outputs'),
     supportsJsonMode: params.includes('response_format'),
+    supportsReasoning: params.includes('reasoning'),
+    supportsTemperature: params.includes('temperature'),
     inputModalities: r.architecture?.input_modalities ?? [],
     outputModalities: r.architecture?.output_modalities ?? [],
   };
@@ -165,6 +167,12 @@ export class OpenRouterClient implements LlmClient {
     return this.requestJson<T>('GET', path, { withAuth });
   }
 
+  /** Certains modèles (ex. famille Claude 5.5) n'acceptent pas `temperature` : avec `require_parameters`, OpenRouter répond alors 404. */
+  private acceptsTemperature(model: string): boolean {
+    const cached = this.settings.get<{ models: ModelInfo[] }>(MODELS_CACHE_KEY);
+    return cached?.models.find((m) => m.id === model)?.supportsTemperature !== false;
+  }
+
   /** Appel de génération (POST /chat/completions) — CdC §14.1. Le coût vient de `usage.cost` (renvoyé par défaut). */
   async complete(req: LlmRequest): Promise<LlmResponse> {
     if (!this.apiKey) throw new AppError('E_KEY_MISSING');
@@ -172,7 +180,9 @@ export class OpenRouterClient implements LlmClient {
     const body: Record<string, unknown> = {
       model: req.model,
       messages: req.messages,
-      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
+      ...(req.temperature !== undefined && this.acceptsTemperature(req.model)
+        ? { temperature: req.temperature }
+        : {}),
       ...(req.maxTokens !== undefined ? { max_tokens: req.maxTokens } : {}),
     };
     if (req.jsonSchema) {
@@ -183,13 +193,19 @@ export class OpenRouterClient implements LlmClient {
       // Ne router que vers des fournisseurs qui gèrent réellement response_format.
       body.provider = { require_parameters: true };
     }
+    // Effort de réflexion (modèles à raisonnement) : seulement si le modèle déclare accepter `reasoning`.
+    if (req.reasoning) {
+      const cached = this.settings.get<{ models: ModelInfo[] }>(MODELS_CACHE_KEY);
+      if (cached?.models.find((m) => m.id === req.model)?.supportsReasoning === true)
+        body.reasoning = { effort: req.reasoning.effort };
+    }
     // Confidentialité (CdC §19) : n'utiliser que des fournisseurs qui ne conservent pas les données (`provider.data_collection`).
     if (this.settings.get<boolean>(PRIVACY_DENY_KEY))
       body.provider = { ...(body.provider as object | undefined), data_collection: 'deny' };
     const json = await this.requestJson<{
       id?: string;
       model?: string;
-      choices?: { message?: { content?: string | null } }[];
+      choices?: { finish_reason?: string | null; message?: { content?: string | null } }[];
       usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number };
       error?: { code?: number | string; message?: string };
     }>('POST', '/chat/completions', {
@@ -208,6 +224,8 @@ export class OpenRouterClient implements LlmClient {
     }
     const content = json.choices?.[0]?.message?.content;
     if (typeof content !== 'string' || content.length === 0) {
+      // Modèle à raisonnement dont la réflexion a consommé toute la limite de jetons : réponse vide mais récupérable.
+      if (json.choices?.[0]?.finish_reason === 'length') throw new AppError('E_REMOTE', TRUNCATED);
       throw new AppError('E_REMOTE', 'Réponse vide du modèle');
     }
     return {

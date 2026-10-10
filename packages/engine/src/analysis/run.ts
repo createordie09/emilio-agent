@@ -49,7 +49,10 @@ export function validateAnalysisPlan(
   profile: DataProfile,
   max: number,
 ): { specs: AnalysisSpec[]; dropped: string[] } {
-  const byName = new Map(profile.columns.map((c) => [c.name.toLowerCase(), c]));
+  // Les colonnes d'identification n'existent pas pour l'analyse (CdC §19).
+  const byName = new Map(
+    profile.columns.filter((c) => !c.identifying).map((c) => [c.name.toLowerCase(), c]),
+  );
   const specs: AnalysisSpec[] = [];
   const dropped: string[] = [];
   const seen = new Set<string>();
@@ -102,13 +105,16 @@ export function baselineSpecs(profile: DataProfile, maxCategorical = 6): Analysi
   const out: AnalysisSpec[] = profile.columns
     .filter(
       (c) =>
+        !c.identifying &&
         (c.type === 'categorical' || c.type === 'boolean') &&
         c.distinct <= MAX_MODALITIES &&
         c.nonMissing > 0,
     )
     .slice(0, maxCategorical)
     .map((c) => ({ type: 'frequencies' as const, variables: [c.name] }));
-  for (const c of profile.columns.filter((c) => isNum(c) && c.distinct > 8 && c.nonMissing > 0))
+  for (const c of profile.columns.filter(
+    (c) => !c.identifying && isNum(c) && c.distinct > 8 && c.nonMissing > 0,
+  ))
     out.push({ type: 'describe', variables: [c.name] });
   return out;
 }

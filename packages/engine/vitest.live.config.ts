@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     include: ['test-live/**/*.live.ts'],
+    // La calibration dure plusieurs minutes (mission réelle) : sa durée est fixée dans le test.
     testTimeout: 60_000,
     hookTimeout: 60_000,
     fileParallelism: false,

@@ -7,6 +7,8 @@ export type LlmRequest = {
   messages: ChatMessage[];
   temperature?: number;
   maxTokens?: number;
+  /** Effort de réflexion (OpenRouter `reasoning.effort`) ; ignoré si le modèle ne l'accepte pas. */
+  reasoning?: { effort: string };
   /** Schéma JSON attendu (sorties structurées). Absent = JSON libre validé côté code. */
   jsonSchema?: { name: string; schema: Record<string, unknown> } | null;
   signal?: AbortSignal;
@@ -31,3 +33,6 @@ export type LlmResponse = {
 export interface LlmClient {
   complete(req: LlmRequest): Promise<LlmResponse>;
 }
+
+/** Détail d'erreur d'une réponse coupée par la limite de jetons de sortie (le réessai double la limite). */
+export const TRUNCATED = 'réponse tronquée';

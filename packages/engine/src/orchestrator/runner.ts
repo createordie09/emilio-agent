@@ -68,6 +68,8 @@ export type RunnerDeps = {
   config?: Partial<RunnerConfig>;
   /** Reprise automatique autorisée (préférence de l'utilisateur, §8.6) ; vrai par défaut. */
   autoResume?: () => boolean | undefined;
+  /** Journal technique : cause réelle d'une erreur de tâche (le message affiché à l'utilisateur ne la contient pas). */
+  techLog?: (line: string) => void;
   onMissionUpdated?: (m: MissionSummary) => void;
 };
 
@@ -317,6 +319,9 @@ export class MissionRunner {
       return;
     }
     const err = e instanceof AppError ? e : new AppError('E_INTERNAL', (e as Error)?.message);
+    this.d.techLog?.(
+      `erreur de tâche ${task.id} (${label}) : ${err.code} ${err.detail ?? ''} ${e instanceof Error && !(e instanceof AppError) ? (e.stack ?? '').split('\n').slice(0, 4).join(' | ') : ''}`,
+    );
     const pause = (
       to: 'paused' | 'paused_no_credit' | 'paused_network' | 'paused_budget',
       msg: string,
