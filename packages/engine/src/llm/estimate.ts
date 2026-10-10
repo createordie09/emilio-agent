@@ -90,6 +90,8 @@ export function estimateMission(i: EstimateInput): CostEstimate {
 
   const lines = (sc: EstimateScenario): Line[] => {
     const rounds = sc === 'bas' ? 1 : sc === 'moyen' ? Math.min(2, maxRounds) : maxRounds;
+    // Une ronde de révision = une révision puis une nouvelle évaluation : le jury évalue donc `rounds + 1` fois (mesuré, J10).
+    const evals = rounds + 1;
     const out: Line[] = [];
     const add = (phase: string, role: AgentRole, calls: number, tIn: number, tOut: number) => {
       if (calls > 0)
@@ -152,11 +154,11 @@ export function estimateMission(i: EstimateInput): CostEstimate {
     const jIn = chapterWords * tpw * cfg.jury.chapterInputRatio;
     const jurors: AgentRole[] = ['juror_methodologist', 'juror_specialist', 'juror_form'];
     for (const role of jurors.slice(0, cfg.jury.jurors))
-      add('P6', role, chapters * rounds, jIn, cfg.jury.tokensOut);
+      add('P6', role, chapters * evals, jIn, cfg.jury.tokensOut);
     add(
       'P6',
       'jury_president',
-      chapters * rounds,
+      chapters * evals,
       cfg.jury.jurors * cfg.jury.tokensOut + 1500,
       cfg.jury.presidentTokensOut,
     );

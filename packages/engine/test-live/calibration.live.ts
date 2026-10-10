@@ -112,7 +112,7 @@ describe(`calibration — scénario ${SCENARIO}`, () => {
           preset: sc.preset,
           budgetMaxUsd: BUDGET,
           parallelism: 3,
-          rondesMaxParChapitre: 2,
+          rondesMaxParChapitre: Number(process.env.CAL_ROUNDS ?? 2),
           rondesMaxGlobales: 1,
           profondeurRecherche: 'rapide',
         },
