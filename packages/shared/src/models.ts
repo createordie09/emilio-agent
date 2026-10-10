@@ -10,6 +10,8 @@ export const ModelInfoSchema = z.object({
   completionPrice: z.number().nullable(),
   supportsStructuredOutputs: z.boolean(),
   supportsJsonMode: z.boolean(),
+  /** Accepte le paramètre `reasoning` (effort de réflexion) ; absent = inconnu (cache ancien). */
+  supportsReasoning: z.boolean().optional(),
   inputModalities: z.array(z.string()),
   outputModalities: z.array(z.string()),
 });

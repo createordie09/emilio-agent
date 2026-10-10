@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "description": "Réglages des appels aux modèles d'IA (J10). `reasoning` : effort de réflexion demandé à OpenRouter (paramètre `reasoning.effort`, documenté dans « Reasoning Tokens ») ; les jetons de réflexion sont facturés comme jetons de sortie. Mesuré sur google/gemini-3.8-flash pour un paragraphe de 150 mots : réflexion par défaut 987 jetons (coût ×5), effort « low » 0 jeton. « minimal » est à éviter : il fait réfléchir davantage deepseek-v4-flash (2 332 jetons).",
+  "maxOutputTokens": 16000,
+  "reasoning": {
+    "default": "low",
+    "roles": {}
+  }
+}

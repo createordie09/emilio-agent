@@ -7,6 +7,8 @@ export type LlmRequest = {
   messages: ChatMessage[];
   temperature?: number;
   maxTokens?: number;
+  /** Effort de réflexion (OpenRouter `reasoning.effort`) ; ignoré si le modèle ne l'accepte pas. */
+  reasoning?: { effort: string };
   /** Schéma JSON attendu (sorties structurées). Absent = JSON libre validé côté code. */
   jsonSchema?: { name: string; schema: Record<string, unknown> } | null;
   signal?: AbortSignal;

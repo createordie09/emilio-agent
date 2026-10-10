@@ -1,0 +1,639 @@
+{
+  "scenario": "A",
+  "label": "documentaire, préréglage économique",
+  "preset": "economique",
+  "budgetUsd": 1.2,
+  "status": "paused_budget",
+  "costUsd": 1.2022405269749996,
+  "wallSeconds": 1256,
+  "planSeconds": 82,
+  "estimate": {
+    "scenarios": {
+      "bas": {
+        "costUsd": 0.4766,
+        "durationSec": 1222
+      },
+      "moyen": {
+        "costUsd": 0.6298,
+        "durationSec": 1635
+      },
+      "haut": {
+        "costUsd": 0.646,
+        "durationSec": 1663
+      }
+    },
+    "phases": [
+      {
+        "phase": "P3",
+        "labelFr": "Recherche approfondie et fiches de lecture",
+        "tokensIn": 207900,
+        "tokensOut": 48000,
+        "costUsd": {
+          "bas": 0.2221,
+          "moyen": 0.2221,
+          "haut": 0.2221
+        },
+        "durationSec": {
+          "bas": 456,
+          "moyen": 456,
+          "haut": 456
+        }
+      },
+      {
+        "phase": "P5",
+        "labelFr": "Rédaction, ancrage et résumés",
+        "tokensIn": 129200,
+        "tokensOut": 14474,
+        "costUsd": {
+          "bas": 0.0875,
+          "moyen": 0.0875,
+          "haut": 0.0875
+        },
+        "durationSec": {
+          "bas": 249,
+          "moyen": 249,
+          "haut": 249
+        }
+      },
+      {
+        "phase": "P6",
+        "labelFr": "Jury par chapitre et révisions",
+        "tokensIn": 84338,
+        "tokensOut": 51002,
+        "costUsd": {
+          "bas": 0.0947,
+          "moyen": 0.1975,
+          "haut": 0.2137
+        },
+        "durationSec": {
+          "bas": 210,
+          "moyen": 434,
+          "haut": 462
+        }
+      },
+      {
+        "phase": "P7",
+        "labelFr": "Évaluation globale et harmonisation",
+        "tokensIn": 67976,
+        "tokensOut": 15200,
+        "costUsd": {
+          "bas": 0.0504,
+          "moyen": 0.1008,
+          "haut": 0.1008
+        },
+        "durationSec": {
+          "bas": 189,
+          "moyen": 378,
+          "haut": 378
+        }
+      },
+      {
+        "phase": "P8",
+        "labelFr": "Bibliographie",
+        "tokensIn": 6000,
+        "tokensOut": 1500,
+        "costUsd": {
+          "bas": 0.002,
+          "moyen": 0.002,
+          "haut": 0.002
+        },
+        "durationSec": {
+          "bas": 37,
+          "moyen": 37,
+          "haut": 37
+        }
+      },
+      {
+        "phase": "P9",
+        "labelFr": "Soutenance",
+        "tokensIn": 9000,
+        "tokensOut": 3500,
+        "costUsd": {
+          "bas": 0.0199,
+          "moyen": 0.0199,
+          "haut": 0.0199
+        },
+        "durationSec": {
+          "bas": 82,
+          "moyen": 82,
+          "haut": 82
+        }
+      }
+    ],
+    "spentUsd": 0.0453,
+    "budgetMaxUsd": 1.2,
+    "exceedsBudget": {
+      "bas": false,
+      "moyen": false,
+      "haut": false
+    },
+    "partial": false,
+    "missingPrice": [],
+    "simulated": false,
+    "sectionCount": 11,
+    "targetWords": 2980,
+    "assumptions": [
+      "11 section(s) à rédiger, 2 980 mots visés.",
+      "Scénario bas : 1 ronde de jury par chapitre ; moyen : 2 ; haut : 2 (maximum permis).",
+      "Recherche « rapide », 3 agent(s) en parallèle.",
+      "Coefficients à calibrer après les premières missions réelles ; la durée dépend de la vitesse des modèles."
+    ],
+    "computedAt": "2026-10-10T10:39:53.110Z"
+  },
+  "phases": [
+    {
+      "phase": "P3",
+      "n": 23,
+      "cost": 0.2343189132,
+      "tin": 86180,
+      "tout": 99710,
+      "start": "2026-10-10T10:39:53.186Z",
+      "end": "2026-10-10T10:46:10.171Z",
+      "seconds": 377
+    },
+    {
+      "phase": "P5",
+      "n": 14,
+      "cost": 0.6519678551,
+      "tin": 107211,
+      "tout": 191705,
+      "start": "2026-10-10T10:45:36.259Z",
+      "end": "2026-10-10T11:00:19.790Z",
+      "seconds": 884
+    },
+    {
+      "phase": "P6",
+      "n": 4,
+      "cost": 0.270683008675,
+      "tin": 52941,
+      "tout": 80986,
+      "start": "2026-10-10T10:50:41.583Z",
+      "end": null,
+      "seconds": null
+    },
+    {
+      "phase": "P7",
+      "n": 2,
+      "cost": 0,
+      "tin": 0,
+      "tout": 0,
+      "start": null,
+      "end": null,
+      "seconds": null
+    },
+    {
+      "phase": "P8",
+      "n": 1,
+      "cost": 0,
+      "tin": 0,
+      "tout": 0,
+      "start": null,
+      "end": null,
+      "seconds": null
+    },
+    {
+      "phase": "P9",
+      "n": 5,
+      "cost": 0,
+      "tin": 0,
+      "tout": 0,
+      "start": null,
+      "end": null,
+      "seconds": null
+    }
+  ],
+  "outsideTasks": {
+    "cost": 0.04527075,
+    "tin": 2691,
+    "tout": 11534,
+    "n": 2
+  },
+  "byRole": [
+    {
+      "role": "section_writer",
+      "model": "google/gemini-3.8-flash",
+      "calls": 37,
+      "cost": 0.7230735,
+      "tin": 84123,
+      "tout": 175995,
+      "avgMs": 29776.027027027027,
+      "tps": 159.746685389026
+    },
+    {
+      "role": "document_analyst",
+      "model": "google/gemini-3.8-flash",
+      "calls": 75,
+      "cost": 0.2550015,
+      "tin": 60842,
+      "tout": 55832,
+      "avgMs": 6487.373333333333,
+      "tps": 114.75008889062445
+    },
+    {
+      "role": "juror_specialist",
+      "model": "deepseek/deepseek-v4-pro",
+      "calls": 3,
+      "cost": 0.053748732,
+      "tin": 7296,
+      "tout": 14963,
+      "avgMs": 82153,
+      "tps": 60.71192368710415
+    },
+    {
+      "role": "outline_architect",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.0399525,
+      "tin": 2150,
+      "tout": 10224,
+      "avgMs": 69308,
+      "tps": 147.51543833323714
+    },
+    {
+      "role": "juror_methodologist",
+      "model": "deepseek/deepseek-v4-pro",
+      "calls": 3,
+      "cost": 0.035092220874999996,
+      "tin": 7326,
+      "tout": 10885,
+      "avgMs": 60656,
+      "tps": 59.818209795128816
+    },
+    {
+      "role": "juror_form",
+      "model": "deepseek/deepseek-v4-pro",
+      "calls": 2,
+      "cost": 0.034065532,
+      "tin": 5203,
+      "tout": 8530,
+      "avgMs": 59727.5,
+      "tps": 71.4076430454983
+    },
+    {
+      "role": "jury_president",
+      "model": "google/gemini-3.8-flash",
+      "calls": 3,
+      "cost": 0.027077999999999998,
+      "tin": 7004,
+      "tout": 5820,
+      "avgMs": 15180,
+      "tps": 127.79973649538867
+    },
+    {
+      "role": "researcher",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 73,
+      "cost": 0.0171145501,
+      "tin": 36586,
+      "tout": 60124,
+      "avgMs": 11111.589041095891,
+      "tps": 74.12229117816028
+    },
+    {
+      "role": "grounding_checker",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 33,
+      "cost": 0.008928521699999999,
+      "tin": 28531,
+      "tout": 28578,
+      "avgMs": 9689.151515151516,
+      "tps": 89.37831126345615
+    },
+    {
+      "role": "orchestrator",
+      "model": "google/gemini-3.8-flash",
+      "calls": 1,
+      "cost": 0.00531825,
+      "tin": 541,
+      "tout": 1310,
+      "avgMs": 12709,
+      "tps": 103.07655991816823
+    },
+    {
+      "role": "summarizer",
+      "model": "deepseek/deepseek-v4-flash",
+      "calls": 14,
+      "cost": 0.0028672203,
+      "tin": 9421,
+      "tout": 11674,
+      "avgMs": 11442.07142857143,
+      "tps": 72.87641473509417
+    }
+  ],
+  "errors": [],
+  "warnings": [
+    "[warning] Peu de sources trouvées pour la section « Objectifs » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Objectifs) : 2 source(s) retenue(s), 0 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Peu de sources trouvées pour la section « Outils de collecte » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Outils de collecte) : 2 source(s) retenue(s), 0 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Peu de sources trouvées pour la section « Vérification des hypothèses » (2/3) : à compléter par vos propres documents.",
+    "[warning] Recherche terminée (Vérification des hypothèses) : 2 source(s) retenue(s), 0 vérifiée(s), 0 rejetée(s), 2 fiche(s) de lecture.",
+    "[warning] Rédacteur : section 2.1 Type d'étude rédigée (103 mots, ancrage 100 %, 2 correction(s), 1 phrase(s) supprimée(s)).",
+    "[warning] Rédacteur : section 1.1 Fondements conceptuels : microfinance, systèmes financiers décentralisés et inclusion financière rédigée (276 mots, ancrage 100 %, 2 correction(s)).",
+    "[warning] Rédacteur : section 3.2 Résultats documentaires sur l'accès et l'utilisation des services financiers par les ménages rédigée (295 mots, ancrage 100 %, 2 correction(s), 1 phrase(s) supprimée(s)).",
+    "[warning] Jury : le chapitre « 1 Clarification conceptuelle et revue de littérature » noté 7,5/20 — à réécrire (9 remarque(s) majeure(s)).",
+    "[warning] Préparation : « Rédaction — 2.5 Difficultés et limites » a échoué (Une erreur interne s'est produite.), nouvel essai.",
+    "[warning] Budget utilisé à 80 % (0.97 $ sur 1.20 $).",
+    "[warning] Jury : le chapitre « 3 Présentation du milieu d'étude et des résultats » noté 8,5/20 — à réécrire (10 remarque(s) majeure(s)).",
+    "[warning] Budget utilisé à 95 % (1.14 $ sur 1.20 $).",
+    "[warning] Le budget de 1.2 $ est atteint."
+  ],
+  "sections": [
+    {
+      "section": "Introduction générale",
+      "words": 263,
+      "target": 240,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "1.1 Fondements conceptuels : microfinance, systèmes financiers décentralisés et inclusion financière",
+      "words": 310,
+      "target": 310,
+      "grounding": 1,
+      "groundingInitial": 0.6,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "1.2 Revue critique des approches théoriques de l'intermédiation financière et des capabilités",
+      "words": 307,
+      "target": 300,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    },
+    {
+      "section": "2.1 Type d'étude",
+      "words": 103,
+      "target": 120,
+      "grounding": 1,
+      "groundingInitial": 0.3333333333333333,
+      "removed": 1,
+      "rounds": 2,
+      "warnings": [
+        "Le texte compte 103 mots pour une cible de 120 (±10 %) : développe.",
+        "1 phrase(s) supprimée(s) par le contrôle d'intégrité."
+      ]
+    },
+    {
+      "section": "2.2 Population et échantillonnage",
+      "words": 113,
+      "target": 120,
+      "grounding": 1,
+      "groundingInitial": 1,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "2.3 Outils de collecte",
+      "words": 113,
+      "target": 120,
+      "grounding": 1,
+      "groundingInitial": 0.5,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "2.4 Méthodes d'analyse",
+      "words": 121,
+      "target": 120,
+      "grounding": 1,
+      "groundingInitial": 0.5,
+      "removed": 0,
+      "rounds": 1,
+      "warnings": []
+    },
+    {
+      "section": "2.5 Difficultés et limites",
+      "words": 96,
+      "target": 100,
+      "grounding": 1,
+      "groundingInitial": 0.6666666666666666,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "3.1 État des lieux du secteur des systèmes financiers décentralisés en milieu rural béninois",
+      "words": 330,
+      "target": 340,
+      "grounding": 1,
+      "groundingInitial": 0.4,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "3.2 Résultats documentaires sur l'accès et l'utilisation des services financiers par les ménages",
+      "words": 295,
+      "target": 340,
+      "grounding": 1,
+      "groundingInitial": 0.8,
+      "removed": 1,
+      "rounds": 2,
+      "warnings": [
+        "Le texte compte 295 mots pour une cible de 340 (±10 %) : développe.",
+        "1 phrase(s) supprimée(s) par le contrôle d'intégrité."
+      ]
+    },
+    {
+      "section": "4.1 Discussion critique des résultats à la lumière des théories de gestion et de la finance inclusive",
+      "words": 343,
+      "target": 340,
+      "grounding": 1,
+      "groundingInitial": 0.6,
+      "removed": 0,
+      "rounds": 2,
+      "warnings": []
+    },
+    {
+      "section": "4.2 Vérification des hypothèses de recherche et recommandations managériales",
+      "words": 323,
+      "target": 330,
+      "grounding": null,
+      "groundingInitial": null,
+      "removed": 0,
+      "rounds": 0,
+      "warnings": []
+    }
+  ],
+  "jury": [],
+  "deliverables": [],
+  "finalCheck": null,
+  "summary": {
+    "finalScore": null,
+    "words": 2717,
+    "pages": 8,
+    "sources": 0,
+    "durationMin": 21,
+    "costUsd": 1.2022405269749996,
+    "attention": []
+  },
+  "costs": {
+    "totalUsd": 1.2022405269749996,
+    "budgetMaxUsd": 1.2,
+    "tokensIn": 249023,
+    "tokensOut": 383935,
+    "calls": 245,
+    "byPhase": [
+      {
+        "key": "P5",
+        "label": "P5 — Rédaction",
+        "costUsd": 0.6519678551,
+        "tokensIn": 107211,
+        "tokensOut": 191705,
+        "calls": 74
+      },
+      {
+        "key": "P6",
+        "label": "P6 — Jury et révisions",
+        "costUsd": 0.270683008675,
+        "tokensIn": 52941,
+        "tokensOut": 80986,
+        "calls": 38
+      },
+      {
+        "key": "P3",
+        "label": "P3 — Recherche documentaire",
+        "costUsd": 0.2343189132,
+        "tokensIn": 86180,
+        "tokensOut": 99710,
+        "calls": 131
+      },
+      {
+        "key": "autre",
+        "label": "Cadrage, plan et divers",
+        "costUsd": 0.04527075,
+        "tokensIn": 2691,
+        "tokensOut": 11534,
+        "calls": 2
+      }
+    ],
+    "byRole": [
+      {
+        "key": "section_writer",
+        "label": "rédacteur académique",
+        "costUsd": 0.7230735,
+        "tokensIn": 84123,
+        "tokensOut": 175995,
+        "calls": 37
+      },
+      {
+        "key": "document_analyst",
+        "label": "analyste de documents",
+        "costUsd": 0.2550015,
+        "tokensIn": 60842,
+        "tokensOut": 55832,
+        "calls": 75
+      },
+      {
+        "key": "juror_specialist",
+        "label": "juré spécialiste",
+        "costUsd": 0.053748732,
+        "tokensIn": 7296,
+        "tokensOut": 14963,
+        "calls": 3
+      },
+      {
+        "key": "outline_architect",
+        "label": "architecte du plan",
+        "costUsd": 0.0399525,
+        "tokensIn": 2150,
+        "tokensOut": 10224,
+        "calls": 1
+      },
+      {
+        "key": "juror_methodologist",
+        "label": "juré méthodologiste",
+        "costUsd": 0.035092220874999996,
+        "tokensIn": 7326,
+        "tokensOut": 10885,
+        "calls": 3
+      },
+      {
+        "key": "juror_form",
+        "label": "juré forme",
+        "costUsd": 0.034065532,
+        "tokensIn": 5203,
+        "tokensOut": 8530,
+        "calls": 2
+      },
+      {
+        "key": "jury_president",
+        "label": "président du jury",
+        "costUsd": 0.027077999999999998,
+        "tokensIn": 7004,
+        "tokensOut": 5820,
+        "calls": 3
+      },
+      {
+        "key": "researcher",
+        "label": "chercheur documentaire",
+        "costUsd": 0.0171145501,
+        "tokensIn": 36586,
+        "tokensOut": 60124,
+        "calls": 73
+      },
+      {
+        "key": "grounding_checker",
+        "label": "vérificateur d'ancrage",
+        "costUsd": 0.008928521699999999,
+        "tokensIn": 28531,
+        "tokensOut": 28578,
+        "calls": 33
+      },
+      {
+        "key": "orchestrator",
+        "label": "directeur de recherche",
+        "costUsd": 0.00531825,
+        "tokensIn": 541,
+        "tokensOut": 1310,
+        "calls": 1
+      },
+      {
+        "key": "summarizer",
+        "label": "résumeur",
+        "costUsd": 0.0028672203,
+        "tokensIn": 9421,
+        "tokensOut": 11674,
+        "calls": 14
+      }
+    ],
+    "byModel": [
+      {
+        "key": "google/gemini-3.8-flash",
+        "label": "google/gemini-3.8-flash",
+        "costUsd": 1.05042375,
+        "tokensIn": 154660,
+        "tokensOut": 249181,
+        "calls": 117
+      },
+      {
+        "key": "deepseek/deepseek-v4-pro",
+        "label": "deepseek/deepseek-v4-pro",
+        "costUsd": 0.122906484875,
+        "tokensIn": 19825,
+        "tokensOut": 34378,
+        "calls": 8
+      },
+      {
+        "key": "deepseek/deepseek-v4-flash",
+        "label": "deepseek/deepseek-v4-flash",
+        "costUsd": 0.0289102921,
+        "tokensIn": 74538,
+        "tokensOut": 100376,
+        "calls": 120
+      }
+    ],
+    "projectedRemainingUsd": 0
+  }
+}

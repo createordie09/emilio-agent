@@ -3,7 +3,13 @@ import { AppError, type AgentRole } from '@emilio/shared';
 import { newId, nowIso, type Db } from '../storage/db';
 import type { EventJournal } from '../events/journal';
 import type { MissionRepo } from '../storage/missions';
-import { clampParallelism, DEFAULT_MAX_OUTPUT_TOKENS, type MissionExecConfig } from './exec-config';
+import {
+  clampParallelism,
+  DEFAULT_LLM_CONFIG,
+  DEFAULT_MAX_OUTPUT_TOKENS,
+  type LlmConfig,
+  type MissionExecConfig,
+} from './exec-config';
 import { TRUNCATED } from './types';
 import type { ChatMessage, LlmClient, LlmResponse } from './types';
 
@@ -63,6 +69,7 @@ export class ModelCaller {
     private readonly prices: PriceGrid = () => null,
     /** Journal technique (fichier) : une ligne par appel, sans contenu. */
     private readonly tech?: (line: string) => void,
+    private readonly llmCfg: LlmConfig = DEFAULT_LLM_CONFIG,
   ) {}
 
   /** Appels simultanés par mission : jamais plus que le parallélisme configuré (§7.6), même quand une tâche lance plusieurs agents (jurés). */
@@ -91,6 +98,16 @@ export class ModelCaller {
     }
   }
 
+  /** Effort de réflexion du rôle : mission > réglage par rôle > défaut (`llm-config.json`) ; absent = défaut du modèle. */
+  private effort(cfg: MissionExecConfig, role: string): string | null {
+    return (
+      (cfg.reasoningEffort as Record<string, string> | undefined)?.[role] ??
+      this.llmCfg.reasoning.roles[role] ??
+      this.llmCfg.reasoning.default ??
+      null
+    );
+  }
+
   private async callInner(p: CallParams): Promise<CallResult> {
     const cfg = this.missions.config<MissionExecConfig>(p.missionId);
     const primary = cfg.models[p.role as AgentRole];
@@ -117,7 +134,12 @@ export class ModelCaller {
           messages: p.messages,
           temperature: p.temperature,
           jsonSchema: p.jsonSchema,
-          maxTokens: p.maxTokens ?? cfg.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+          maxTokens:
+            p.maxTokens ??
+            cfg.maxOutputTokens ??
+            this.llmCfg.maxOutputTokens ??
+            DEFAULT_MAX_OUTPUT_TOKENS,
+          ...(this.effort(cfg, p.role) ? { reasoning: { effort: this.effort(cfg, p.role)! } } : {}),
           signal: p.signal,
           meta: { role: p.role, label: p.label },
         });

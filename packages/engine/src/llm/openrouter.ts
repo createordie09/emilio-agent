@@ -66,6 +66,7 @@ export function normalizeModel(r: RawModel): ModelInfo {
     completionPrice: parsePrice(r.pricing?.completion),
     supportsStructuredOutputs: params.includes('structured_outputs'),
     supportsJsonMode: params.includes('response_format'),
+    supportsReasoning: params.includes('reasoning'),
     inputModalities: r.architecture?.input_modalities ?? [],
     outputModalities: r.architecture?.output_modalities ?? [],
   };
@@ -182,6 +183,12 @@ export class OpenRouterClient implements LlmClient {
       };
       // Ne router que vers des fournisseurs qui gèrent réellement response_format.
       body.provider = { require_parameters: true };
+    }
+    // Effort de réflexion (modèles à raisonnement) : seulement si le modèle déclare accepter `reasoning`.
+    if (req.reasoning) {
+      const cached = this.settings.get<{ models: ModelInfo[] }>(MODELS_CACHE_KEY);
+      if (cached?.models.find((m) => m.id === req.model)?.supportsReasoning === true)
+        body.reasoning = { effort: req.reasoning.effort };
     }
     // Confidentialité (CdC §19) : n'utiliser que des fournisseurs qui ne conservent pas les données (`provider.data_collection`).
     if (this.settings.get<boolean>(PRIVACY_DENY_KEY))

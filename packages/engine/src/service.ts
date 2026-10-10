@@ -48,6 +48,7 @@ import { writingMockRespond } from './writing/mock-responder';
 import { juryMockRespond } from './jury/mock-responder';
 import { ExportService } from './export/service';
 import { OpsService } from './ops/service';
+import { loadLlmConfig } from './llm/llm-config';
 import { FileLogger } from './ops/logger';
 import { exportMockRespond } from './export/mock-responder';
 import type { PdfAdapter } from './export/pdf';
@@ -160,6 +161,7 @@ export class EngineService {
       (mode) => (mode === 'mock' ? this.mock : this.llm),
       (model) => this.priceOf(model),
       (line) => this.logger.line('info', line),
+      loadLlmConfig(opts.resourcesDir),
     );
     this.runner = new MissionRunner({
       db: this.db,
@@ -233,6 +235,7 @@ export class EngineService {
               ),
       },
       config: opts.runner,
+      techLog: (line) => this.logger.line('error', line),
       autoResume: () => this.settings.get<boolean>('auto_resume_missions'),
       onMissionUpdated: (m) => this.emit({ kind: 'mission.updated', mission: m }),
     });
