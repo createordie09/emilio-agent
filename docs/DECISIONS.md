@@ -114,3 +114,39 @@ Format : contexte → décision → conséquences. Référence au cahier des cha
 
 - Direction artistique (design system §6.1, page `/design`, captures clair et sombre de `docs/screenshots/`) **validée par le porteur du projet** le 3 octobre 2026. Les écrans des jalons suivants peuvent être construits dessus.
 - Le dashboard de mission de J2 reste provisoire et sera repris selon la §6.6.
+
+---
+
+# Jalon J3 — Assistant « Nouvelle mission », import et base de connaissances
+
+## ADR-017 — Embeddings locaux et recherche vectorielle (J3, §4.1, §11.5) — [À VÉRIFIER] partiellement levé
+
+- **Choix** : `multilingual-e5-small` (famille E5, multilingue dont le français), via Transformers.js (`@huggingface/transformers`) et ONNX, **dimension 384**, préfixes `passage: ` / `query: ` (exigés par E5), vecteurs normalisés. Le dossier du modèle est lu localement (`allowRemoteModels = false`) : aucun téléchargement à l'exécution.
+- **Non vérifié ici** : Hugging Face est bloqué par la politique réseau de l'environnement cloud. La taille exacte du modèle quantifié, sa licence et les noms de fichiers du dépôt `Xenova/multilingual-e5-small` restent donc **à confirmer** : le script `pnpm models:fetch` lit la liste des fichiers via l'API du dépôt (il ne devine pas les noms), prend la variante quantifiée si elle existe, écrit `SHA256SUMS` et affiche les tailles. À lancer sur votre machine, puis à vérifier avant l'embarquement (cible ENF-05 : < 400 Mo au total).
+- **Repli** : sans modèle installé, `HashEmbedder` (hachage de mots et de bigrammes, déterministe, sans accents) assure l'indexation et la recherche **lexicale** ; l'interface devra l'indiquer (`semantic = false`). Il sert aussi aux tests. Il ne remplace pas la recherche sémantique.
+- **Index** : `sqlite-vec` 0.1.9, table `chunks_vec` = `vec0(mission_id text partition key, embedding float[384])` (partition par mission : la recherche k-NN ne mélange jamais deux missions). Distance L2 sur vecteurs normalisés → cosinus = 1 − d²/2. Changer de modèle d'embeddings = nouvelle migration + ré-indexation. Les extraits de bibliographie ne sont pas vectorisés (§11.5).
+- **Recherche hybride** : score = 0,6 × similarité vectorielle + 0,4 × BM25 (FTS5), chacun normalisé sur les candidats. Reclassement par LLM : reporté (J4+).
+
+## ADR-018 — Lecture des fichiers (J3, §4.1, §9 P0)
+
+- PDF : `pdfjs-dist` (build « legacy », Node) — texte par page, lignes reconstituées par ordonnée. PDF sans texte (scanné) → statut « à vérifier » + message ; **OCR non disponible** (V1.1, §4.1). DOCX : `mammoth`. TXT/MD : direct. CSV : `papaparse` (séparateur deviné, BOM, repli Windows-1252). XLSX : **`exceljs` à la place de SheetJS (`xlsx`)** — écart au §4.1 : la version publiée sur npm (0.18.5) n'est plus maintenue et présente des vulnérabilités connues (pollution de prototype, ReDoS) corrigées seulement dans les versions distribuées hors npm ; on évite d'embarquer cette dépendance pour lire des fichiers fournis par l'utilisateur. Limite : XLSX uniquement (pas `.xls`).
+- Profil des données de terrain : répondants, variables, types (entier, nombre, booléen, date, catégorielle, texte), manquants, modalités, statistiques descriptives **calculées par du code** (§17). Nombres à la française (« 1 234,5 »). Avertissements : échantillon < 30, colonnes vides ou > 50 % manquantes, doublons, feuilles ignorées.
+- Dépendances lourdes (`pdfjs-dist`, `mammoth`, `exceljs`, `papaparse`, `@huggingface/transformers`) **externalisées** du bundle : `pdfjs-dist` empaqueté ne retrouvait pas son worker (bug détecté par le test E2E réel, corrigé).
+
+## ADR-019 — Découpage (J3, §11.5)
+
+- Paragraphes reconstruits (PDF : coupure sur ligne courte finissant par une ponctuation) ; en-têtes, pieds de page et numéros de page répétés retirés (lignes de bord présentes sur ≥ 50 % des pages, minimum 3) ; titres détectés (numérotés, MAJUSCULES, mots-clés) ; bibliographie détectée (« Bibliographie », « Références », « Webographie »…) jusqu'aux annexes → `is_bibliography`, exclue de la recherche et jamais mélangée à du texte courant.
+- Extraits : cible 500 mots, **300 à 800** (un paragraphe plus long est coupé aux frontières de phrase), **chevauchement d'un paragraphe** (≤ 30 % de la taille max), pages `page_from`/`page_to` conservées pour les citations. Titre de section = celui du début de l'extrait.
+
+## ADR-020 — Brouillons, import et validation du brief (J3, §6.4, §7, §9 P0)
+
+- **Un brouillon est une mission** au statut `draft` (`brief_json` partiel, jamais invalide) : enregistrement automatique (600 ms), reprise depuis « Brouillons en cours », suppression avec ses fichiers, extraits et vecteurs. Les brouillons n'apparaissent pas dans « Mes missions ».
+- **Ingestion à l'import** (et non au lancement) : P0 est exécutée pendant l'étape 5, avec progression en direct (événements `file.updated`) ; traitement séquentiel (CPU, ENF-06), idempotent (la source et les extraits d'un fichier sont purgés avant retraitement), repris au démarrage si interrompu. Les fichiers sont **copiés** dans `missions/<id>/uploads` (SHA-256 calculé au vol ; doublon refusé) ; le texte extrait est écrit dans `parsed/`.
+- Types d'import ↔ `mission_files.kind` (§5.3) : « Travail déjà rédigé » → `other` + rôle `existing_work` dans `meta_json` (la colonne est contrainte par le schéma). **Seuls les documents de référence sont citables** : un document importé existe par définition (`verified`, §12.1.4), mais guide d'établissement et travail déjà rédigé reçoivent le type `document_interne` et le statut `unverified` — les jalons J4+ ne doivent proposer à la citation que `type != 'document_interne'`.
+- Glisser-déposer : le renderer sandboxé n'a pas les chemins ; `webUtils.getPathForFile` est appelé dans le preload. Le bouton « Parcourir » utilise `dialog.showOpenDialog` côté main.
+- Validation finale : brief complet (zod), fichiers traités, **confirmation bloquante** si approche empirique sans données de terrain (§7.3), un modèle pour chacun des 16 rôles, budget obligatoire → la mission passe `draft → briefing`. Les profils de normes intégrés sont insérés dans `norms_profiles` au démarrage (clé étrangère de `missions.norms_profile_id`) ; bug trouvé par l'E2E.
+- **Estimation de coût et de durée** (§6.4 étape 7) : reportée à J5 avec le plan (§22) ; l'écran l'indique clairement. Le bouton s'appelle « Créer la mission » en attendant « Générer le plan ».
+- Étape 6 : préréglages dans `resources/presets.json` (identifiants **vérifiés dans la liste réelle d'OpenRouter le 3 octobre 2026**, jurés d'une autre famille que le rédacteur §10.2, absence signalée si un modèle disparaît §14.3) ; mode « Personnalisé » = un identifiant par rôle avec suggestions issues de `GET /models`. Réglages avancés (§7.6) avec explication de leur effet.
+- Étape 4 : 6 profils de normes dans `resources/norms-profiles.json` (valeurs = usages courants, à ajuster selon l'établissement, §15.2). Les fichiers CSL et la mise en forme finale restent en J8.
+- Robustesse : fichiers de configuration absents → listes vides (le moteur démarre) ; corrompus → erreur explicite. Dossier `resources/` résolu parmi plusieurs candidats (variable, installateur, dépôt). Un défaut de ce type empêchait l'ouverture de la fenêtre ; corrigé.
+- Version du moteur : 0.3.0. Schéma : migration 0002 (`chunks_vec`, unicité `(mission_id, sha256)`).

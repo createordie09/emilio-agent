@@ -4,6 +4,11 @@ const ok = <T>(value: T): Promise<Result<T>> => Promise.resolve({ ok: true, valu
 
 /** Faux modèles et clé de démonstration — UNIQUEMENT hors Electron (captures, développement du renderer seul). */
 function browserMock(): EmilioApi {
+  const nope = () =>
+    Promise.resolve({
+      ok: false as const,
+      error: { code: 'E_ENGINE' as const, messageFr: 'Moteur indisponible hors Electron.' },
+    });
   const models: ModelInfo[] = [
     {
       id: 'demo/modele-a',
@@ -75,6 +80,16 @@ function browserMock(): EmilioApi {
       },
     },
     models: { list: () => ok({ models, fetchedAt: new Date().toISOString(), fromCache: false }) },
+    drafts: {
+      list: () => ok([]),
+      create: nope,
+      get: nope,
+      save: nope,
+      remove: nope,
+      finalize: nope,
+    },
+    files: { pick: () => ok([]), pathsFor: () => [], add: nope, remove: nope, list: () => ok([]) },
+    catalog: { presets: () => ok([]), normsProfiles: () => ok([]) },
     // Missions : non simulées hors Electron (le moteur n'existe pas dans le navigateur).
     missions: {
       list: () => ok([]),

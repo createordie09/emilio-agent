@@ -1,0 +1,61 @@
+﻿Identifiant;Age;Sexe;Ville;Revenu mensuel (FCFA);Taux de remboursement;Satisfaction (1-5);Credit obtenu;Remarque
+R001;30;Femme;Cotonou;139021;1,9;1;Oui;
+R002;24;Homme;Bohicon;391281;2,5;4;Non;Commentaire 1
+R003;43;Femme;Parakou;430035;4,6;5;Oui;Commentaire 2
+R004;27;Homme;Natitingou;427248;4,1;1;Non;Commentaire 3
+R005;38;Femme;Parakou;264915;4,1;5;Oui;Commentaire 4
+R006;35;Homme;Cotonou;334546;3,6;5;Oui;Commentaire 5
+R007;23;Femme;Natitingou;100800;3,8;3;Non;Commentaire 6
+R008;35;Femme;Natitingou;57633;1,4;2;Non;Commentaire 7
+R009;58;Femme;Bohicon;282929;1,7;2;Oui;Commentaire 8
+R010;59;Femme;Bohicon;372294;2,2;4;Oui;
+R011;24;Femme;Parakou;147411;3,0;4;Oui;Commentaire 10
+R012;28;Femme;Cotonou;402728;4,1;4;Non;Commentaire 11
+R013;36;Femme;Parakou;265925;3,3;5;Oui;Commentaire 12
+R014;49;Femme;Parakou;80900;4,1;5;Non;Commentaire 13
+R015;26;Femme;Natitingou;245955;4,2;5;Oui;Commentaire 14
+R016;32;Femme;Natitingou;211545;0,1;4;Oui;Commentaire 15
+R017;38;Femme;Cotonou;330291;2,8;4;Oui;Commentaire 16
+R018;35;Femme;Bohicon;144166;4,6;5;Oui;Commentaire 17
+R019;56;Femme;Natitingou;266421;2,5;5;Non;
+R020;48;Homme;Natitingou;275613;3,4;1;Oui;Commentaire 19
+R021;38;Homme;Bohicon;65313;2,9;2;Oui;Commentaire 20
+R022;46;Femme;Natitingou;338445;2,5;1;Non;Commentaire 21
+R023;49;Homme;Cotonou;264769;5,0;5;Oui;Commentaire 22
+R024;51;Femme;Cotonou;296341;1,2;4;Oui;Commentaire 23
+R025;57;Femme;Natitingou;280117;2,9;1;Oui;Commentaire 24
+R026;43;Femme;Parakou;93171;1,3;2;Oui;Commentaire 25
+R027;37;Homme;Cotonou;289447;1,8;4;Oui;Commentaire 26
+R028;56;Homme;Cotonou;312137;3,7;3;Oui;
+R029;25;Femme;Parakou;186952;2,2;4;Oui;Commentaire 28
+R030;53;Femme;Cotonou;220516;1,8;4;Oui;Commentaire 29
+R031;50;Homme;Natitingou;371112;4,8;4;Non;Commentaire 30
+R032;26;Homme;Cotonou;329051;0,0;3;Oui;Commentaire 31
+R033;53;Femme;Natitingou;439542;3,4;4;Oui;Commentaire 32
+R034;39;Homme;Bohicon;107948;0,8;5;Non;Commentaire 33
+R035;50;Femme;Parakou;364306;4,3;5;Non;Commentaire 34
+R036;23;Homme;Bohicon;298677;2,9;5;Non;Commentaire 35
+R037;50;Femme;Bohicon;145268;2,5;3;Oui;
+R038;26;Femme;Parakou;367424;3,4;2;Oui;Commentaire 37
+R039;23;Homme;Bohicon;209833;2,2;1;Oui;Commentaire 38
+R040;53;Femme;Natitingou;287077;1,8;4;Oui;Commentaire 39
+R041;29;Homme;Bohicon;69929;4,3;1;Oui;Commentaire 40
+R042;33;Homme;Bohicon;234975;0,2;4;Oui;Commentaire 41
+R043;55;Femme;Cotonou;86593;3,7;2;Oui;Commentaire 42
+R044;54;Homme;Parakou;378468;0,9;2;Non;Commentaire 43
+R045;27;Femme;Bohicon;353831;2,2;3;Non;Commentaire 44
+R046;27;Femme;Cotonou;314431;5,0;2;Oui;
+R047;55;Homme;Natitingou;421610;4,8;4;Oui;Commentaire 46
+R048;59;Femme;Parakou;357420;2,7;1;Oui;Commentaire 47
+R049;48;Homme;Cotonou;357954;2,3;4;Oui;Commentaire 48
+R050;25;Femme;Cotonou;159036;1,1;1;Oui;Commentaire 49
+R051;50;Femme;Natitingou;227026;4,2;2;Oui;Commentaire 50
+R052;54;Femme;Cotonou;113327;2,6;2;Oui;Commentaire 51
+R053;30;Homme;Natitingou;358950;5,0;3;Non;Commentaire 52
+R054;31;Femme;Bohicon;284709;1,1;3;Oui;Commentaire 53
+R055;59;Femme;Parakou;332788;4,0;5;Oui;
+R056;46;Femme;Bohicon;210891;1,8;5;Non;Commentaire 55
+R057;47;Femme;Cotonou;111709;0,7;1;Non;Commentaire 56
+R058;27;Homme;Natitingou;308688;3,5;1;Oui;Commentaire 57
+R059;42;Homme;Bohicon;183790;1,9;5;Oui;Commentaire 58
+R060;51;Femme;Bohicon;170368;1,6;2;Non;Commentaire 59

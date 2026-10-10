@@ -8,10 +8,15 @@ export function Stepper({
   steps,
   current,
   className,
+  onStepClick,
+  maxReachable,
 }: {
   steps: string[];
   current: number;
   className?: string;
+  /** Rend les étapes déjà visitées cliquables (navigation libre de l'assistant, CdC §6.4). */
+  onStepClick?: (i: number) => void;
+  maxReachable?: number;
 }) {
   return (
     <ol className={cn('flex items-center', className)} aria-label="Étapes">
@@ -24,7 +29,23 @@ export function Stepper({
             className="flex flex-1 items-center last:flex-none"
             aria-current={cur ? 'step' : undefined}
           >
-            <div className="flex flex-col items-center gap-1.5">
+            <div
+              className={cn(
+                'flex flex-col items-center gap-1.5',
+                onStepClick && i <= (maxReachable ?? current) && 'cursor-pointer',
+              )}
+              role={onStepClick && i <= (maxReachable ?? current) ? 'button' : undefined}
+              tabIndex={onStepClick && i <= (maxReachable ?? current) ? 0 : undefined}
+              aria-label={
+                onStepClick && i <= (maxReachable ?? current)
+                  ? `Aller à l'étape ${i + 1} : ${label}`
+                  : undefined
+              }
+              onClick={() => onStepClick && i <= (maxReachable ?? current) && onStepClick(i)}
+              onKeyDown={(e) =>
+                e.key === 'Enter' && onStepClick && i <= (maxReachable ?? current) && onStepClick(i)
+              }
+            >
               <span
                 className={cn(
                   'grid size-8 place-items-center rounded-full t-caption transition-colors duration-200',

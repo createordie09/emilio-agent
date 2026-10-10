@@ -18,6 +18,7 @@ export async function launchApp(): Promise<{ app: ElectronApplication; page: Pag
       EMILIO_ENGINE_NODE: process.execPath,
       EMILIO_INSECURE_TEST_CIPHER: '1',
       NODE_USE_ENV_PROXY: '1',
+      EMILIO_RESOURCES_DIR: join(__dirname, '../../../resources'),
     } as Record<string, string>,
   });
   const page = await app.firstWindow();

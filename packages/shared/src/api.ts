@@ -2,6 +2,16 @@ import type { KeyInfo, KeyStatus, ModelList } from './models';
 import type { SerializedError } from './errors';
 import type { ThemePreference } from './constants';
 import type { MissionDetail, MissionEvent, MissionSummary } from './mission';
+import type { BriefDraft, WorkType } from './brief';
+import type { FileKind, MissionFileInfo } from './files';
+import type {
+  AddFileResult,
+  DraftDetail,
+  DraftSummary,
+  FinalizeOptions,
+  NormsProfileInfo,
+  PresetInfo,
+} from './wizard';
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: SerializedError };
 
@@ -16,7 +26,8 @@ export type AppInfo = {
 /** Événements poussés par le moteur vers l'interface. */
 export type EngineLiveEvent =
   | { kind: 'mission.event'; event: MissionEvent }
-  | { kind: 'mission.updated'; mission: MissionSummary };
+  | { kind: 'mission.updated'; mission: MissionSummary }
+  | { kind: 'file.updated'; missionId: string; file: MissionFileInfo };
 
 export type EnginePing = { ok: true; engineVersion: string; schemaVersion: number };
 
@@ -47,6 +58,31 @@ export interface EmilioApi {
     simulate(kind: 'no_credit' | 'recharge' | 'offline' | 'online'): Promise<Result<null>>;
     events(id: string | null, opts?: { limit?: number }): Promise<Result<MissionEvent[]>>;
   };
+  /** Assistant « Nouvelle mission » : brouillons, fichiers, préréglages, profils de normes (CdC §6.4). */
+  drafts: {
+    list(): Promise<Result<DraftSummary[]>>;
+    create(opts?: { workType?: WorkType; titre?: string }): Promise<Result<DraftDetail>>;
+    get(id: string): Promise<Result<DraftDetail>>;
+    save(id: string, brief: BriefDraft): Promise<Result<DraftDetail>>;
+    remove(id: string): Promise<Result<null>>;
+    finalize(id: string, opts?: FinalizeOptions): Promise<Result<MissionSummary>>;
+  };
+  files: {
+    /** Ouvre la boîte de dialogue système et renvoie les chemins choisis. */
+    pick(kind: FileKind): Promise<Result<string[]>>;
+    /** Chemins des fichiers déposés par glisser-déposer (le renderer n'a pas accès aux chemins). */
+    pathsFor(files: File[]): string[];
+    add(
+      draftId: string,
+      items: { path: string; kind: FileKind }[],
+    ): Promise<Result<AddFileResult[]>>;
+    remove(draftId: string, fileId: string): Promise<Result<MissionFileInfo[]>>;
+    list(draftId: string): Promise<Result<MissionFileInfo[]>>;
+  };
+  catalog: {
+    presets(): Promise<Result<PresetInfo[]>>;
+    normsProfiles(): Promise<Result<NormsProfileInfo[]>>;
+  };
   /** Abonnement aux événements du moteur en direct ; renvoie la fonction de désabonnement. */
   onEvent(cb: (e: EngineLiveEvent) => void): () => void;
   ui: {
@@ -66,6 +102,18 @@ export type EngineMethod =
   | 'setApiKey'
   | 'testKey'
   | 'listModels'
+  | 'listDrafts'
+  | 'createDraft'
+  | 'getDraft'
+  | 'saveDraft'
+  | 'deleteDraft'
+  | 'finalizeDraft'
+  | 'addFiles'
+  | 'removeFile'
+  | 'listFiles'
+  | 'listPresets'
+  | 'listNormsProfiles'
+  | 'searchKb'
   | 'listMissions'
   | 'getMission'
   | 'createDemoMission'

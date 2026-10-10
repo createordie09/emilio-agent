@@ -140,6 +140,12 @@ export function MissionPage() {
             {m.error.messageFr}
           </p>
         )}
+        {m.status === 'briefing' && (
+          <p role="status" className="t-small rounded-md bg-primary-softer p-3 text-text-muted">
+            Votre brief est enregistré et vos documents sont indexés. La génération du plan arrive
+            au prochain jalon de l'application.
+          </p>
+        )}
         <Stepper
           steps={PHASES.map((p) => p.label)}
           current={phaseIndex(m)}

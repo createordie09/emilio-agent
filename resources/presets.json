@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "description": "Préréglages de modèles (CdC §14.3). Identifiants vérifiés dans la liste GET /api/v1/models d'OpenRouter le 3 octobre 2026 ; ils évoluent vite : un modèle disparu est signalé dans l'application et peut être remplacé. Les jurés sont d'une autre famille que le rédacteur (§10.2).",
+  "presets": [
+    {
+      "id": "economique",
+      "label": "Économique",
+      "description": "Modèles peu coûteux pour tous les rôles ; gamme moyenne pour le rédacteur et le président du jury.",
+      "models": {
+        "orchestrator": "google/gemini-3.8-flash",
+        "outline_architect": "google/gemini-3.8-flash",
+        "researcher": "deepseek/deepseek-v4-flash",
+        "document_analyst": "google/gemini-3.8-flash",
+        "source_verifier": "deepseek/deepseek-v4-flash",
+        "data_analyst": "google/gemini-3.8-flash",
+        "section_writer": "google/gemini-3.8-flash",
+        "grounding_checker": "deepseek/deepseek-v4-flash",
+        "summarizer": "deepseek/deepseek-v4-flash",
+        "juror_methodologist": "deepseek/deepseek-v4-pro",
+        "juror_specialist": "deepseek/deepseek-v4-pro",
+        "juror_form": "deepseek/deepseek-v4-pro",
+        "jury_president": "google/gemini-3.8-flash",
+        "harmonizer": "google/gemini-3.8-flash",
+        "bibliographer": "deepseek/deepseek-v4-flash",
+        "defense_designer": "google/gemini-3.8-flash"
+      }
+    },
+    {
+      "id": "equilibre",
+      "label": "Équilibré",
+      "description": "Modèles haut de gamme pour l'orchestrateur, le rédacteur et le président du jury ; économiques pour la recherche, l'ancrage et les résumés.",
+      "models": {
+        "orchestrator": "anthropic/claude-sonnet-5.5",
+        "outline_architect": "anthropic/claude-sonnet-5.5",
+        "researcher": "deepseek/deepseek-v4-flash",
+        "document_analyst": "google/gemini-3.8-flash",
+        "source_verifier": "deepseek/deepseek-v4-flash",
+        "data_analyst": "anthropic/claude-sonnet-5.5",
+        "section_writer": "anthropic/claude-sonnet-5.5",
+        "grounding_checker": "deepseek/deepseek-v4-flash",
+        "summarizer": "deepseek/deepseek-v4-flash",
+        "juror_methodologist": "google/gemini-3.8-flash",
+        "juror_specialist": "google/gemini-3.8-flash",
+        "juror_form": "google/gemini-3.8-flash",
+        "jury_president": "anthropic/claude-sonnet-5.5",
+        "harmonizer": "google/gemini-3.8-flash",
+        "bibliographer": "deepseek/deepseek-v4-flash",
+        "defense_designer": "google/gemini-3.8-flash"
+      }
+    },
+    {
+      "id": "excellence",
+      "label": "Excellence",
+      "description": "Les meilleurs modèles disponibles pour le raisonnement et la rédaction ; jurés d'une autre famille que le rédacteur.",
+      "models": {
+        "orchestrator": "anthropic/claude-opus-5.5",
+        "outline_architect": "anthropic/claude-opus-5.5",
+        "researcher": "deepseek/deepseek-v4-flash",
+        "document_analyst": "google/gemini-3.8-flash",
+        "source_verifier": "deepseek/deepseek-v4-flash",
+        "data_analyst": "anthropic/claude-opus-5.5",
+        "section_writer": "anthropic/claude-opus-5.5",
+        "grounding_checker": "google/gemini-3.8-flash",
+        "summarizer": "deepseek/deepseek-v4-flash",
+        "juror_methodologist": "openai/gpt-6.1-sol",
+        "juror_specialist": "openai/gpt-6.1-sol",
+        "juror_form": "openai/gpt-6.1-sol",
+        "jury_president": "anthropic/claude-opus-5.5",
+        "harmonizer": "google/gemini-3.8-flash",
+        "bibliographer": "deepseek/deepseek-v4-flash",
+        "defense_designer": "anthropic/claude-sonnet-5.5"
+      }
+    }
+  ]
+}

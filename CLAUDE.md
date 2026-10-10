@@ -97,6 +97,13 @@ pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 - Missions : `MissionRepo.transition` (table §8.1) → file `SqliteQueue` → `MissionRunner` (planificateur) → `ModelCaller` (seul point d'appel LLM). Mode simulé par mission (`config.llmMode`), jamais d'appel payant en test.
 - Mission factice : mode développeur → « Mes missions » → bouton « Lancer une mission factice » ; boutons de panne simulée sur la page de la mission.
 
+## Base de connaissances et assistant (J3)
+
+- Import → `IngestService` (copie, extraction PDF/DOCX/TXT, profil CSV/XLSX, découpage, embeddings, FTS5 + sqlite-vec) ; recherche hybride `KbStore.search`. Modèle d'embeddings : `pnpm models:fetch` (sinon repli lexical `HashEmbedder`).
+- Brouillons = missions `draft` (`DraftService`) ; brief zod dans `@emilio/shared` (`brief.ts`). Préréglages et profils de normes : `resources/*.json` (jamais d'identifiant de modèle dans le code).
+- Seuls les documents de référence (`sources.type != 'document_interne'`) sont citables.
+- Fixtures de test : `packages/engine/test/fixtures` (régénérables par `generate.mjs`).
+
 ## Qualité
 
 TypeScript `strict`, ESLint + Prettier, aucune sortie d'agent non validée par zod. Mode LLM simulé (mock) obligatoire dès J2 (§21.2) : aucun test ne doit faire d'appel payant.

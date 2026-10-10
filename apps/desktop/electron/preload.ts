@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron';
 import { IPC } from '@emilio/shared/ipc';
 import type { EmilioApi, EngineLiveEvent } from '@emilio/shared';
 
@@ -13,6 +13,26 @@ const api: EmilioApi = {
     remove: () => ipcRenderer.invoke(IPC.keyRemove),
   },
   models: { list: (opts) => ipcRenderer.invoke(IPC.modelsList, opts) },
+  drafts: {
+    list: () => ipcRenderer.invoke(IPC.draftsList),
+    create: (opts) => ipcRenderer.invoke(IPC.draftsCreate, opts),
+    get: (id) => ipcRenderer.invoke(IPC.draftsGet, id),
+    save: (id, brief) => ipcRenderer.invoke(IPC.draftsSave, id, brief),
+    remove: (id) => ipcRenderer.invoke(IPC.draftsRemove, id),
+    finalize: (id, opts) => ipcRenderer.invoke(IPC.draftsFinalize, id, opts),
+  },
+  files: {
+    pick: (kind) => ipcRenderer.invoke(IPC.filesPick, kind),
+    // Le renderer sandboxé n'a pas accès aux chemins de fichiers : on les résout ici, dans le preload.
+    pathsFor: (files) => files.map((f) => webUtils.getPathForFile(f)).filter(Boolean),
+    add: (id, items) => ipcRenderer.invoke(IPC.filesAdd, id, items),
+    remove: (id, fileId) => ipcRenderer.invoke(IPC.filesRemove, id, fileId),
+    list: (id) => ipcRenderer.invoke(IPC.filesList, id),
+  },
+  catalog: {
+    presets: () => ipcRenderer.invoke(IPC.catalogPresets),
+    normsProfiles: () => ipcRenderer.invoke(IPC.catalogNorms),
+  },
   missions: {
     list: () => ipcRenderer.invoke(IPC.missionsList),
     get: (id) => ipcRenderer.invoke(IPC.missionsGet, id),

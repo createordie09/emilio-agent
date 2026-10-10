@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "description": "Profils de normes proposés à l'étape 4 de l'assistant (CdC §15.2). Les valeurs de mise en page sont des usages courants, pas une norme officielle unique : à ajuster selon le guide de l'établissement. Les fichiers CSL et la mise en forme finale arrivent au jalon J8.",
+  "profiles": [
+    {
+      "id": "afrique-francophone-standard",
+      "name": "Afrique francophone — Standard universitaire",
+      "description": "Usage courant des universités et grandes écoles d'Afrique francophone (espace CAMES).",
+      "citationMode": "auteur_date",
+      "layout": {
+        "font": "Times New Roman",
+        "fontSize": 12,
+        "lineSpacing": 1.5,
+        "marginCm": 2.5,
+        "justify": true
+      },
+      "exampleCitation": "(Auteur, 2020, p. 45)",
+      "exampleReference": "Auteur, A. (2020). Titre de l'ouvrage. Ville : Éditions Exemple."
+    },
+    {
+      "id": "apa7-fr",
+      "name": "APA 7e édition (français)",
+      "description": "Style de l'American Psychological Association, adapté au français.",
+      "citationMode": "auteur_date",
+      "layout": {
+        "font": "Times New Roman",
+        "fontSize": 12,
+        "lineSpacing": 2,
+        "marginCm": 2.54,
+        "justify": false
+      },
+      "exampleCitation": "(Auteur, 2020, p. 45)",
+      "exampleReference": "Auteur, A. (2020). Titre de l'article. Revue exemple, 12(3), 45-67."
+    },
+    {
+      "id": "iso690-auteur-date",
+      "name": "ISO 690 (auteur-date)",
+      "description": "Norme ISO 690, citations dans le texte par auteur et année.",
+      "citationMode": "auteur_date",
+      "layout": {
+        "font": "Times New Roman",
+        "fontSize": 12,
+        "lineSpacing": 1.5,
+        "marginCm": 2.5,
+        "justify": true
+      },
+      "exampleCitation": "(AUTEUR, 2020, p. 45)",
+      "exampleReference": "AUTEUR, Alice, 2020. Titre de l'ouvrage. Ville : Éditions Exemple."
+    },
+    {
+      "id": "iso690-notes",
+      "name": "ISO 690 (numérique / notes)",
+      "description": "Norme ISO 690 avec renvois numérotés en notes de bas de page.",
+      "citationMode": "notes",
+      "layout": {
+        "font": "Times New Roman",
+        "fontSize": 12,
+        "lineSpacing": 1.5,
+        "marginCm": 2.5,
+        "justify": true
+      },
+      "exampleCitation": "¹ AUTEUR, Alice. Titre de l'ouvrage. Ville : Éditions Exemple, 2020, p. 45.",
+      "exampleReference": "AUTEUR, Alice. Titre de l'ouvrage. Ville : Éditions Exemple, 2020."
+    },
+    {
+      "id": "notes-sciences-humaines",
+      "name": "Notes de bas de page — droit et sciences humaines",
+      "description": "Notes de bas de page avec « ibid. » et « op. cit. ».",
+      "citationMode": "notes",
+      "layout": {
+        "font": "Times New Roman",
+        "fontSize": 12,
+        "lineSpacing": 1.5,
+        "marginCm": 2.5,
+        "justify": true
+      },
+      "exampleCitation": "¹ A. Auteur, Titre de l'ouvrage, Ville, Exemple, 2020, p. 45. ² Ibid., p. 52.",
+      "exampleReference": "AUTEUR Alice, Titre de l'ouvrage, Ville, Exemple, 2020."
+    },
+    {
+      "id": "vancouver",
+      "name": "Vancouver (santé)",
+      "description": "Citations numérotées, courantes en médecine et santé publique.",
+      "citationMode": "notes",
+      "layout": {
+        "font": "Times New Roman",
+        "fontSize": 12,
+        "lineSpacing": 1.5,
+        "marginCm": 2.5,
+        "justify": true
+      },
+      "exampleCitation": "[1]",
+      "exampleReference": "1. Auteur A. Titre de l'article. Rev Exemple. 2020;12(3):45-67."
+    }
+  ]
+}

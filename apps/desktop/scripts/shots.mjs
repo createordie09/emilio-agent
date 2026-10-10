@@ -101,5 +101,84 @@ for (const theme of ['clair', 'sombre']) {
   await page.waitForTimeout(500);
   await page.screenshot({ path: join(out, `missions-liste-${t}.png`) });
 }
+// --- J3 : assistant « Nouvelle mission » ---
+const fx = join(here, '../../../packages/engine/test/fixtures');
+await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1400, 1500));
+const draftId = await page.evaluate(
+  async (paths) => {
+    const api = window.api;
+    const d = await api.drafts.create({
+      workType: 'memoire_master',
+      titre: 'Microfinance et inclusion financière des ménages ruraux au Bénin',
+    });
+    const norms = await api.catalog.normsProfiles();
+    const n = norms.value[0];
+    await api.drafts.save(d.value.id, {
+      discipline: 'Sciences de gestion',
+      specialite: 'Finance et microfinance',
+      problematique:
+        'Dans quelle mesure la microfinance améliore-t-elle l’inclusion financière des ménages ruraux du Bénin ?',
+      questionsRecherche: ['Quel est le rôle des groupes de caution solidaire ?'],
+      objectifGeneral: 'Analyser l’effet de la microfinance sur l’inclusion financière.',
+      hypotheses: ['L’accès au crédit améliore la productivité agricole.'],
+      motsCles: ['microfinance', 'inclusion financière', 'Bénin'],
+      terrain: { pays: 'Bénin', ville: 'Parakou', periode: '2025' },
+      approche: 'mixte',
+      etablissement: {
+        nom: 'Université de Parakou',
+        faculte: 'Faculté de droit et de sciences politiques',
+        anneeAcademique: '2025-2026',
+      },
+      profilNormesId: n.id,
+      styleCitation: n.citationMode,
+      mise_en_page: {
+        police: n.layout.font,
+        taille: n.layout.fontSize,
+        interligne: n.layout.lineSpacing,
+        margeCm: n.layout.marginCm,
+      },
+      execution: {
+        preset: 'equilibre',
+        budgetMaxUsd: 15,
+        parallelism: 3,
+        rondesMaxParChapitre: 3,
+        rondesMaxGlobales: 2,
+        profondeurRecherche: 'normale',
+        preferenceSources: 'toutes',
+        models: undefined,
+      },
+    });
+    await api.files.add(
+      d.value.id,
+      paths.map(([path, kind]) => ({ path, kind })),
+    );
+    return d.value.id;
+  },
+  [
+    [join(fx, 'memoire-exemple.pdf'), 'user_document'],
+    [join(fx, 'guide-redaction.docx'), 'institution_guidelines'],
+    [join(fx, 'donnees-enquete.csv'), 'field_data'],
+  ],
+);
+for (const theme of ['clair', 'sombre']) {
+  const t = theme === 'clair' ? 'light' : 'dark';
+  await go('#/parametres');
+  await page.getByRole('tab', { name: 'Apparence' }).click();
+  await page.getByRole('radio', { name: theme === 'clair' ? 'Clair' : 'Sombre' }).click();
+  await go('#/missions/nouvelle');
+  await page.getByRole('heading', { name: /Quel travail/ }).waitFor();
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: join(out, `wizard-entree-${t}.png`) });
+  await go(`#/missions/nouvelle/${draftId}`);
+  await page.getByRole('heading', { name: '1. Type de travail' }).waitFor();
+  for (let i = 1; i <= 7; i++) {
+    if (i === 5)
+      await page.getByText('60 répondant(s) · 9 variable(s)').waitFor({ timeout: 30000 });
+    if (i === 7) await page.getByRole('button', { name: 'Créer la mission' }).waitFor();
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: join(out, `wizard-etape${i}-${t}.png`) });
+    if (i < 7) await page.getByRole('button', { name: 'Continuer' }).click();
+  }
+}
 await app.close();
 console.log('Captures écrites dans', out);

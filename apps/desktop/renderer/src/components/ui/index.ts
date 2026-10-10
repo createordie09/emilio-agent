@@ -6,3 +6,4 @@ export * from './navigation';
 export * from './dialog';
 export * from './activity';
 export * from './layout';
+export * from './forms';

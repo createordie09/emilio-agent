@@ -10,6 +10,7 @@ export const ERROR_MESSAGES_FR = {
   E_BUDGET: 'Le budget maximal de la mission est atteint.',
   E_BAD_REQUEST: "La requête envoyée au modèle d'IA est invalide.",
   E_SCHEMA: "La réponse du modèle d'IA n'est pas exploitable.",
+  E_PARSE_FILE: 'Impossible de lire ce fichier.',
   E_MODEL_UNAVAILABLE: 'Le modèle demandé est indisponible.',
   E_REMOTE: 'Le service OpenRouter a renvoyé une erreur inattendue.',
   E_ENGINE: "Le moteur de l'application ne répond pas.",
