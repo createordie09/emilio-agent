@@ -151,6 +151,8 @@ pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 - Banc d'essai : `packages/engine/test-live/calibration.live.ts` (mission réelle courte, budget plafonné) ; protocole et constats dans `docs/calibration/README.md`. Sous le proxy du cloud : `NODE_USE_ENV_PROXY=1` (le proxy ajoute la clé OpenRouter ; l'en-tête Authorization du client est retiré).
 - `sourcesMode: 'mock'` (config de mission) : vrai modèle, sources simulées. Chaque appel porte `max_tokens` (`maxOutputTokens`, 16 000 par défaut).
 
+- Données personnelles : `privacy/identifying.ts` exclut d'office les colonnes d'identification (jamais envoyées au modèle, ADR-045) ; `privacy/pseudonymize.ts` (E1, E2…, contacts masqués) prêt pour les transcriptions.
+
 ## Qualité
 
 TypeScript `strict`, ESLint + Prettier, aucune sortie d'agent non validée par zod. Mode LLM simulé (mock) obligatoire dès J2 (§21.2) : aucun test ne doit faire d'appel payant.

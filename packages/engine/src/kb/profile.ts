@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 import Papa from 'papaparse';
+import { detectIdentifying } from '../privacy/identifying';
 import { AppError, type ColumnProfile, type DataProfile } from '@emilio/shared';
 
 const MISSING = new Set(['', 'na', 'n/a', 'nan', 'null', 'nd', 'n.d.', '#n/a', '-', '—']);
@@ -31,6 +32,9 @@ function numericStats(nums: number[]): NonNullable<ColumnProfile['numeric']> {
 function profileColumn(name: string, values: string[]): ColumnProfile {
   const present = values.filter((v) => !isMissing(v)).map((v) => v.trim());
   const base = { name, nonMissing: present.length, missing: values.length - present.length };
+  // Donnée personnelle : on ne garde que le strict nécessaire (ni modalités, ni statistiques, ni valeurs).
+  if (detectIdentifying(name, present).identifying)
+    return { ...base, type: 'text', distinct: new Set(present).size, identifying: true };
   const counts = new Map<string, number>();
   for (const v of present) counts.set(v, (counts.get(v) ?? 0) + 1);
   const distinct = counts.size;
@@ -84,6 +88,11 @@ function buildProfile(headers: string[], rows: string[][], sheet?: string): Data
     ),
   );
   const warnings: string[] = [];
+  const ident = columns.filter((c) => c.identifying).map((c) => `« ${c.name} »`);
+  if (ident.length)
+    warnings.push(
+      `Colonne(s) d'identification : ${ident.join(', ')}. Elles sont exclues de l'analyse et ne sont jamais envoyées au modèle d'IA.`,
+    );
   if (rows.length === 0) warnings.push('Aucune ligne de données trouvée.');
   else if (rows.length < 30)
     warnings.push(
@@ -106,7 +115,13 @@ function buildProfile(headers: string[], rows: string[][], sheet?: string): Data
     sheet,
     respondents: rows.length,
     columns,
-    sample: rows.slice(0, 5).map((r) => Object.fromEntries(unique.map((n, i) => [n, r[i] ?? '']))),
+    sample: rows
+      .slice(0, 5)
+      .map((r) =>
+        Object.fromEntries(
+          unique.map((n, i) => [n, columns[i]!.identifying ? '•••' : (r[i] ?? '')]),
+        ),
+      ),
     warnings,
   };
 }

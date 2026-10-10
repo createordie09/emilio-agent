@@ -106,3 +106,5 @@ export * from './ops/service';
 export * from './ops/logger';
 export * from './ops/costs';
 export * from './ops/archive';
+export * from './privacy/identifying';
+export * from './privacy/pseudonymize';

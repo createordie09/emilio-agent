@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, FolderOpen } from 'lucide-react';
+import { AlertTriangle, ShieldCheck, FolderOpen } from 'lucide-react';
 import {
   FILE_KINDS,
   FILE_KIND_LABEL_FR,
@@ -47,6 +47,12 @@ function ProfileCard({ p }: { p: DataProfile }) {
     <details className="rounded-md border border-border bg-surface-muted p-3 t-small">
       <summary className="cursor-pointer font-medium">
         {fmtInt(p.respondents)} répondant(s) · {p.columns.length} variable(s)
+        {p.columns.some((c) => c.identifying) && (
+          <span className="ml-2 inline-flex items-center gap-1 text-success">
+            <ShieldCheck className="size-4" aria-hidden />
+            {p.columns.filter((c) => c.identifying).length} colonne(s) d’identification protégée(s)
+          </span>
+        )}
       </summary>
       <table className="mt-2 w-full">
         <thead className="text-left text-text-muted">
@@ -60,7 +66,7 @@ function ProfileCard({ p }: { p: DataProfile }) {
           {p.columns.map((c) => (
             <tr key={c.name} className="border-t border-border">
               <td className="py-1">{c.name}</td>
-              <td>{c.type}</td>
+              <td>{c.identifying ? 'identification — exclue, jamais envoyée à l’IA' : c.type}</td>
               <td className="tabular">{c.missing}</td>
             </tr>
           ))}

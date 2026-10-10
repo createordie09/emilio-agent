@@ -33,7 +33,8 @@ export type Opts = {
   pdf?: PdfAdapter;
   brief?: BriefDraft;
   respond?: Respond;
-  data?: boolean;
+  /** Données de terrain : `true` = fixture du dépôt ; une chaîne = chemin d'un fichier CSV. */
+  data?: boolean | string;
   delayMs?: number;
   setup?: (e: EngineService) => void;
 };
@@ -77,7 +78,9 @@ export async function runMission(o: Opts = {}) {
   const d = engine.drafts.create({ workType: 'memoire_master' });
   engine.drafts.save(d.id, brief);
   if (o.data) {
-    await engine.ingest.add(d.id, [{ path: FX('donnees-enquete.csv'), kind: 'field_data' }]);
+    await engine.ingest.add(d.id, [
+      { path: typeof o.data === 'string' ? o.data : FX('donnees-enquete.csv'), kind: 'field_data' },
+    ]);
     await engine.ingest.idle();
   }
   await engine.drafts.finalize(d.id, { confirmNoFieldData: true });

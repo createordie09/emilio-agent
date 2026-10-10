@@ -54,6 +54,7 @@ export function dataProfileText(files: MissionFileInfo[]): string {
     .map((x) => {
       const p = x.profile!;
       const cols = p.columns
+        .filter((c) => !c.identifying)
         .slice(0, 12)
         .map((c) => c.name)
         .join(', ');
