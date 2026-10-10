@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { AppError, type AgentRole } from '@emilio/shared';
 import { newId, nowIso, type Db } from '../storage/db';
 import type { EventJournal } from '../events/journal';
@@ -6,6 +7,9 @@ import { clampParallelism, type MissionExecConfig } from './exec-config';
 import type { ChatMessage, LlmClient, LlmResponse } from './types';
 
 export type PriceGrid = (model: string) => { prompt: number; completion: number } | null;
+
+/** Tâche en cours d'exécution : les appels des tâches locales y sont rattachés (coût par phase du rapport de mission). */
+export const taskContext = new AsyncLocalStorage<string>();
 
 export type CallParams = {
   missionId: string;
@@ -147,7 +151,7 @@ export class ModelCaller {
       )
       .run(
         newId(),
-        p.taskId,
+        p.taskId ?? taskContext.getStore() ?? null,
         model,
         p.promptVersion ?? null,
         res.promptTokens,
@@ -170,7 +174,7 @@ export class ModelCaller {
       )
       .run(
         newId(),
-        p.taskId,
+        p.taskId ?? taskContext.getStore() ?? null,
         model,
         p.promptVersion ?? null,
         ms,

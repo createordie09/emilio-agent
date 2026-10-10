@@ -75,3 +75,30 @@ export * from './jury/schemas';
 export * from './jury/consolidate';
 export * from './jury/service';
 export * from './jury/mock-responder';
+export * from './export/config';
+export { plainOf } from './export/model';
+export type {
+  DocModel,
+  Run,
+  Para,
+  TableBlock,
+  FigureBlock,
+  FrontPage,
+  BibliographyGroup,
+} from './export/model';
+export * from './export/typography';
+export * from './export/inline';
+export * from './export/bibliography';
+export * from './export/sigles';
+export * from './export/charts';
+export * from './export/assemble';
+export * from './export/docx';
+export * from './export/html';
+export * from './export/pdf';
+export * from './export/pptx';
+export * from './export/fiche';
+export * from './export/final-check';
+export * from './export/report';
+export * from './export/schemas';
+export * from './export/mock-responder';
+export * from './export/service';

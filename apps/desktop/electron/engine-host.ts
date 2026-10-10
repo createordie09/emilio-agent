@@ -7,6 +7,8 @@ import {
   type EngineMethod,
   type EngineRequest,
   type EngineResponse,
+  type HostReply,
+  type HostRequest,
   type Result,
 } from '@emilio/shared';
 
@@ -16,7 +18,7 @@ export interface EngineClient {
 
 /** Processus moteur abstrait : utilityProcess (défaut) ou Node système (mode dev/CI, cf. ADR-006). */
 interface EngineProc {
-  postMessage(msg: EngineRequest): void;
+  postMessage(msg: EngineRequest | HostReply): void;
   onMessage(cb: (m: EngineResponse | EngineEvent) => void): void;
   onExit(cb: () => void): void;
   kill(): void;
@@ -68,6 +70,9 @@ export class EngineHost implements EngineClient {
     private readonly onReady: (raw: EngineClient) => Promise<void>,
     private readonly requestTimeoutMs = 60_000,
     private readonly onLive: (payload: unknown) => void = () => {},
+    /** Appels du moteur vers l'application (rendu PDF) : renvoie un message d'erreur, ou rien si tout va bien. */
+    private readonly onHost: (req: HostRequest) => Promise<string | void> = async () =>
+      'Non disponible.',
   ) {}
 
   start(): Promise<void> {
@@ -81,6 +86,19 @@ export class EngineHost implements EngineClient {
       proc.onMessage((msg) => {
         if ('event' in msg) {
           if (msg.event === 'live') this.onLive(msg.payload);
+          if (msg.event === 'host') {
+            const req = msg.payload as HostRequest;
+            this.onHost(req).then(
+              (err) =>
+                proc.postMessage({
+                  hostReply: { id: req.id, ok: !err, message: err || undefined },
+                }),
+              (e: unknown) =>
+                proc.postMessage({
+                  hostReply: { id: req.id, ok: false, message: (e as Error).message },
+                }),
+            );
+          }
           if (msg.event === 'ready') {
             this.onReady({ request: (m, p) => this.send(m, p) }).then(resolveReady, rejectReady);
           }

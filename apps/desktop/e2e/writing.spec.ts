@@ -24,7 +24,7 @@ test('analyse des données et rédaction : tableaux calculés, sections ancrées
     await expect(page.getByText('Terminée', { exact: true }).first()).toBeVisible({
       timeout: 180_000,
     });
-    await expect(page.getByText(/jusqu'à P7/).first()).toBeVisible();
+    await expect(page.getByText('Mission terminée.').first()).toBeVisible();
 
     await page.getByRole('tab', { name: 'Analyse' }).click();
     // Analyse des données (P4) : chiffres calculés par le code, interprétation contrôlée, hypothèses.
@@ -82,6 +82,21 @@ test('analyse des données et rédaction : tableaux calculés, sections ancrées
     const drafts = page.getByRole('region', { name: 'Brouillons' });
     await expect(drafts.getByRole('list', { name: 'Versions' })).toBeVisible();
     await expect(drafts.getByText('Version courante')).toBeVisible();
+
+    // Livrables (P8/P9) : Word, PDF rendu par Chromium, rapport ; contrôle final ; charte d'utilisation.
+    await page.getByRole('tab', { name: 'Livrables' }).click();
+    const liv = page.getByRole('region', { name: 'Livrables' });
+    const files = liv.getByRole('list', { name: 'Fichiers produits' }).getByRole('listitem');
+    await expect(files).toHaveCount(3);
+    await expect(files.nth(0)).toContainText('Mémoire (Word)');
+    await expect(files.nth(1)).toContainText('Mémoire (PDF)');
+    await expect(files.nth(2)).toContainText('Rapport de mission');
+    await expect(liv.getByText(/source\(s\) citée\(s\) sur/)).toBeVisible();
+    await expect(
+      liv.getByRole('group', { name: 'Contrôle final' }).or(liv.getByLabel('Contrôle final')),
+    ).toContainText('Aucun problème bloquant');
+    await expect(liv.getByText(/emplacement\(s\) à compléter par vous/).first()).toBeVisible();
+    await expect(liv.getByLabel('Charte d’utilisation')).toContainText('auteur responsable');
   } finally {
     await app.close();
   }

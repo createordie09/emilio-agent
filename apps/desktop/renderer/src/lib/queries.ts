@@ -122,3 +122,10 @@ export const useVersion = (draftId: string | null) =>
     gcTime: 0,
     queryFn: () => unwrap(api.writing.version(draftId!)),
   });
+
+export const useExports = (missionId: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: ['exports', missionId],
+    enabled: Boolean(missionId) && enabled,
+    queryFn: () => unwrap(api.exports.overview(missionId!)),
+  });

@@ -131,6 +131,36 @@ export class ResearchService {
     this.d.journal.record({ missionId, level, agentRole, messageFr });
   }
 
+  /** Journal des requêtes et des bases interrogées (rapport de mission, §16.4). Ne doit jamais faire échouer la recherche. */
+  private logSearch(
+    missionId: string,
+    sectionKey: string | null,
+    iteration: number,
+    queries: { texte: string; langue: string }[],
+    raw: CandidateSource[],
+  ): void {
+    try {
+      const byConnector: Record<string, number> = {};
+      for (const c of raw) byConnector[c.origin] = (byConnector[c.origin] ?? 0) + 1;
+      this.d.db
+        .prepare(
+          'INSERT INTO search_log(id,mission_id,section_key,iteration,queries_json,connectors_json,found,created_at) VALUES (?,?,?,?,?,?,?,?)',
+        )
+        .run(
+          newId(),
+          missionId,
+          sectionKey,
+          iteration,
+          JSON.stringify(queries.map((q) => ({ texte: q.texte, langue: q.langue }))),
+          JSON.stringify(byConnector),
+          raw.length,
+          nowIso(),
+        );
+    } catch {
+      /* journal facultatif */
+    }
+  }
+
   async researchSection(spec: SectionSpec): Promise<SectionResearchResult> {
     const { missionId } = spec;
     const cfg = this.d.missions.config<MissionExecConfig>(missionId);
@@ -189,6 +219,7 @@ export class ResearchService {
       );
       const merged = dedupe(raw).filter((c) => !scoredBySource.has(this.key(c)));
       for (const c of raw) result.byConnector[c.origin] = (result.byConnector[c.origin] ?? 0) + 1;
+      this.logSearch(missionId, spec.sectionKey, iter, queries, raw);
       result.found += raw.length;
       result.merged += merged.length;
       if (merged.length) {
@@ -316,6 +347,7 @@ export class ResearchService {
     );
     const byConnector: Record<string, number> = {};
     for (const c of raw) byConnector[c.origin] = (byConnector[c.origin] ?? 0) + 1;
+    this.logSearch(missionId, null, 0, spec.queries, raw);
     const merged = dedupe(raw);
     const emb = this.d.embedder();
     const [qv] = await emb.embedPassages([spec.topic]);

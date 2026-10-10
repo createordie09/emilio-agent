@@ -10,7 +10,7 @@ import type { MissionRepo } from '../storage/missions';
 import type { QueueAdapter, QueuedTask } from '../queue/queue';
 import type { EventJournal } from '../events/journal';
 import type { CheckpointRepo } from './checkpoints';
-import type { ModelCaller } from '../llm/call-model';
+import { taskContext, type ModelCaller } from '../llm/call-model';
 import { clampParallelism, type MissionExecConfig } from '../llm/exec-config';
 import type { AgentRegistry } from '../agents/registry';
 import { roleLabelFr } from '../agents/registry';
@@ -252,7 +252,13 @@ export class MissionRunner {
       let cost = { costUsd: 0, tokensIn: 0, tokensOut: 0, model: null as string | null };
       if (task.agentRole === 'local') {
         const h = this.d.localHandlers?.[String(task.input.handler ?? '')];
-        output = h ? await h(task) : { ok: true };
+        output = h ? await taskContext.run(task.id, () => Promise.resolve(h(task))) : { ok: true };
+        const agg = this.d.db
+          .prepare(
+            'SELECT COALESCE(SUM(cost_usd),0) AS c, COALESCE(SUM(prompt_tokens),0) AS i, COALESCE(SUM(completion_tokens),0) AS o FROM llm_calls WHERE task_id=?',
+          )
+          .get(task.id) as { c: number; i: number; o: number };
+        cost = { costUsd: agg.c, tokensIn: agg.i, tokensOut: agg.o, model: null };
       } else {
         const agent = this.d.agents.get(task.agentRole as AgentRole);
         const r = await executeAgentTask(this.d.caller, agent, task, signal);
@@ -435,9 +441,7 @@ export class MissionRunner {
     if (total > 0 && c.done + c.skipped === total && this.inFlight.size === 0) {
       const stop = this.d.missions.config<MissionExecConfig>(id).stopAfterPhase;
       this.d.missions.transition(id, 'completed', {
-        reason: stop
-          ? `Étapes disponibles terminées (jusqu'à ${stop}) : la rédaction et le jury arrivent dans une prochaine version de l'application.`
-          : 'Mission terminée.',
+        reason: stop ? `Étapes disponibles terminées (jusqu'à ${stop}).` : 'Mission terminée.',
       });
       this.touch(id);
       return true;
