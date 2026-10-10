@@ -36,6 +36,7 @@ import {
 } from './config';
 import { compactBrief, dataProfileText, outlineText } from './brief-text';
 import { allocateWords, leaves, mergeProposal, OutlineRepo } from './outline';
+import type { WritingConfig } from '../writing/config';
 import { CadrageSchema, PlanSchema, type Cadrage } from './schemas';
 
 /** Méta du plan courant (colonne `missions.plan_meta_json`). */
@@ -83,6 +84,7 @@ export type PlanningDeps = {
   config: PlanConfig;
   estimation: EstimationConfig;
   structures: StructureTemplate[];
+  writing: WritingConfig;
   price: (model: string) => { prompt: number; completion: number } | null;
   onUpdated: (missionId: string) => void;
 };
@@ -822,6 +824,73 @@ export class PlanningService {
       label: `Recherche — ${n.numbering ? n.numbering + ' ' : ''}${n.title}`,
       input: { handler: 'p3.research', nodeId: n.id },
     }));
+    const hasData = this.hasFieldData(id);
+    const wantsResults = new RegExp(this.d.writing.resultsPattern, 'i');
+    if (hasData)
+      tasks.push({
+        key: 'p4.analyse',
+        phase: 'P4',
+        agentRole: 'local',
+        label: 'Analyse des données de terrain',
+        input: { handler: 'p4.analysis' },
+      });
+    // P5 : rédaction du corps (une tâche par unité), puis introduction et conclusion, puis pages liminaires (§9 P5, §8.5).
+    // Une section dépend de sa recherche, de l'analyse si elle présente des résultats, et de la section précédente du même chapitre
+    // (pour en recevoir le résumé) : les chapitres, eux, avancent en parallèle.
+    const byId = new Map(ov.nodes.map((n) => [n.id, n]));
+    const chapterOf = (n: OutlineNodeView): string => {
+      let cur = n;
+      while (cur.parentId && byId.get(cur.parentId)) {
+        const p = byId.get(cur.parentId)!;
+        if (cur.level === 'chapitre' || p.level === 'partie') break;
+        cur = p;
+      }
+      return cur.id;
+    };
+    const lastInChapter = new Map<string, string>();
+    const bodyKeys: string[] = [];
+    const bodyUnits = units.filter((u) => u.node.kind === 'corps');
+    for (const u of bodyUnits) {
+      const n = u.node;
+      const key = `p5.redaction.${n.id}`;
+      const deps = [
+        ...(targets.some((t) => t.id === n.id) ? [`p3.recherche.${n.id}`] : []),
+        ...(hasData && wantsResults.test(`${n.title} ${n.objective}`) ? ['p4.analyse'] : []),
+      ];
+      const ch = chapterOf(n);
+      if (lastInChapter.has(ch)) deps.push(lastInChapter.get(ch)!);
+      lastInChapter.set(ch, key);
+      bodyKeys.push(key);
+      tasks.push({
+        key,
+        phase: 'P5',
+        agentRole: 'local',
+        label: `Rédaction — ${n.numbering ? n.numbering + ' ' : ''}${n.title}`,
+        input: { handler: 'p5.write', nodeId: n.id },
+        dependsOnKeys: deps,
+      });
+    }
+    const generalKeys: string[] = [];
+    for (const u of units.filter((x) => x.node.kind !== 'corps')) {
+      const key = `p5.general.${u.node.id}`;
+      generalKeys.push(key);
+      tasks.push({
+        key,
+        phase: 'P5',
+        agentRole: 'local',
+        label: `Rédaction — ${u.node.title}`,
+        input: { handler: 'p5.general', nodeId: u.node.id },
+        dependsOnKeys: bodyKeys,
+      });
+    }
+    tasks.push({
+      key: 'p5.liminaires',
+      phase: 'P5',
+      agentRole: 'local',
+      label: 'Résumé et pages liminaires',
+      input: { handler: 'p5.front' },
+      dependsOnKeys: generalKeys.length ? generalKeys : bodyKeys,
+    });
     this.d.db.transaction(() => {
       const t = nowIso();
       const nextBrief = {
@@ -849,7 +918,7 @@ export class PlanningService {
           id,
         );
       const cfg = this.cfg(id);
-      this.d.missions.setConfig(id, { ...cfg, stopAfterPhase: 'P3' });
+      this.d.missions.setConfig(id, { ...cfg, stopAfterPhase: 'P5' });
       this.d.queue.enqueue(id, tasks);
       start();
     })();

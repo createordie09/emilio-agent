@@ -372,6 +372,21 @@ export class ResearchService {
     };
   }
 
+  private inFlight = new Map<string, Promise<unknown>>();
+
+  /** Exécute `fn` après toute opération en cours sur la même source (accès séquentiel par source). */
+  private once<T>(sourceId: string, fn: () => Promise<T>): Promise<T> {
+    const prev = this.inFlight.get(sourceId) ?? Promise.resolve();
+    const next = prev.catch(() => undefined).then(fn);
+    this.inFlight.set(sourceId, next);
+    void next
+      .finally(() => {
+        if (this.inFlight.get(sourceId) === next) this.inFlight.delete(sourceId);
+      })
+      .catch(() => undefined);
+    return next;
+  }
+
   private key(c: CandidateSource): string {
     return c.doi ? `doi:${c.doi}` : `t:${normalizeTitle(c.title)}|${c.year ?? ''}`;
   }
@@ -665,40 +680,58 @@ export class ResearchService {
         string,
         string | number | null
       >;
-      if (r.status !== 'user_upload' && ft < depth.fullText) {
-        ft++;
-        const o = await acquireFullText(
-          ftDeps,
-          spec.missionId,
-          {
-            id: r.sourceId,
-            title: String(row.title),
-            doi: (row.doi as string) ?? undefined,
-            oaPdfUrl: (row.oa_pdf_url as string) ?? undefined,
-            abstract: (row.abstract as string) ?? undefined,
-          },
-          spec.signal,
-        );
-        r.fullText = o.status;
-        this.d.db
-          .prepare('UPDATE sources SET fulltext_status=?, updated_at=? WHERE id=?')
-          .run(o.status, nowIso(), r.sourceId);
-      } else if (r.status !== 'user_upload' && row.abstract) {
-        // Au-delà du quota de textes intégraux : le résumé seul reste ancrable.
-        const have = (
-          this.d.db.prepare('SELECT COUNT(*) n FROM chunks WHERE source_id=?').get(r.sourceId) as {
-            n: number;
+      if (r.status !== 'user_upload' && (ft < depth.fullText || row.abstract)) {
+        const wantFull = ft < depth.fullText;
+        if (wantFull) ft++;
+        // Une source retenue par plusieurs sections est acquise UNE fois (les recherches de sections tournent en parallèle).
+        r.fullText = await this.once(r.sourceId, async () => {
+          const have = (
+            this.d.db
+              .prepare('SELECT COUNT(*) n FROM chunks WHERE source_id=?')
+              .get(r.sourceId) as {
+              n: number;
+            }
+          ).n;
+          const stored = String(
+            (
+              this.d.db
+                .prepare('SELECT fulltext_status s FROM sources WHERE id=?')
+                .get(r.sourceId) as { s: string }
+            ).s,
+          ) as RetainedSource['fullText'];
+          if (have && stored !== 'none') return stored;
+          if (wantFull) {
+            const o = await acquireFullText(
+              ftDeps,
+              spec.missionId,
+              {
+                id: r.sourceId,
+                title: String(row.title),
+                doi: (row.doi as string) ?? undefined,
+                oaPdfUrl: (row.oa_pdf_url as string) ?? undefined,
+                abstract: (row.abstract as string) ?? undefined,
+              },
+              spec.signal,
+            );
+            this.d.db
+              .prepare('UPDATE sources SET fulltext_status=?, updated_at=? WHERE id=?')
+              .run(o.status, nowIso(), r.sourceId);
+            return o.status;
           }
-        ).n;
-        if (!have) {
-          await this.d.ingest.indexPages(spec.missionId, r.sourceId, [
-            { page: null, text: String(row.abstract) },
-          ]);
-          this.d.db
-            .prepare("UPDATE sources SET fulltext_status='abstract_only', updated_at=? WHERE id=?")
-            .run(nowIso(), r.sourceId);
-          r.fullText = 'abstract_only';
-        }
+          // Au-delà du quota de textes intégraux : le résumé seul reste ancrable.
+          if (!have && row.abstract) {
+            await this.d.ingest.indexPages(spec.missionId, r.sourceId, [
+              { page: null, text: String(row.abstract) },
+            ]);
+            this.d.db
+              .prepare(
+                "UPDATE sources SET fulltext_status='abstract_only', updated_at=? WHERE id=?",
+              )
+              .run(nowIso(), r.sourceId);
+            return 'abstract_only' as const;
+          }
+          return stored;
+        });
       }
       if (notes < depth.notes) {
         const note = await buildReadingNote(
