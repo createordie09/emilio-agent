@@ -340,7 +340,7 @@ Format : contexte → décision → conséquences. Référence au cahier des cha
 - **[À VÉRIFIER] §23.5 levé** : les six identifiants de modèles de `resources/presets.json` existent chez OpenRouter, avec sorties structurées. La sortie JSON stricte a été essayée sur les trois modèles du préréglage économique.
 - **Plafond de jetons de sortie** : OpenRouter réserve le coût maximal d'une réponse quand `max_tokens` est absent ; un solde modeste est alors refusé (402) à tort. Désormais 16 000 jetons par appel (`maxOutputTokens`, réglable par mission), et une réponse vide coupée par la limite (`finish_reason: length`) est retentée une fois avec le double.
 - **Modèles à raisonnement** : leurs jetons de réflexion sont facturés en sortie (150 à 290 jetons pour une réponse de 20 à 30 jetons). Aucun coefficient n'est modifié sans mesure : à calibrer sur mission réelle.
-- **Non fait** : les trois missions réelles, l'ajustement de `estimation.json`, l'amélioration des prompts d'après leurs défauts, les préréglages. **Bloqué par le solde du compte OpenRouter** (épuisé).
+- Mesures réelles et ajustements : voir ADR-046.
 
 ## ADR-045 — Anonymisation des données de terrain (J10, §19)
 
@@ -351,3 +351,12 @@ Décision déléguée par vous : « à gérer comme un pro ».
 - **Test d'intégration** : sur une mission simulée avec un fichier contenant des noms, téléphones et e-mails, **aucune requête envoyée au modèle** ne contient ces valeurs ni les intitulés d'identification, alors que les variables d'analyse y figurent.
 - **Pseudonymisation** (`Pseudonymizer`) : remplace les noms propres par E1, E2… (variantes d'une même personne comprises, mots entiers uniquement), masque e-mails et numéros de téléphone ; la table de correspondance reste locale. Prête pour les transcriptions d'entretiens ; **pas encore branchée** (aucun chemin d'import de transcriptions : codage qualitatif reporté).
 - **Limites** : la détection des noms propres dans du texte libre n'est pas automatique (le pseudonymiseur remplace les noms qu'on lui donne) ; les quasi-identifiants (ville + âge + profession croisés) ne sont pas traités ; les documents de référence importés par l'utilisateur restent envoyés par extraits (information donnée à l'onboarding).
+
+## ADR-046 — Résultats de calibration et corrections (J10, §14.5, §21.4)
+
+- **Quatre missions réelles** (sources simulées), détail dans `docs/calibration/README.md`. Coût réel 0,81 à 1,2 $ pour un mini-mémoire ; le jury représente la moitié de la dépense.
+- **`reasoning.effort` = « low » par défaut** (réglable par rôle et par mission, envoyé seulement aux modèles qui déclarent `reasoning`) : la réflexion par défaut doublait le coût.
+- **`temperature` omise pour les modèles qui ne la déclarent pas** (Claude 5.5, GPT-6.1) : sinon 404 et bascule silencieuse sur le modèle de secours. L'essai « équilibré » n'a donc pas testé ses modèles prévus.
+- **Estimation recalée** (`resources/estimation.json`, `estimate.ts`) : jurés 4 300 jetons de sortie, rédaction ×2,5, entrée du président fixe, évaluations = rondes + 1. Aucun coefficient de recherche (P3) abaissé.
+- **Jurés plus concis** (justification ≤ 40 mots, ≤ 3 points forts, ≤ 6 remarques).
+- **Non démontré** : critère §21.4 n° 8 ; rien n'a été essayé avec de vraies sources ni avec les modèles Claude / GPT du préréglage en mission complète (crédit épuisé).
