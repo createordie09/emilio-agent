@@ -26,3 +26,44 @@ export async function launchApp(): Promise<{ app: ElectronApplication; page: Pag
   await page.waitForLoadState('domcontentloaded');
   return { app, page };
 }
+
+/** Active le mode développeur (outils de simulation) via les Paramètres. */
+export async function enableDevMode(page: Page): Promise<void> {
+  await page.evaluate(() => (location.hash = '#/parametres'));
+  await page.getByRole('tab', { name: 'Apparence' }).click();
+  await page.getByRole('switch', { name: 'Mode développeur' }).click();
+}
+
+/**
+ * Parcourt l'assistant jusqu'à « Créer la mission » (sans documents ni données) : la mission est au stade « brief ».
+ * `aProposer` : l'agent doit proposer la problématique.
+ */
+export async function createBriefedMission(
+  page: Page,
+  opts: { title?: string; aProposer?: boolean } = {},
+): Promise<void> {
+  const title = opts.title ?? 'Microfinance et inclusion financière au Bénin';
+  await page.evaluate(() => (location.hash = '#/missions/nouvelle'));
+  await page.getByRole('button', { name: "Ouvrir l'assistant" }).click();
+  await page.getByLabel(/^Discipline/).fill('Sciences de gestion');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByLabel('Thème ou titre provisoire').fill(title);
+  if (opts.aProposer) {
+    await page.getByRole('checkbox', { name: /m'aide à la formuler/ }).click();
+  } else {
+    await page
+      .getByLabel(/^Problématique/)
+      .fill('Dans quelle mesure la microfinance améliore-t-elle l’inclusion financière ?');
+  }
+  await page.getByLabel('Mot-clé', { exact: true }).fill('microfinance');
+  await page.getByLabel('Mot-clé', { exact: true }).press('Enter');
+  await page.getByRole('radio', { name: 'Documentaire' }).click();
+  for (let i = 0; i < 2; i++) await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('radio', { name: /Afrique francophone/ }).click();
+  await page.getByRole('button', { name: 'Continuer' }).click(); // → documents (aucun import)
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('radio', { name: /Équilibré/ }).click();
+  await page.getByLabel('Budget maximal (en dollars)').fill('12');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+  await page.getByRole('button', { name: 'Créer la mission' }).click();
+}

@@ -1,4 +1,4 @@
-import type { AgentRole } from '@emilio/shared';
+import type { AgentRole, Phase } from '@emilio/shared';
 
 /**
  * Configuration d'exécution d'une mission (extrait de CdC §7.6 utile au moteur en J2).
@@ -14,6 +14,8 @@ export type MissionExecConfig = {
   parallelism: number;
   /** Coût estimé d'un appel pour le contrôle de budget avant appel (§14.4). */
   estimateCallUsd?: number;
+  /** Dernière phase disponible dans cette version de l'application : la mission se termine après elle (J5 : P3). */
+  stopAfterPhase?: Phase;
   /** Seuils d'alerte budget déjà notifiés (50, 80, 95 %). */
   budgetAlertsSent?: number[];
 };

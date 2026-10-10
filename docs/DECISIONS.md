@@ -183,3 +183,48 @@ Format : contexte → décision → conséquences. Référence au cahier des cha
 - **Fiches de lecture** (`document_analyst/reading-note`) : le modèle résume les extraits ; **le code** vérifie que chaque citation existe littéralement (`quoteExists`, normalisation tolérante des espaces, apostrophes, guillemets, tirets, césures) dans un extrait fourni et ≤ 40 mots ; sinon elle est supprimée et comptée (affichée à l'utilisateur).
 - Mode simulé par mission (corpus fictif de DOI `10.5555/*`, PDF générés, source fantôme rejetée) : aucune requête réseau ni LLM payant en test ; bouton « Recherche de démonstration » (mode développeur).
 - Version du moteur : 0.4.0. Prompts documentés dans `docs/PROMPTS.md` (version `recherche-1`).
+
+## ADR-026 — Cadrage P1 (J5, §9 P1, §10.3.1)
+
+- L'Orchestrateur (mode cadrage) reçoit le brief condensé (`compactBrief`, sans données personnelles de l'auteur), le profil des données de terrain (calculé par du code) et rend : incohérences (avec correction proposée), 3 formulations de problématique **si elle est à proposer ou faible**, concepts à définir, pistes théoriques (jamais d'auteur cité), plan de requêtes FR/EN par concept, `manques`. Schéma zod = celui du §10.3.1. Prompt : `agents/orchestrator/cadrage.prompt.md` (version `plan-1`).
+- Le résultat est stocké dans `missions.cadrage_json` (migration 0004) dès qu'il est obtenu : une planification interrompue, en échec ou régénérée ne refait **pas** P1.
+- Les incohérences sont affichées sur l'écran de validation ; elles ne bloquent rien (l'utilisateur reste maître de son brief).
+
+## ADR-027 — Recherche exploratoire (J5, §9 P2.1–2.2)
+
+- `ResearchService.explore` : requêtes tirées du cadrage (une par concept à tour de rôle, FR puis EN, 8 au plus — `plan-config.json`), connecteurs en parallèle (panne isolée), déduplication, score (pertinence par embeddings + qualité §11.4), **30 / 45 / 60 candidats** selon la profondeur (rapide / normale / approfondie), métadonnées et résumés seulement (pas de texte intégral ni de fiche de lecture).
+- **Vérification rapide** : existence des DOI (Crossref puis OpenAlex), sans arbitrage par un modèle ; une source sans identifiant reste « non vérifiée » (pas rejetée). Les sources **rejetées sont écartées** de la liste transmise à l'Architecte. Comme pour J4, une panne réseau ne rejette jamais une source.
+- Les sources sont écrites dans `sources` (réutilisées ensuite par P3) ; la liste exploratoire de la mission est dans `plan_meta_json`.
+- **Aucune source inventée** : l'Architecte ne voit que des alias `S1…Sn`. Tout alias inconnu est ignoré par le code (compté dans les remarques) ; les « sources pressenties » stockées sont toujours des identifiants de la base.
+- Réseau absent (cas du cloud) : le plan est quand même proposé, avec l'avertissement « Aucune source candidate… ».
+
+## ADR-028 — Plan proposé par l'Architecte (J5, §9 P2, §10.3.2, §15.3)
+
+- **Sortie plate** (`noeuds[]` avec `ref` / `parent`) et non un arbre récursif : les schémas récursifs sont mal acceptés par les sorties structurées de plusieurs modèles. Le code reconstruit l'arbre. **Non vérifié en réel** (pas de clé dans le cloud) : si un modèle refuse ce schéma, la première génération réelle le dira (erreur claire, « Réessayer »).
+- **Gabarits** : `resources/norms/structures/*.json` (mémoire de recherche, rapport de stage, rapport professionnel, thèse, article IMRaD, revue de littérature) — clé stable par nœud, niveau, type (introduction / conclusion / corps), poids de mots (`share`). Structure « standard » → **imposée** : le code restaure tout nœud du gabarit manquant, écarte les parties/chapitres ajoutés (sauf gabarit « thèse », ouvert) et le dit dans les points d'attention. Structure « personnalisée » ou « importée » → gabarit seulement indicatif (l'extraction des règles d'un guide d'établissement, `extract_guidelines`, n'est pas encore faite).
+- **Mots** : cible = milieu de la longueur demandée × `wordsPerPage` (350) × `bodyShare` (0,85 : le reste = liminaires, bibliographie, annexes). Répartition **par du code** : poids du gabarit, sinon mots proposés par le modèle, normalisés pour que la somme soit exacte (arrondi à 10). Les propositions de mots du modèle ne sont jamais prises telles quelles. Valeurs **à ajuster** après les premiers tests réels (`plan-config.json`).
+- Section < 400 mots signalée (hors sous-sections d'introduction/conclusion, rédigées d'un bloc) ; sections sans objectif, plan hors longueur (±10 %), budget dépassé, version > 5 : tous signalés à l'écran, jamais bloquants.
+- **Numérotation** : parties en chiffres romains, chapitres en continu, sections « 2.3 », sous-sections « 2.3.1 » ; introduction et conclusion générales non numérotées ; sections sous une partie sans chapitre (rapport de stage) « 1.1 ».
+- **Versions** : chaque proposition est conservée dans `plan_versions`. « Nouvelle version » : le commentaire, le plan **actuel avec les modifications de l'utilisateur** et la problématique retenue sont transmis à l'Architecte ; P1 et la recherche exploratoire sont réutilisés. Au-delà de 5 versions : conseil (pas de limite stricte, §9 P2).
+
+## ADR-029 — Édition et validation du plan (J5, §6.5)
+
+- Le plan de travail vit dans `outline_nodes` ; édition possible **seulement** en `awaiting_plan_validation` : renommer, objectif, questions clés, mots (feuilles seulement : un parent affiche la somme), nombre minimal de sources, ajouter / supprimer / déplacer. Le moteur recalcule numérotation et niveaux (un chapitre glissé dans un chapitre devient section, etc.), refuse les cycles, la profondeur > sous-section et la subdivision de l'introduction/conclusion.
+- Interface : glisser-déposer natif HTML5 (haut / bas d'une carte = avant / après, centre = à l'intérieur) **et** boutons Monter / Descendre / Ajouter / Supprimer (accessibles au clavier). Les gestionnaires lisent une référence synchrone : `dragover` précède le rendu React (bug trouvé par le test E2E).
+- **Validation** : si la problématique était « à proposer », le choix (ou un texte libre) est obligatoire ; il est alors écrit dans le brief. Le plan est figé dans `plan_json`, puis `running`.
+- **Décision à confirmer** : les phases P4–P9 n'existent pas encore. La validation met donc en file la **recherche approfondie P3** (une tâche par section feuille du corps, via `ResearchService`, avec le minimum de sources de la section), puis la mission se termine avec le message « Étapes disponibles terminées (jusqu'à P3)… ». Config `stopAfterPhase` (jamais utilisée par les missions de démonstration).
+
+## ADR-030 — Estimation du coût et de la durée (J5, §14.5)
+
+- `llm/estimate.ts`, coefficients dans `resources/estimation.json` (**à calibrer** : valeurs de départ raisonnées, non mesurées) : recherche (appels par profondeur), fiches de lecture, analyse de données (seulement si données fournies), rédaction (mots × 1,3 jetons/mot, contexte en plus), ancrage (1 affirmation / 30 mots), résumés, jury (3 jurés + président × rondes × chapitres), révisions (part des sections), évaluation globale, bibliographie, soutenance (si PPTX).
+- Trois scénarios : **bas** (1 ronde), **moyen** (2), **haut** (maximum permis partout) ; détail par phase. Prix **uniquement** ceux d'OpenRouter (`GET /models`, jamais d'ici) ; modèle sans prix → estimation signalée comme « minimum ». En **mode simulé** seulement, `simulatedPrice` (configuration, exemple) permet d'afficher des montants ; l'écran le dit.
+- Durée : jetons de sortie ÷ vitesse (mesurée sur `llm_calls` après 5 appels réels par modèle, sinon 45 jetons/s par défaut) + surcoût par appel, divisée par le parallélisme effectif pour P3, P5, P6.
+- `projectRemaining` (coût restant projeté après chaque phase, §14.5.6) est écrit et testé mais **pas encore affiché** : il sert au tableau de bord (J6+).
+
+## ADR-031 — États et robustesse de la planification (J5, §8.6)
+
+- `planning` s'exécute en arrière-plan (un seul travail par mission), journal en français. Tout échec (crédit, budget, réseau, clé, réponse inexploitable `E_SCHEMA`) → `failed` avec raison claire, **aucun plan à moitié écrit** (transaction) ; « Réessayer » relance la planification (transition `failed → planning` ajoutée, la table du §8.1 est inchangée pour le reste). Pas de pause automatique : la planification est courte, une reprise manuelle suffit.
+- Annulation : le travail est interrompu et le statut reste « annulée ». Redémarrage de l'application : une mission restée en `planning` est relancée (les étapes déjà faites — cadrage, exploration — sont réutilisées).
+- Mode développeur : « Mode simulé » (bascule `llmMode`) disponible au stade « brief » pour tester sans appel payant ; refusé hors mode développeur.
+- Reporté : notification système « plan prêt » (§6.9) au jalon J9 avec les autres notifications.
+- Version du moteur : 0.5.0. Schéma : migration 0004 (`cadrage_json`, `plan_meta_json`, colonnes de `outline_nodes`, `plan_versions`).

@@ -140,6 +140,18 @@ function browserMock(): EmilioApi {
         }),
       simulate: () => ok(null),
       events: () => ok([]),
+      setSimulated: nope,
+    },
+    plan: {
+      generate: nope,
+      regenerate: nope,
+      get: nope,
+      updateNode: nope,
+      addNode: nope,
+      deleteNode: nope,
+      moveNode: nope,
+      saveMeta: nope,
+      validate: nope,
     },
     onEvent: () => () => {},
     ui: {

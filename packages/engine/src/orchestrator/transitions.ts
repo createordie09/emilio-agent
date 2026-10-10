@@ -26,7 +26,7 @@ export const TRANSITIONS: Record<MissionStatus, readonly MissionStatus[]> = {
   paused_network: ['running', 'cancelled', 'paused'],
   // Budget atteint : reprendre (budget relevé) ou finaliser (§8.6) ; la finalisation repasse par running.
   paused_budget: ['running', 'cancelled'],
-  failed: ['running', 'cancelled'], // « Réessayer à partir de cette étape »
+  failed: ['running', 'planning', 'cancelled'], // « Réessayer » : reprise des tâches, ou nouvelle planification si le plan a échoué
   completed: [],
   cancelled: [],
 };

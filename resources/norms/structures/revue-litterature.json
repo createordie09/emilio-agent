@@ -1,0 +1,51 @@
+{
+  "id": "revue-litterature",
+  "label": "Revue de littérature",
+  "workTypes": ["revue_litterature"],
+  "allowExtraChapters": false,
+  "nodes": [
+    {
+      "key": "i",
+      "level": "section",
+      "kind": "corps",
+      "title": "Introduction",
+      "share": 0.08
+    },
+    {
+      "key": "m",
+      "level": "section",
+      "kind": "corps",
+      "title": "Méthode de recherche documentaire",
+      "share": 0.1
+    },
+    {
+      "key": "s",
+      "level": "section",
+      "kind": "corps",
+      "title": "Synthèse thématique",
+      "share": 0.45
+    },
+    {
+      "key": "d",
+      "level": "section",
+      "kind": "corps",
+      "title": "Discussion",
+      "share": 0.17
+    },
+    {
+      "key": "p",
+      "level": "section",
+      "kind": "corps",
+      "title": "Pistes de recherche",
+      "share": 0.1
+    },
+    {
+      "key": "c",
+      "level": "section",
+      "kind": "corps",
+      "title": "Conclusion",
+      "share": 0.1
+    }
+  ],
+  "description": "Gabarit de structure (CdC §15.3). Les parts (`share`) sont des poids relatifs de mots, normalisés par le code."
+}

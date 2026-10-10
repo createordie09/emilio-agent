@@ -13,7 +13,9 @@ import {
   Wifi,
   WifiOff,
   Wallet,
+  WandSparkles,
   Zap,
+  ClipboardCheck,
 } from 'lucide-react';
 import type { MissionDetail, TaskSummary } from '@emilio/shared';
 import {
@@ -26,10 +28,11 @@ import {
   Skeleton,
   StatusBadge,
   Stepper,
+  Switch,
   type ActivityItem,
 } from '@/components/ui';
 import { api } from '@/lib/api';
-import { fmtUsd } from '@/lib/fr';
+import { errorText, fmtUsd } from '@/lib/fr';
 import { avatarRole, PHASES, relativeTime, STATUS_FR } from '@/lib/mission-labels';
 import { useMission, useMissionEvents } from '@/lib/queries';
 import { useToasts } from '@/stores/toasts';
@@ -49,6 +52,10 @@ const TASK_ICON: Record<TaskSummary['status'], { icon: typeof CheckCircle2; cls:
 /** Phase en cours → index dans la frise ; phases entièrement faites = cochées. */
 function phaseIndex(m: MissionDetail): number {
   if (m.status === 'completed') return PHASES.length;
+  if (m.tasks.length === 0) {
+    const i = PHASES.findIndex((p) => p.id === m.currentPhase);
+    return m.status === 'awaiting_plan_validation' ? 2 : i < 0 ? 0 : i;
+  }
   const done = (p: string) => {
     const t = m.tasks.filter((x) => x.phase === p);
     return t.length > 0 && t.every((x) => x.status === 'done');
@@ -74,11 +81,22 @@ export function MissionPage() {
       </div>
     );
 
-  const act = (f: () => Promise<{ ok: boolean; error?: { messageFr: string } }>) => async () => {
-    const r = await f();
-    if (!r.ok)
-      push({ tone: 'danger', title: 'Action impossible', description: r.error?.messageFr });
-  };
+  const act =
+    (
+      f: () => Promise<{
+        ok: boolean;
+        error?: { code?: string; messageFr: string; detail?: string };
+      }>,
+    ) =>
+    async () => {
+      const r = await f();
+      if (!r.ok)
+        push({
+          tone: 'danger',
+          title: 'Action impossible',
+          description: r.error ? errorText(r.error) : undefined,
+        });
+    };
   const st = STATUS_FR[m.status];
   const canPause = m.status === 'running';
   const canResume = m.status.startsWith('paused');
@@ -126,6 +144,12 @@ export function MissionPage() {
                 Réessayer
               </Button>
             )}
+            {m.planVersion > 0 && m.status !== 'awaiting_plan_validation' && (
+              <Button variant="secondary" size="sm" onClick={() => nav(`/missions/${m.id}/plan`)}>
+                <ClipboardCheck className="size-4" />
+                Voir le plan
+              </Button>
+            )}
             {canCancel && (
               <Button variant="ghost" size="sm" onClick={act(() => api.missions.cancel(m.id))}>
                 <Square className="size-4" />
@@ -142,10 +166,59 @@ export function MissionPage() {
           </p>
         )}
         {m.status === 'briefing' && (
-          <p role="status" className="t-small rounded-md bg-primary-softer p-3 text-text-muted">
-            Votre brief est enregistré et vos documents sont indexés. La génération du plan arrive
-            au prochain jalon de l'application.
+          <section
+            aria-label="Génération du plan"
+            className="flex flex-wrap items-center justify-between gap-4 rounded-lg bg-primary-softer p-5"
+          >
+            <p className="t-small max-w-xl text-text-muted">
+              Votre brief est enregistré et vos documents sont indexés. Les agents vont maintenant
+              cadrer le sujet, explorer la littérature et vous proposer un plan à valider.
+            </p>
+            <div className="flex items-center gap-4">
+              {devMode && (
+                <label className="t-small flex items-center gap-2 text-text-muted">
+                  <Switch
+                    label="Mode simulé (aucun appel payant)"
+                    checked={m.simulated}
+                    onCheckedChange={(v) => void act(() => api.missions.setSimulated(m.id, v))()}
+                  />
+                  Mode simulé
+                </label>
+              )}
+              <Button size="lg" onClick={act(() => api.plan.generate(m.id))}>
+                <WandSparkles className="size-4" />
+                Générer le plan
+              </Button>
+            </div>
+          </section>
+        )}
+        {m.status === 'planning' && (
+          <p
+            role="status"
+            className="t-small flex items-center gap-3 rounded-md bg-primary-softer p-4 text-text-muted"
+          >
+            <Loader2
+              className="size-4 animate-[spin_1.2s_linear_infinite] text-primary"
+              aria-hidden
+            />
+            Planification en cours : cadrage du sujet, recherche exploratoire puis proposition de
+            plan.
           </p>
+        )}
+        {m.status === 'awaiting_plan_validation' && (
+          <section
+            aria-label="Plan prêt"
+            className="flex flex-wrap items-center justify-between gap-4 rounded-lg bg-success-soft p-5"
+          >
+            <p className="t-small max-w-xl">
+              Le plan est prêt (version {m.planVersion}). Relisez-le, modifiez-le si besoin, puis
+              validez-le pour lancer la recherche documentaire.
+            </p>
+            <Button size="lg" onClick={() => nav(`/missions/${m.id}/plan`)}>
+              <ClipboardCheck className="size-4" />
+              Examiner le plan
+            </Button>
+          </section>
         )}
         <Stepper
           steps={PHASES.map((p) => p.label)}

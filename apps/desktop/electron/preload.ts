@@ -54,6 +54,19 @@ const api: EmilioApi = {
     retry: (id) => ipcRenderer.invoke(IPC.missionsRetry, id),
     simulate: (kind) => ipcRenderer.invoke(IPC.missionsSimulate, kind),
     events: (id, opts) => ipcRenderer.invoke(IPC.missionsEvents, id, opts),
+    setSimulated: (id, simulated) => ipcRenderer.invoke(IPC.missionsSetSimulated, id, simulated),
+  },
+  plan: {
+    generate: (id) => ipcRenderer.invoke(IPC.planGenerate, id),
+    regenerate: (id, comment) => ipcRenderer.invoke(IPC.planRegenerate, id, comment),
+    get: (id) => ipcRenderer.invoke(IPC.planGet, id),
+    updateNode: (id, nodeId, patch) => ipcRenderer.invoke(IPC.planUpdateNode, id, nodeId, patch),
+    addNode: (id, input) => ipcRenderer.invoke(IPC.planAddNode, id, input),
+    deleteNode: (id, nodeId) => ipcRenderer.invoke(IPC.planDeleteNode, id, nodeId),
+    moveNode: (id, nodeId, parentId, index) =>
+      ipcRenderer.invoke(IPC.planMoveNode, id, nodeId, parentId, index),
+    saveMeta: (id, patch) => ipcRenderer.invoke(IPC.planSaveMeta, id, patch),
+    validate: (id) => ipcRenderer.invoke(IPC.planValidate, id),
   },
   onEvent: (cb) => {
     const listener = (_e: IpcRendererEvent, payload: EngineLiveEvent) => cb(payload);

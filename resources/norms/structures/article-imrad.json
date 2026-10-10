@@ -1,0 +1,37 @@
+{
+  "id": "article-imrad",
+  "label": "Article scientifique (IMRaD)",
+  "workTypes": ["article"],
+  "allowExtraChapters": false,
+  "nodes": [
+    {
+      "key": "i",
+      "level": "section",
+      "kind": "corps",
+      "title": "Introduction",
+      "share": 0.17
+    },
+    {
+      "key": "m",
+      "level": "section",
+      "kind": "corps",
+      "title": "Méthodes",
+      "share": 0.23
+    },
+    {
+      "key": "r",
+      "level": "section",
+      "kind": "corps",
+      "title": "Résultats",
+      "share": 0.3
+    },
+    {
+      "key": "d",
+      "level": "section",
+      "kind": "corps",
+      "title": "Discussion",
+      "share": 0.3
+    }
+  ],
+  "description": "Gabarit de structure (CdC §15.3). Les parts (`share`) sont des poids relatifs de mots, normalisés par le code."
+}

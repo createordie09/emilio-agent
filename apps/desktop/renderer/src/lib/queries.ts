@@ -62,3 +62,11 @@ export const useMissionEvents = (id: string | null) =>
     queryKey: ['events', id],
     queryFn: () => unwrap(api.missions.events(id, { limit: 100 })),
   });
+
+export const usePlan = (id: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: ['plan', id],
+    enabled: Boolean(id) && enabled,
+    gcTime: 0,
+    queryFn: () => unwrap(api.plan.get(id!)),
+  });

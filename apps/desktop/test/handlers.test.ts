@@ -169,6 +169,74 @@ describe('IPC handlers — missions', () => {
   });
 });
 
+describe('IPC handlers — cadrage et plan', () => {
+  const rec = (devMode = false) => {
+    const calls: { method: string; params: unknown }[] = [];
+    const engine = {
+      async request(method: string, params?: unknown) {
+        calls.push({ method, params });
+        if (method === 'getSetting')
+          return {
+            ok: true,
+            value: (params as { key: string }).key === 'ui_settings' ? { devMode } : null,
+          };
+        return { ok: true, value: { id: 'm1' } };
+      },
+    } as unknown as EngineClient;
+    return { engine, calls };
+  };
+  it('relaie génération, nouvelle version, lecture, édition, déplacement et validation avec leurs paramètres', async () => {
+    const { engine, calls } = rec();
+    const { handlers } = createHandlers({ engine, cipher: cipher(), appInfo: () => ({}) });
+    await handlers[IPC.planGenerate]('m1');
+    await handlers[IPC.planRegenerate]('m1', 'Plus de théorie');
+    await handlers[IPC.planGet]('m1');
+    await handlers[IPC.planUpdateNode]('m1', 'n1', { title: 'T' });
+    await handlers[IPC.planAddNode]('m1', { parentId: null, title: 'Nouveau' });
+    await handlers[IPC.planMoveNode]('m1', 'n1', 'n2', 3);
+    await handlers[IPC.planDeleteNode]('m1', 'n1');
+    await handlers[IPC.planSaveMeta]('m1', { problematiqueChoisie: 'Q ?' });
+    await handlers[IPC.planValidate]('m1');
+    expect(calls.map((c) => c.method)).toEqual([
+      'generatePlan',
+      'regeneratePlan',
+      'getPlan',
+      'updatePlanNode',
+      'addPlanNode',
+      'movePlanNode',
+      'deletePlanNode',
+      'savePlanMeta',
+      'validatePlan',
+    ]);
+    expect(calls[1]!.params).toEqual({ id: 'm1', comment: 'Plus de théorie' });
+    expect(calls[5]!.params).toEqual({ id: 'm1', nodeId: 'n1', parentId: 'n2', index: 3 });
+  });
+  it('le mode simulé d’une mission est réservé au mode développeur', async () => {
+    const off = rec(false);
+    const h1 = createHandlers({
+      engine: off.engine,
+      cipher: cipher(),
+      appInfo: () => ({}),
+    }).handlers;
+    expect(await h1[IPC.missionsSetSimulated]('m1', true)).toMatchObject({
+      ok: false,
+      error: { code: 'E_BAD_REQUEST' },
+    });
+    expect(off.calls.some((c) => c.method === 'setLlmMode')).toBe(false);
+    const on = rec(true);
+    const h2 = createHandlers({
+      engine: on.engine,
+      cipher: cipher(),
+      appInfo: () => ({}),
+    }).handlers;
+    expect(await h2[IPC.missionsSetSimulated]('m1', true)).toMatchObject({ ok: true });
+    expect(on.calls.find((c) => c.method === 'setLlmMode')!.params).toEqual({
+      id: 'm1',
+      simulated: true,
+    });
+  });
+});
+
 describe('IPC handlers — sources documentaires', () => {
   const setup = (dev: boolean, available = true) => {
     const store = new Map<string, unknown>();

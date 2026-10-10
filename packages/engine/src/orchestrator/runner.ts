@@ -433,7 +433,12 @@ export class MissionRunner {
     const c = this.d.queue.counts(id);
     const total = Object.values(c).reduce((a, b) => a + b, 0);
     if (total > 0 && c.done + c.skipped === total && this.inFlight.size === 0) {
-      this.d.missions.transition(id, 'completed', { reason: 'Mission terminée.' });
+      const stop = this.d.missions.config<MissionExecConfig>(id).stopAfterPhase;
+      this.d.missions.transition(id, 'completed', {
+        reason: stop
+          ? `Étapes disponibles terminées (jusqu'à ${stop}) : la rédaction et le jury arrivent dans une prochaine version de l'application.`
+          : 'Mission terminée.',
+      });
       this.touch(id);
       return true;
     }

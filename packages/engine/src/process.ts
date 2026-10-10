@@ -26,6 +26,7 @@ const engine = new EngineService({
   modelsDir: process.env.EMILIO_MODELS_DIR,
   presetsPath: process.env.EMILIO_PRESETS_PATH,
   normsProfilesPath: process.env.EMILIO_NORMS_PATH,
+  resourcesDir: process.env.EMILIO_RESOURCES_DIR,
   qualityWeightsPath: process.env.EMILIO_QUALITY_WEIGHTS_PATH,
 });
 engine.onLive((payload) => parentPort.postMessage({ event: 'live', payload }));

@@ -110,6 +110,12 @@ pnpm dist             # electron-builder (installateur Windows NSIS, J9)
 - Poids de qualité : `resources/quality-weights.json`. Prompts : `docs/PROMPTS.md`.
 - Les API n'ont **pas** été validées en réel (réseau bloqué dans le cloud) : `EMILIO_CONTACT_EMAIL=… pnpm sources:check` sur une machine avec accès.
 
+## Cadrage et plan (J5)
+
+- `PlanningService` (`packages/engine/src/planning/`) : P1 (cadrage) → recherche exploratoire (`ResearchService.explore`) → P2 (Architecte) → `outline_nodes` ; édition (`OutlineRepo`), validation (fige `plan_json`, met P3 en file). Réglages : `resources/plan-config.json`, `resources/estimation.json`, gabarits `resources/norms/structures/*.json`. Estimation : `llm/estimate.ts`.
+- Écran : `/missions/:id/plan` (`PlanPage`). Le plan n'est éditable qu'en `awaiting_plan_validation`. Mode simulé d'une mission (mode développeur) : « Mode simulé » au stade brief.
+- Le code décide de la structure, des mots et de la numérotation ; l'agent propose seulement titres, objectifs, questions et sources pressenties (alias fournis).
+
 ## Qualité
 
 TypeScript `strict`, ESLint + Prettier, aucune sortie d'agent non validée par zod. Mode LLM simulé (mock) obligatoire dès J2 (§21.2) : aucun test ne doit faire d'appel payant.

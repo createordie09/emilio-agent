@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Coins, FolderKanban, Wallet, Rocket, KeyRound } from 'lucide-react';
+import { Coins, FolderKanban, Wallet, Rocket } from 'lucide-react';
 import {
   WelcomeBanner,
   KpiCard,
@@ -73,11 +73,11 @@ export function HomePage() {
       <EmptyState
         icon={Rocket}
         title="Aucune mission pour l'instant"
-        text="La création de missions arrive dans un prochain jalon. En attendant, configurez votre clé et vos modèles."
+        text="Décrivez votre travail en 7 étapes : les agents cadrent le sujet, explorent la littérature et vous proposent un plan à valider."
         action={
-          <Button onClick={() => nav('/parametres')}>
-            <KeyRound className="size-4" />
-            Ouvrir les paramètres
+          <Button onClick={() => nav('/missions/nouvelle')}>
+            <Rocket className="size-4" />
+            Nouvelle mission
           </Button>
         }
       />

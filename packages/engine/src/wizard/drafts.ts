@@ -191,7 +191,7 @@ export class DraftService {
     this.journal.record({
       missionId: id,
       level: 'info',
-      messageFr: 'La génération du plan sera disponible au prochain jalon de l’application.',
+      messageFr: 'Vous pouvez maintenant générer le plan de la mission.',
     });
     return this.missions.summary(id);
   }

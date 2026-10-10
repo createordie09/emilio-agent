@@ -10,6 +10,7 @@ import type {
 import type { ThemePreference } from './constants';
 import type { MissionDetail, MissionEvent, MissionSummary } from './mission';
 import type { BriefDraft, WorkType } from './brief';
+import type { PlanMetaPatch, PlanNodeInput, PlanNodePatch, PlanOverview } from './plan';
 import type { FileKind, MissionFileInfo } from './files';
 import type {
   AddFileResult,
@@ -64,6 +65,32 @@ export interface EmilioApi {
     /** Mode développeur : pannes simulées du client factice. */
     simulate(kind: 'no_credit' | 'recharge' | 'offline' | 'online'): Promise<Result<null>>;
     events(id: string | null, opts?: { limit?: number }): Promise<Result<MissionEvent[]>>;
+    /** Mode développeur : bascule une mission au stade « brief » en mode simulé (aucun appel payant). */
+    setSimulated(id: string, simulated: boolean): Promise<Result<MissionSummary>>;
+  };
+  /** Cadrage, plan et validation (CdC §9 P1–P2, §6.5, §14.5). */
+  plan: {
+    /** Lance P1 + P2 (en arrière-plan) ; l'avancement arrive par les événements. */
+    generate(missionId: string): Promise<Result<MissionSummary>>;
+    /** Nouvelle version du plan avec commentaire (§9 P2 boucle). */
+    regenerate(missionId: string, comment: string): Promise<Result<MissionSummary>>;
+    get(missionId: string): Promise<Result<PlanOverview>>;
+    updateNode(
+      missionId: string,
+      nodeId: string,
+      patch: PlanNodePatch,
+    ): Promise<Result<PlanOverview>>;
+    addNode(missionId: string, input: PlanNodeInput): Promise<Result<PlanOverview>>;
+    deleteNode(missionId: string, nodeId: string): Promise<Result<PlanOverview>>;
+    moveNode(
+      missionId: string,
+      nodeId: string,
+      parentId: string | null,
+      index: number,
+    ): Promise<Result<PlanOverview>>;
+    saveMeta(missionId: string, patch: PlanMetaPatch): Promise<Result<PlanOverview>>;
+    /** « Valider le plan et lancer la mission » : fige le plan et démarre la recherche approfondie. */
+    validate(missionId: string): Promise<Result<MissionSummary>>;
   };
   /** Assistant « Nouvelle mission » : brouillons, fichiers, préréglages, profils de normes (CdC §6.4). */
   drafts: {
@@ -152,7 +179,17 @@ export type EngineMethod =
   | 'saveSourcesConfig'
   | 'setSourceKey'
   | 'testSources'
-  | 'demoResearch';
+  | 'demoResearch'
+  | 'setLlmMode'
+  | 'generatePlan'
+  | 'regeneratePlan'
+  | 'getPlan'
+  | 'updatePlanNode'
+  | 'addPlanNode'
+  | 'deletePlanNode'
+  | 'movePlanNode'
+  | 'savePlanMeta'
+  | 'validatePlan';
 export type EngineRequest = { id: number; method: EngineMethod; params?: unknown };
 export type EngineResponse = { id: number; result: Result<unknown> };
 export type EngineEvent = { event: 'ready' | 'log' | 'live'; payload?: unknown };

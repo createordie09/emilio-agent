@@ -1,0 +1,84 @@
+{
+  "id": "rapport-stage",
+  "label": "Rapport de stage",
+  "workTypes": ["rapport_stage"],
+  "allowExtraChapters": false,
+  "nodes": [
+    {
+      "key": "intro",
+      "level": "chapitre",
+      "kind": "introduction",
+      "title": "Introduction",
+      "share": 0.08
+    },
+    {
+      "key": "p1",
+      "level": "partie",
+      "kind": "corps",
+      "title": "Présentation de la structure d'accueil",
+      "share": 0.2,
+      "children": [
+        {
+          "key": "p1.1",
+          "level": "section",
+          "kind": "corps",
+          "title": "Historique"
+        },
+        {
+          "key": "p1.2",
+          "level": "section",
+          "kind": "corps",
+          "title": "Missions"
+        },
+        {
+          "key": "p1.3",
+          "level": "section",
+          "kind": "corps",
+          "title": "Organisation"
+        },
+        {
+          "key": "p1.4",
+          "level": "section",
+          "kind": "corps",
+          "title": "Organigramme"
+        }
+      ]
+    },
+    {
+      "key": "p2",
+      "level": "partie",
+      "kind": "corps",
+      "title": "Déroulement du stage",
+      "share": 0.3,
+      "children": [
+        {
+          "key": "p2.1",
+          "level": "section",
+          "kind": "corps",
+          "title": "Tâches réalisées"
+        },
+        {
+          "key": "p2.2",
+          "level": "section",
+          "kind": "corps",
+          "title": "Compétences acquises"
+        }
+      ]
+    },
+    {
+      "key": "p3",
+      "level": "partie",
+      "kind": "corps",
+      "title": "Analyse critique d'une problématique observée et suggestions",
+      "share": 0.34
+    },
+    {
+      "key": "concl",
+      "level": "chapitre",
+      "kind": "conclusion",
+      "title": "Conclusion",
+      "share": 0.08
+    }
+  ],
+  "description": "Gabarit de structure (CdC §15.3). Les parts (`share`) sont des poids relatifs de mots, normalisés par le code."
+}
